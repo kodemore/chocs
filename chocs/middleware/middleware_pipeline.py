@@ -19,7 +19,7 @@ class MiddlewareCursor(MiddlewareHandler):
         if self.queue.empty():
             return self.parent(request)
 
-        middleware: [Middleware, Callable] = self.queue.get()
+        middleware: Union[Middleware, Callable] = self.queue.get()
         next = MiddlewareCursor(self.queue, self)
 
         if isinstance(middleware, Middleware):
