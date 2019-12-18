@@ -83,5 +83,3 @@ def test_router_prioritise_routes_with_no_wildcards():
     route, controller = router.match("/pets/11a22")
 
     assert route.route == "/pets/{pet_id}"
-
-

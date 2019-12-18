@@ -10,7 +10,7 @@ def hello(request: HttpRequest) -> HttpResponse:
     return HttpResponse(body=f"Hello {request.attributes['name']}!")
 
 
-@router.get('*')
+@router.get("*")
 def default(request: HttpRequest) -> HttpResponse:
     return HttpResponse(HttpStatus.NOT_FOUND, "Not found")
 
