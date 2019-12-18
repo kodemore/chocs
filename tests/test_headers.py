@@ -1,9 +1,16 @@
+import pytest
+
 from chocs.headers import Headers
 
 
 def test_can_instantiate():
     headers = Headers()
     assert isinstance(headers, Headers)
+
+
+def test_invalid_headers():
+    with pytest.raises(AssertionError):
+        Headers("test")
 
 
 def test_normalize_wsgi_headers():
