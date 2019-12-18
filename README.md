@@ -1,4 +1,4 @@
-# Chocs
+# Chocs [![Build Status](https://travis-ci.org/fatcode/chocs.svg?branch=master)](https://travis-ci.org/fatcode/chocs) [![codecov](https://codecov.io/gh/fatcode/chocs/branch/master/graph/badge.svg)](https://codecov.io/gh/fatcode/chocs) [![Maintainability](https://api.codeclimate.com/v1/badges/d159c53965809f2f4e9d/maintainability)](https://codeclimate.com/github/fatcode/chocs/maintainability)
 Chocs is a modern http framework for wsgi compatible servers. Chocs aims to be small, expressive
 and robust. 
 It provides elegant api for writing fault-proof extensible microservices.  
