@@ -11,7 +11,7 @@ class HttpResponse:
     def __init__(
         self,
         status: Union[int, HttpStatus] = HttpStatus.OK,
-        body: Union[BytesIO, str, None] = None,
+        body: Union[bytes, bytearray, str, None] = None,
         encoding: str = "utf-8",
         headers: Optional[Union[dict, Headers]] = None,
     ):
@@ -27,7 +27,7 @@ class HttpResponse:
     def headers(self):
         return self._headers
 
-    def write(self, body: Union[str, BytesIO]) -> None:
+    def write(self, body: Union[str, bytes, bytearray]) -> None:
         if isinstance(body, str):
             self.body.write(body.encode(self.encoding))
         else:

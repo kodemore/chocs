@@ -37,7 +37,7 @@ class HttpRequest:
             return self._parsed_body
 
         content_type: Tuple[str, Dict[str, str]] = parse_header(
-            self.headers.get("Content-Type")
+            self.headers.get("Content-Type")  # type: ignore
         )
 
         if content_type[0] == "multipart/form-data":
@@ -65,8 +65,8 @@ class HttpRequest:
         for key, value in environ.items():
             if not key.startswith("HTTP"):
                 continue
-            headers.add_header(key, value)
-        headers.add_header("Content-Type", environ.get("CONTENT_TYPE", "text/plain"))
+            headers.set(key, value)
+        headers.set("Content-Type", environ.get("CONTENT_TYPE", "text/plain"))
         return cls(
             method=HttpMethod(environ.get("REQUEST_METHOD", "GET").upper()),
             uri=environ.get("PATH_INFO", "/"),
