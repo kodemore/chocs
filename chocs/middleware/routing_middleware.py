@@ -1,4 +1,5 @@
 from typing import Callable
+from typing import Dict
 
 from chocs.errors import HttpError
 from chocs.http_method import HttpMethod
@@ -12,7 +13,7 @@ from chocs.routing.router import Router
 
 class RoutingMiddleware(Middleware):
     def __init__(self):
-        self.methods = {key: Router() for key in HttpMethod}
+        self.methods: Dict[str, Router] = {key: Router() for key in HttpMethod}
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         try:

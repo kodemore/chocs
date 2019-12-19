@@ -30,43 +30,43 @@ class Application:
 class ApplicationRouter(RoutingMiddleware):
     def get(self, route: str, **patterns) -> Callable:
         def _get(handler: Callable) -> None:
-            self.methods[HttpMethod.GET].set(Route(route, **patterns), handler)
+            self.methods[HttpMethod.GET].append(Route(route, **patterns), handler)
 
         return _get
 
     def post(self, route: str, **patterns) -> Callable:
         def _post(handler: Callable) -> None:
-            self.methods[HttpMethod.POST].set(Route(route, **patterns), handler)
+            self.methods[HttpMethod.POST].append(Route(route, **patterns), handler)
 
         return _post
 
     def put(self, route: str, **patterns) -> Callable:
         def _put(handler: Callable) -> None:
-            self.methods[HttpMethod.PUT].set(Route(route, **patterns), handler)
+            self.methods[HttpMethod.PUT].append(Route(route, **patterns), handler)
 
         return _put
 
     def patch(self, route: str, **patterns) -> Callable:
         def _patch(handler: Callable) -> None:
-            self.methods[HttpMethod.PATCH].set(Route(route, **patterns), handler)
+            self.methods[HttpMethod.PATCH].append(Route(route, **patterns), handler)
 
         return _patch
 
     def delete(self, route: str, **patterns) -> Callable:
         def _delete(handler: Callable) -> None:
-            self.methods[HttpMethod.DELETE].set(Route(route, **patterns), handler)
+            self.methods[HttpMethod.DELETE].append(Route(route, **patterns), handler)
 
         return _delete
 
     def head(self, route: str, **patterns) -> Callable:
         def _head(handler: Callable) -> None:
-            self.methods[HttpMethod.HEAD].set(Route(route, **patterns), handler)
+            self.methods[HttpMethod.HEAD].append(Route(route, **patterns), handler)
 
         return _head
 
     def options(self, route: str, **patterns) -> Callable:
         def _options(handler: Callable) -> None:
-            self.methods[HttpMethod.OPTIONS].set(Route(route, **patterns), handler)
+            self.methods[HttpMethod.OPTIONS].append(Route(route, **patterns), handler)
 
         return _options
 
