@@ -2,6 +2,7 @@ import pytest
 
 from chocs import Headers
 from chocs import HttpResponse
+from chocs.cookies import Cookie
 
 
 def test_can_instantiate():
@@ -31,3 +32,9 @@ def test_headers():
         instance.headers = None
 
     assert isinstance(instance.headers, Headers)
+
+
+def test_set_cookie():
+    instance = HttpResponse()
+    instance.cookies.append(Cookie("name", "value"))
+    assert instance.headers.get("Set-Cookie") == "name=value"
