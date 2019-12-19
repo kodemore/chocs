@@ -1,17 +1,16 @@
 # Chocs [![Build Status](https://travis-ci.org/fatcode/chocs.svg?branch=master)](https://travis-ci.org/fatcode/chocs) [![codecov](https://codecov.io/gh/fatcode/chocs/branch/master/graph/badge.svg)](https://codecov.io/gh/fatcode/chocs) [![Maintainability](https://api.codeclimate.com/v1/badges/d159c53965809f2f4e9d/maintainability)](https://codeclimate.com/github/fatcode/chocs/maintainability)
-Chocs is a modern http framework for wsgi compatible servers. Chocs aims to be small, expressive
-and robust. 
-It provides elegant api for writing fault-proof extensible microservices.  
+Chocs is a modern HTTP framework for WSGI compatible servers. Chocs aims to be small, expressive, and robust. 
+It provides an elegant API for writing fault-proof, extensible microservices.  
 
 ## Features
 
- - Elegant and easy api
- - No additional bloat like built-in template engines, session handlers, etc...
- - Compatible with all wsgi servers
+ - Elegant and easy API
+ - No additional bloat like built-in template engines, session handlers, etc.
+ - Compatible with all WSGI servers
  - Loosely coupled components which can be used separately
  - Multipart body parsing
  - Graceful error handling
- - Http middleware support
+ - HTTP middleware support
  - Fast routing
 
 ## Installation
@@ -33,10 +32,10 @@ def hello(request: HttpRequest) -> HttpResponse:
 serve()
 ```
 
- > Keep in mind `serve()` function is using `bjoern` package, make sure you did include it in your project 
- > dependencies before using it, you can also use any wsgi compatible server of your choice.
+ > Keep in mind that the `serve()` function is using the `bjoern` package, so make sure you included it in your project 
+ > dependencies before using it. You are able to use any WSGI compatible server.
 
-## Running application with gunicorn (or any other wsgi server)
+## Running application with Gunicorn (or any other WSGI server)
 
 ```python
 # myapp.py
@@ -54,9 +53,9 @@ gunicorn -w 4 myapp:app
 ```
 
 ## Routing
-Chocs is shipped with built-in routing module. Easiest way to utilise chocs' routing is to use `chocs.router` object.
-`chocs.router` is an instance of module's internal class `chocs.chocs.ApplicationRouter`, it provides simple api where 
-each of the function is a decorator corresponding to http method.
+Chocs is shipped with a built-in routing module. The easiest way to utilise chocs' routing is to use `chocs.router` object.
+`chocs.router` is an instance of the module's internal class `chocs.chocs.ApplicationRouter`, which provides a simple API 
+where each function is a decorator corresponding to an HTTP method.
 
 ```python
 from chocs import router, HttpResponse, HttpRequest
@@ -66,9 +65,9 @@ def hello(req: HttpRequest) -> HttpResponse:
     ...
 ```
 
-The above example will assign hello function to `GET /hello` request. 
+The above example will assign the hello function to handle a `GET /hello` request. 
 
-Available methods are:
+Available methods:
 - `delete`
 - `get`
 - `head`
@@ -80,7 +79,7 @@ Available methods are:
 
 ### Parametrized routes
 
-Routes can contain parametrized parts, parameters must be enclosed within `{` and `}`.
+Routes can contain parameterised parts. Parameters must be enclosed within `{` and `}`.
 
 ```python
 from chocs import router
@@ -89,13 +88,13 @@ from chocs import router
 def hello():
     ...
 ```
-Will match following URIs:
+Will match the following URIs:
  - `/pet/1`
  - `/pet/abc`
  - `/pet/abc1`
 
-When more control is required over accepted parameter's value, additional regex can be passed to function.
-Consider following example:
+Advanced matching can be achieved by passing a regex to the function.
+Consider the following example:
 
 ```python
 from chocs import router
@@ -104,13 +103,13 @@ from chocs import router
 def hello():
     ...
 ```
-Above example limits `id` parameters to accept digits only, so `/pet/abc` and `/pet/abc1` will no longer match 
-route's pattern.
+This restricts the `id` parameter to accept only digits, so `/pet/abc` and `/pet/abc1` will no longer match route's 
+pattern.
  
-### Wildcarded routes
+### Wildcard routes
 
-Asterisk (`*`) can be used to in route's pattern to match any possible combination. Keep in mind routes which DO NOT 
-contain wildcards are prioritised over the ones with wildcards.
+Asterisks (`*`) can be used in the route's pattern to match any possible combination. Keep in mind that routes which 
+_do not_ contain wildcards are prioritised over routes with wildcards.
 
 ```python
 from chocs import router
@@ -125,22 +124,22 @@ The above example will match following URIs:
 - `/pet/a/b/c`
 - `/pet/12jd/fds`
 
-## Defining and using custom middleware
+## Defining and using a custom middleware
 
-Middleware are functions or classes extending `chocs.middleware.Middleware` class. Middleware have access
-to request object and next function used to control middleware stack flow. Successful middleware should call
-`next` function *(which accepts `chocs.HttpRequest` instance and returns `chocs.HttpReponse`)* and return
+Middleware are functions or classes that inherit `chocs.middleware.Middleware`. Middlewares have access to the request 
+object and the next function is used to control middleware stack flow. Successful middleware execution should call
+the `next` function *(which accepts a `chocs.HttpRequest` instance and returns `chocs.HttpReponse`)* and return a
 valid `chocs.HttpResponse` instance.
 
-Middleware can perform various tasks;
- - making changes in request/response objects ending
- - validating input data
- - authenticating users
- - end request-response cycle
- - connecting to external data source
+Middlewares can perform various tasks:
+ - Making changes in request/response objects ending
+ - Validating input data
+ - Authenticating users
+ - End request-response cycle
+ - Connecting to external data sources
  
-Middleware are different than functions decorated by `router.*` decorators as they got executed every time
-request happens and they are not bound to the uri.
+Middlewares are different to functions decorated by `router.*` decorators as they are executed every time a request 
+happens and they are not bound to the URI.
  
 ```python
 from chocs import HttpRequest, HttpResponse, serve
@@ -154,33 +153,33 @@ serve(my_custom_middleware)
 ```
 
 ## Request
-`chocs.Request` object is an abstraction around wsgi's environ and `wsgi.input` data, providing some additional
+`chocs.Request` object is an abstraction around WSGI's environment and `wsgi.input` data, providing some additional
 information.
 
 #### `Request.headers:dict`
 Keeps parsed headers in dict-like object.
 
 #### `Request.body:BytesIO` 
-Raw body's data
+Raw body data
 
 #### `Request.parsed_body:chocs.message.RequestBody`
-Depending on the content type it might be one of the following:
+Depending on the content type it could be one of the following:
  - `chocs.message.FormBody`
  - `chocs.message.JsonBody`
  - `chocs.message.MultiPartBody`
 
 #### `Request.method:chocs.HttpMethod`
-Request's method
+The request's method
 
 #### `Request.uri:str`
-Request's uri
+The request's URI
 
 #### `Request.query_string:chocs.QueryString`
-Dict like object with parsed query string with json forms support.
+A dict like object with parsed query string with JSON forms support
         
 #### `Request.attributes:dict`
-Matched route attributes, eg when `/users/john` matches `/users/{name}` route, attributes will
-contain `name` key with value of `john`
+Matched route attributes, for example when `/users/john` matches the `/users/{name}` route, attributes will contain a 
+`name` key with a value of `john`
 
 ## Response
 `chocs.Response` object 
