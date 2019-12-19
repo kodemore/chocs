@@ -3,7 +3,7 @@ from io import BytesIO
 from typing import Optional, List
 from typing import Union
 
-from cookies import Cookie
+from .cookies import Cookie
 from .headers import Headers
 from .http_status import HttpStatus
 

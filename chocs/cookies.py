@@ -33,3 +33,6 @@ class Cookie:
 
     def header(self) -> List[str]:
         return [part.strip() for part in str(self).split(":", 1)]
+
+
+__all__ = ["Cookie"]

@@ -1,6 +1,7 @@
 from .chocs import Application
 from .chocs import router
 from .chocs import serve
+from .cookies import Cookie
 from .headers import Headers
 from .http_method import HttpMethod
 from .http_request import HttpRequest
