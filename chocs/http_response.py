@@ -1,5 +1,6 @@
+import copy
 from io import BytesIO
-from typing import Optional
+from typing import Optional, List
 from typing import Union
 
 from cookies import Cookie
@@ -19,13 +20,17 @@ class HttpResponse:
         self.status_code = status
         self.body = BytesIO()
         self.encoding = encoding
+        self.cookies: List[Cookie] = []
 
         if body:
             self.write(body)
 
     @property
     def headers(self):
-        return self._headers
+        headers: Headers = copy.copy(self._headers)
+        for cookie in self.cookies:
+            headers.set(*cookie.header())
+        return headers
 
     def write(self, body: Union[str, bytes, bytearray]) -> None:
         if isinstance(body, str):
@@ -39,9 +44,6 @@ class HttpResponse:
 
     def close(self):
         self.body.close()
-
-    def set_cookie(self, cookie: Cookie):
-        self.headers.set(*cookie.header())
 
     def __str__(self):
         self.body.seek(0)

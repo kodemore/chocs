@@ -36,5 +36,5 @@ def test_headers():
 
 def test_set_cookie():
     instance = HttpResponse()
-    instance.set_cookie(Cookie("name", "value"))
+    instance.cookies.append(Cookie("name", "value"))
     assert instance.headers.get("Set-Cookie") == "name=value"
