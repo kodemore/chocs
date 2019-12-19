@@ -1,6 +1,6 @@
 from datetime import datetime
-from http import cookies
-from typing import Optional
+from http.cookies import SimpleCookie
+from typing import Optional, List
 
 
 class Cookie:
@@ -18,7 +18,7 @@ class Cookie:
         self.domain = domain
         self.expires = expires
 
-        cookie = cookies.SimpleCookie()
+        cookie: SimpleCookie = SimpleCookie()
         cookie[name] = str(value)
         if domain:
             cookie[name]["domain"] = domain
@@ -31,5 +31,5 @@ class Cookie:
     def __str__(self) -> str:
         return str(self.cookie)
 
-    def header(self) -> list:
-        return [x.strip() for x in str(self).split(":", 1)]
+    def header(self) -> List[str]:
+        return [part.strip() for part in str(self).split(":", 1)]

@@ -8,11 +8,6 @@ def test_can_instantiate():
     assert isinstance(headers, Headers)
 
 
-def test_invalid_headers():
-    with pytest.raises(AssertionError):
-        Headers("test")
-
-
 def test_normalize_wsgi_headers():
     headers = Headers({"HTTP_USER_AGENT": "Test Agent", "HTTP_ACCEPT": "plain/text"})
 
