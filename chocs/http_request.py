@@ -5,6 +5,7 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
+from .cookies import CookieParser
 from .headers import Headers
 from .http_method import HttpMethod
 from .message.body import RequestBody
@@ -74,6 +75,10 @@ class HttpRequest:
             query_string=QueryString(environ.get("QUERY_STRING", "")),
             headers=headers,
         )
+
+    @property
+    def cookies(self):
+        return CookieParser(self.headers.get("Cookie")).to_list()
 
 
 __all__ = ["HttpRequest"]
