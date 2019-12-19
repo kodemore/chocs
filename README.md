@@ -53,6 +53,78 @@ app = Application(router)
 gunicorn -w 4 myapp:app
 ```
 
+## Routing
+Chocs is shipped with built-in routing module. Easiest way to utilise chocs' routing is to use `chocs.router` object.
+`chocs.router` is an instance of module's internal class `chocs.chocs.ApplicationRouter`, it provides simple api where 
+each of the function is a decorator corresponding to http method.
+
+```python
+from chocs import router, HttpResponse, HttpRequest
+
+@router.get("/hello")
+def hello(req: HttpRequest) -> HttpResponse:
+    ...
+```
+
+The above example will assign hello function to `GET /hello` request. 
+
+Available methods are:
+- `delete`
+- `get`
+- `head`
+- `options`
+- `patch`
+- `post`
+- `put`
+- `trace`
+
+### Parametrized routes
+
+Routes can contain parametrized parts, parameters must be enclosed within `{` and `}`.
+
+```python
+from chocs import router
+
+@router.get("/pet/{id}")
+def hello():
+    ...
+```
+Will match following URIs:
+ - `/pet/1`
+ - `/pet/abc`
+ - `/pet/abc1`
+
+When more control is required over accepted parameter's value, additional regex can be passed to function.
+Consider following example:
+
+```python
+from chocs import router
+
+@router.get("/pet/{id}", id=r"\d+")
+def hello():
+    ...
+```
+Above example limits `id` parameters to accept digits only, so `/pet/abc` and `/pet/abc1` will no longer match 
+route's pattern.
+ 
+### Wildcarded routes
+
+Asterisk (`*`) can be used to in route's pattern to match any possible combination. Keep in mind routes which DO NOT 
+contain wildcards are prioritised over the ones with wildcards.
+
+```python
+from chocs import router
+
+@router.get("/pet/*", id)
+def hello():
+    ...
+```
+
+The above example will match following URIs:
+- `/pet/a`
+- `/pet/a/b/c`
+- `/pet/12jd/fds`
+
 ## Defining and using custom middleware
 
 Middleware are functions or classes extending `chocs.middleware.Middleware` class. Middleware have access
