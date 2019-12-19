@@ -1,6 +1,7 @@
 from datetime import datetime
 from http.cookies import SimpleCookie
-from typing import Optional, List
+from typing import List
+from typing import Optional
 
 
 class Cookie:
@@ -35,4 +36,23 @@ class Cookie:
         return [part.strip() for part in str(self).split(":", 1)]
 
 
-__all__ = ["Cookie"]
+class CookieParser:
+    def __init__(self, header: str):
+        """
+        When the user agent generates an HTTP request, the user agent MUST
+        NOT attach more than one Cookie header field.
+        https://tools.ietf.org/html/rfc6265#section-5.4
+
+        Therefore CookieParser will only accept a single header string
+        """
+        self.header = header
+
+    def to_list(self) -> List[Cookie]:
+        simple_cookie: SimpleCookie = SimpleCookie()
+        simple_cookie.load(self.header)
+        return [
+            Cookie(morsel.key, morsel.value) for key, morsel in simple_cookie.items()
+        ]
+
+
+__all__ = ["Cookie", "CookieParser"]

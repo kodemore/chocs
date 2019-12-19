@@ -1,6 +1,7 @@
 import copy
 from io import BytesIO
-from typing import Optional, List
+from typing import List
+from typing import Optional
 from typing import Union
 
 from .cookies import Cookie

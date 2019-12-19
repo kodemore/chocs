@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from chocs.cookies import Cookie
+from chocs.cookies import CookieParser
 
 
 def test_can_instantiate():
@@ -23,3 +24,14 @@ def test_cookie_as_header():
         value
         == "key=value; Domain=/; expires=Sun, 17 May 2020 00:00:00 GMT; Path=test.com"
     )
+
+
+def test_cookies_from_header():
+    header = "session=encodedguff; token=somehash"
+    instance = CookieParser(header)
+    cookies = instance.to_list()
+    assert len(cookies) == 2
+    assert cookies[0].name == "session"
+    assert cookies[0].value == "encodedguff"
+    assert cookies[1].name == "token"
+    assert cookies[1].value == "somehash"
