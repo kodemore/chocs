@@ -65,7 +65,7 @@ class HttpStatus(IntEnum):
     NOT_EXTENDED = 510
     NETWORK_AUTHENTICATION_REQUIRED = 511
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.value)
 
 

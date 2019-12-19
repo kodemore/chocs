@@ -5,7 +5,9 @@ from tempfile import TemporaryFile
 from typing import Any
 from typing import Dict
 from typing import IO
+from typing import Text
 from typing import Tuple
+from typing import Union
 
 from .form_body import FormBody
 
@@ -19,7 +21,21 @@ class ParserState(Enum):
     END = 5
 
 
-def _parse_multipart_data(data, boundary: str, encoding: str = "utf8"):
+class MultipartBody(FormBody):
+    @staticmethod
+    def from_wsgi(
+        wsgi_input: BytesIO, encoding: str = "utf8", boundary: str = ""
+    ) -> "MultipartBody":
+        assert boundary, (
+            "%s.from_wsgi requires boundary parameters." % MultipartBody.__name__
+        )
+        wsgi_input.seek(0)
+        return _parse_multipart_data(wsgi_input.read(), boundary, encoding)
+
+
+def _parse_multipart_data(
+    data: bytes, boundary: str, encoding: str = "utf8"
+) -> MultipartBody:
     state = ParserState.PART_BOUNDARY
     prev_byte = None
     cursor = 0
@@ -28,7 +44,7 @@ def _parse_multipart_data(data, boundary: str, encoding: str = "utf8"):
     body = MultipartBody()
 
     def _append_content_to_body(
-        raw_content_disposition: str, _content_type: str, _content_data
+        raw_content_disposition: str, _content_type: str, _content_data: bytes
     ) -> None:
         parsed_content_disposition: Tuple[str, Dict[str, str]] = parse_header(
             raw_content_disposition[20:]
@@ -159,23 +175,11 @@ class UploadedFile:
 
         return self._str
 
-    def __enter__(self):
+    def __enter__(self) -> IO[Any]:
         return self.file
 
-    def __exit__(self, *args):
+    def __exit__(self, *args: Any) -> None:
         self.close()
-
-
-class MultipartBody(FormBody):
-    @staticmethod
-    def from_wsgi(
-        wsgi_input: BytesIO, encoding: str = "utf8", boundary: str = ""
-    ) -> "MultipartBody":
-        assert boundary, (
-            "%s.from_wsgi requires boundary parameters." % MultipartBody.__name__
-        )
-        wsgi_input.seek(0)
-        return _parse_multipart_data(wsgi_input.read(), boundary, encoding)
 
 
 __all__ = ["MultipartBody", "UploadedFile"]

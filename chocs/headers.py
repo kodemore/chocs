@@ -1,6 +1,5 @@
-from typing import ItemsView
-from typing import KeysView
 from typing import Generator
+from typing import KeysView
 from typing import Optional
 from typing import Sequence
 from typing import Union
@@ -57,7 +56,7 @@ class Headers:
             return self.__getitem__(name)
         return default
 
-    def __setitem__(self, name, value: Sequence[str]) -> None:
+    def __setitem__(self, name: str, value: Sequence[str]) -> None:
         """
         Sets value for header. Value must be valid sequence of strings.
         """
@@ -83,10 +82,10 @@ class Headers:
             for value in values:
                 yield key, value
 
-    def values(self) -> ValuesView:
+    def values(self) -> ValuesView[Union[str, Sequence[str]]]:
         return self._headers.values()
 
-    def keys(self) -> KeysView:
+    def keys(self) -> KeysView[str]:
         return self._headers.keys()
 
 

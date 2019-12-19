@@ -1,4 +1,6 @@
+from typing import Any
 from typing import Callable
+from typing import Dict
 from typing import Union
 
 from .http_method import HttpMethod
@@ -15,7 +17,7 @@ class Application:
         for item in middleware:
             self.middleware.append(item)
 
-    def __call__(self, env: dict, start: Callable):
+    def __call__(self, env: Dict[str, Any], start: Callable) -> Any:
         request = HttpRequest.from_wsgi(env)
         response = self.middleware(request)
 

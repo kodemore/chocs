@@ -12,8 +12,8 @@ class HttpMethod(Enum):
     TRACE = "TRACE"
     PATCH = "PATCH"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        return str(self.value)
 
 
 __all__ = ["HttpMethod"]

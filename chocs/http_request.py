@@ -1,5 +1,6 @@
 from cgi import parse_header
 from io import BytesIO
+from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Tuple
@@ -61,7 +62,7 @@ class HttpRequest:
         return self._parsed_body
 
     @classmethod
-    def from_wsgi(cls, environ: dict) -> "HttpRequest":
+    def from_wsgi(cls, environ: Dict[str, Any]) -> "HttpRequest":
         headers = Headers()
         for key, value in environ.items():
             if not key.startswith("HTTP"):

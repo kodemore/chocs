@@ -12,7 +12,7 @@ from chocs.routing.router import Router
 
 
 class RoutingMiddleware(Middleware):
-    def __init__(self):
+    def __init__(self) -> None:
         self.methods: Dict[HttpMethod, Router] = {key: Router() for key in HttpMethod}
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:

@@ -1,5 +1,6 @@
 from copy import deepcopy
 from queue import Queue
+from typing import Any
 from typing import Callable
 from typing import Union
 
@@ -11,7 +12,7 @@ from .middleware_handler import MiddlewareHandler
 
 class MiddlewareCursor(MiddlewareHandler):
     def __init__(self, queue: Queue, parent: MiddlewareHandler):
-        self.queue: Queue = Queue()
+        self.queue: Queue[Middleware] = Queue()
         self.queue.queue = deepcopy(queue.queue)
         self.parent = parent
 
