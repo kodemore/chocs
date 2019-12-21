@@ -153,13 +153,13 @@ serve(my_custom_middleware)
 ```
 
 ## Request
-`chocs.Request` object is an abstraction around WSGI's environment and `wsgi.input` data, providing some additional
-information.
+`chocs.Request` object is an abstraction around WSGI's environment and `wsgi.input` data with handy interface 
+to ease everyday work.
 
-#### `Request.headers:dict`
+#### `chocs.Request.headers:dict`
 Keeps parsed headers in dict-like object.
 
-#### `Request.body:BytesIO` 
+#### `chocs.Request.body:io.BytesIO` 
 Raw body data
 
 #### `Request.parsed_body:chocs.message.RequestBody`
@@ -167,19 +167,45 @@ Depending on the content type it could be one of the following:
  - `chocs.message.FormBody`
  - `chocs.message.JsonBody`
  - `chocs.message.MultiPartBody`
+ 
+#### `chocs.Request.cookies:typing.List[chocs.cookies.Cookie]` 
+Requests' cookies
 
-#### `Request.method:chocs.HttpMethod`
+#### `chocs.Request.method:chocs.HttpMethod`
 The request's method
 
-#### `Request.uri:str`
+#### `chocs.Request.uri:str`
 The request's URI
 
-#### `Request.query_string:chocs.QueryString`
+#### `chocs.Request.query_string:chocs.QueryString`
 A dict like object with parsed query string with JSON forms support
         
-#### `Request.attributes:dict`
+#### `chocs.Request.attributes:dict`
 Matched route attributes, for example when `/users/john` matches the `/users/{name}` route, attributes will contain a 
 `name` key with a value of `john`
 
 ## Response
-`chocs.Response` object 
+`chocs.Response` object is a part of request-response flow and it is required to be returned by all functions
+decorated with `router.*` method. Instance of the response class is recognised by `chocs.Application` and used to 
+generate real response served to your clients.
+
+#### `chocs.Response.body: io.BytesIO` 
+Body served to server's clients.
+
+### `chocs.Response.status_code: Union[chocs.HttpStatus, int]`
+Valid response code, instance of `chocs.HttpStatus` enum can be used or just a status code's number.
+
+#### `chocs.Request.headers (read-only)`
+Keeps parsed headers in dict-like object. This property is read-only and can be set only on object instantiation.
+
+#### `chocs.Response.cookies:typing.List[chocs.cookies.Cookie]` 
+Response's cookies
+
+#### `chocs.Response.write(body: Union[bytes, str, bytearray])`
+Write bytes to response body
+
+#### `chocs.Response.close()`
+Makes body non-writable.
+
+#### `chocs.Response.writable: bool`
+Indicates whether response's body is writable.
