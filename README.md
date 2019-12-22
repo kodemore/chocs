@@ -169,7 +169,7 @@ Depending on the content type it could be one of the following:
  - `chocs.message.MultiPartBody`
  
 #### `chocs.Request.cookies:typing.List[chocs.cookies.Cookie]` 
-Requests' cookies
+Request's cookies
 
 #### `chocs.Request.method:chocs.HttpMethod`
 The request's method
