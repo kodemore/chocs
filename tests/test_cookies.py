@@ -1,37 +1,81 @@
+from chocs.cookie_jar import CookieJar, Cookie
+import pytest
 from datetime import datetime
-
-from chocs.cookies import Cookie
-from chocs.cookies import CookieParser
 
 
 def test_can_instantiate():
-    headers = Cookie("key", "value")
-    assert isinstance(headers, Cookie)
+    jar = CookieJar()
+    assert isinstance(jar, CookieJar)
 
 
-def test_cookie_as_string():
-    assert str(Cookie("key", "value", "test.com", "/", datetime(2020, 5, 17))) == (
-        "Set-Cookie: key=value; Domain=/; expires=Sun, 17 May 2020 00:00:00 GMT; "
-        "Path=test.com"
-    )
+def test_set_simple_cookie():
+    jar = CookieJar()
+    jar["test"] = "value"
+
+    assert "test" in jar
+    assert isinstance(jar["test"], Cookie)
+    assert "value" == str(jar["test"])
 
 
-def test_cookie_as_header():
-    instance = Cookie("key", "value", "test.com", "/", datetime(2020, 5, 17))
-    header, value = instance.header()
-    assert header == "Set-Cookie"
-    assert (
-        value
-        == "key=value; Domain=/; expires=Sun, 17 May 2020 00:00:00 GMT; Path=test.com"
-    )
+def test_set_cookie():
+    jar = CookieJar()
+    jar.append(Cookie("test", "value"))
+
+    assert "test" in jar
+    assert isinstance(jar["test"], Cookie)
+    assert "value" == str(jar["test"])
 
 
-def test_cookies_from_header():
-    header = "session=encodedguff; token=somehash"
-    instance = CookieParser(header)
-    cookies = instance.to_list()
-    assert len(cookies) == 2
-    assert cookies[0].name == "session"
-    assert cookies[0].value == "encodedguff"
-    assert cookies[1].name == "token"
-    assert cookies[1].value == "somehash"
+def test_override_cookie():
+    cookie = Cookie("test", "value")
+    jar = CookieJar()
+    jar["test"] = "value"
+    jar.append(cookie)
+
+    assert jar["test"] is cookie
+
+    jar["test"] = "123"
+    assert jar["test"] is not cookie
+
+
+def test_fail_to_change_cookie_name():
+    jar = CookieJar()
+    jar["test"] = "name"
+    cookie = jar["test"]
+
+    with pytest.raises(AttributeError):
+        cookie.name = "test-2"
+
+
+@pytest.mark.parametrize(
+    "cookie,expected",
+    [
+        (Cookie("name", "value"), "name=value"),
+        (
+            Cookie("name", "value", expires=datetime(1999, 1, 1)),
+            "name=value; Expires=Fri, 01 Jan 1999 00:00:00 ",
+        ),
+        (Cookie("name", "value", http_only=True), "name=value; HttpOnly"),
+        (Cookie("name", "value", secure=True), "name=value; Secure"),
+        (
+            Cookie("name", "value", secure=True, http_only=True),
+            "name=value; Secure; HttpOnly",
+        ),
+        (
+            Cookie("name", "value", secure=True, same_site=True),
+            "name=value; Secure; SameSite=Strict",
+        ),
+        (
+            Cookie(
+                "name",
+                "value",
+                secure=True,
+                same_site=True,
+                expires=datetime(1999, 1, 1),
+            ),
+            "name=value; Expires=Fri, 01 Jan 1999 00:00:00 ; Secure; SameSite=Strict",
+        ),
+    ],
+)
+def test_serialise_cookie(cookie: Cookie, expected: str):
+    assert cookie.serialise() == expected

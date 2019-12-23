@@ -26,7 +26,7 @@ class RoutingMiddleware(Middleware):
 
             return response
         except HttpError as error:
-            return error
+            return HttpResponse(status=error.status_code, body=error.http_message)
 
 
 __all__ = ["RoutingMiddleware"]

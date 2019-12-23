@@ -2,7 +2,7 @@ import pytest
 
 from chocs import Headers
 from chocs import HttpResponse
-from chocs.cookies import Cookie
+from chocs.cookie_jar import Cookie
 
 
 def test_can_instantiate():

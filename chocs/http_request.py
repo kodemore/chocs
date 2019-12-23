@@ -6,7 +6,8 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-from .cookies import CookieParser
+from .cookie_jar import CookieJar
+from .cookie_jar import parse_cookie_header
 from .headers import Headers
 from .http_method import HttpMethod
 from .message.body import RequestBody
@@ -32,6 +33,7 @@ class HttpRequest:
         self.query_string = query_string
         self._parsed_body: Union[RequestBody, str] = ""
         self.attributes: Dict[str, str] = {}
+        self._cookies: Optional[CookieJar] = None
 
     @property
     def parsed_body(self) -> Union[RequestBody, str]:
@@ -79,7 +81,10 @@ class HttpRequest:
 
     @property
     def cookies(self):
-        return CookieParser(self.headers.get("Cookie")).to_list()
+        if self._cookies is None:
+            self._cookies = parse_cookie_header(self.headers.get("cookie"))
+
+        return self._cookies
 
 
 __all__ = ["HttpRequest"]

@@ -1,4 +1,4 @@
-# Chocs [![Build Status](https://travis-ci.org/fatcode/chocs.svg?branch=master)](https://travis-ci.org/fatcode/chocs) [![codecov](https://codecov.io/gh/fatcode/chocs/branch/master/graph/badge.svg)](https://codecov.io/gh/fatcode/chocs) [![Maintainability](https://api.codeclimate.com/v1/badges/d159c53965809f2f4e9d/maintainability)](https://codeclimate.com/github/fatcode/chocs/maintainability)
+# Chocs [![Build Status](https://travis-ci.org/kodemore/chocs.svg?branch=master)](https://travis-ci.org/kodemore/chocs) [![codecov](https://codecov.io/gh/kodemore/chocs/branch/master/graph/badge.svg)](https://codecov.io/gh/kodemore/chocs) [![Maintainability](https://api.codeclimate.com/v1/badges/9e3c979283b2361a9174/maintainability)](https://codeclimate.com/github/kodemore/chocs/maintainability)
 Chocs is a modern HTTP framework for WSGI compatible servers. Chocs aims to be small, expressive, and robust. 
 It provides an elegant API for writing fault-proof, extensible microservices.  
 
@@ -209,3 +209,49 @@ Makes body non-writable.
 
 #### `chocs.Response.writable: bool`
 Indicates whether response's body is writable.
+
+## Working with cookies
+
+`chocs.CookieJar` object takes care of cookie handling. It can be accessed in dict-like manner, when item is requested,
+instance of `chocs.Cookie` is returned to user. 
+
+Cookies can be set either by passing string value to the `chocs.CookieJar`'s key, or by calling `chocs.CookieJar.append` 
+method which accepts instance of `chocs.Cookie`.
+
+### Reading client cookies
+
+Cookies can be easily accessed from `chocs.Request.cookies` object which is injected as a parameter to each function 
+registered as route handler. Consider the following example:
+
+```python
+from chocs import HttpRequest, HttpResponse, serve, router
+
+
+@router.get("/cookies")
+def read_cookies(request: HttpRequest) -> HttpResponse:
+
+    message = "Hello"
+    if "user_name" in request.cookies:
+        message += f", {str(request.cookies['user_name'])}"
+    message += "!"
+
+    return HttpResponse(body=message)
+
+serve()
+```
+
+### Setting cookies
+```python
+from chocs import HttpRequest, HttpResponse, serve, router, Cookie
+from datetime import datetime
+
+
+@router.get("/cookies")
+def read_cookies(request: HttpRequest) -> HttpResponse:
+    response = HttpResponse(body="Hi! I have baked some cookies for ya!")
+    response.cookies['simple-cookie'] = "Simple cookie for simple people"
+    response.cookies.append(Cookie("advanced-cookie", "This cookie will expire in 2021-01-01", expires=datetime(2021, 1, 1)))
+    return response
+
+serve()
+```

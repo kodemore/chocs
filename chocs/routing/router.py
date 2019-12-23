@@ -2,7 +2,7 @@ from typing import Callable
 from typing import List
 from typing import Tuple
 
-from chocs.errors.not_found import NotFoundError
+from chocs.errors.not_found_error import NotFoundError
 from .route import Route
 
 
