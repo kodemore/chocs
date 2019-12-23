@@ -1,12 +1,11 @@
 import copy
 from io import BytesIO
 from typing import Dict
-from typing import List
 from typing import Optional
 from typing import Sequence
 from typing import Union
 
-from .cookies import Cookie
+from .cookie_jar import CookieJar
 from .headers import Headers
 from .http_status import HttpStatus
 
@@ -23,7 +22,7 @@ class HttpResponse:
         self.status_code = status
         self.body = BytesIO()
         self.encoding = encoding
-        self.cookies: List[Cookie] = []
+        self.cookies = CookieJar()
 
         if body:
             self.write(body)
@@ -31,8 +30,8 @@ class HttpResponse:
     @property
     def headers(self) -> Headers:
         headers: Headers = copy.copy(self._headers)
-        for cookie in self.cookies:
-            headers.set(*cookie.header())
+        for cookie in self.cookies.values():
+            headers.set("Set-Cookie", cookie.serialise())
         return headers
 
     def write(self, body: Union[str, bytes, bytearray]) -> None:

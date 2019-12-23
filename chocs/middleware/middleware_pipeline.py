@@ -1,6 +1,5 @@
 from copy import deepcopy
 from queue import Queue
-from typing import Any
 from typing import Callable
 from typing import Union
 

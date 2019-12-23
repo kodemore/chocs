@@ -1,14 +1,15 @@
 from chocs import Headers
 from chocs import HttpRequest
+from chocs import HttpMethod
 
 
 def test_can_instantiate():
-    instance = HttpRequest("GET")
+    instance = HttpRequest(HttpMethod.GET)
     assert isinstance(instance, HttpRequest)
 
 
 def test_get_cookies():
-    instance = HttpRequest("GET")
+    instance = HttpRequest(HttpMethod.GET)
     instance.headers = Headers({"cookie": "key=value; anotherkey=anothervalue"})
     cookies = instance.cookies
 
