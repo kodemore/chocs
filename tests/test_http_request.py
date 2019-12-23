@@ -14,7 +14,5 @@ def test_get_cookies():
     cookies = instance.cookies
 
     assert len(cookies) == 2
-    assert cookies[0].name == "key"
-    assert cookies[0].value == "value"
-    assert cookies[1].name == "anotherkey"
-    assert cookies[1].value == "anothervalue"
+    assert str(cookies["key"]) == "value"
+    assert str(cookies["anotherkey"]) == "anothervalue"
