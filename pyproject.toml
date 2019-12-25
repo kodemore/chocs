@@ -12,7 +12,7 @@ homepage = "https://github.com/fatcode/chocs"
 repository = "https://github.com/fatcode/chocs"
 documentation = "https://github.com/fatcode/chocs"
 
-keywords = ["rest", "http", "http layer", "request", "response"]
+keywords = ["rest", "http", "http framework", "wsgi", "request", "response", "cookies"]
 
 classifiers = [
     "Topic :: Software Development :: Libraries",
