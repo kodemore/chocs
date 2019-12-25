@@ -1,16 +1,17 @@
 [tool.poetry]
 name = "chocs"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lightweight and powerful layer for building rest applications based on wsgi servers."
 authors = [
-    "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
+    "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>",
+    "Gez Page <gezpage@gmail.com>"
 ]
 license = "MIT"
 readme = "README.md"
 
-homepage = "https://github.com/fatcode/chocs"
-repository = "https://github.com/fatcode/chocs"
-documentation = "https://github.com/fatcode/chocs"
+homepage = "https://github.com/kodemore/chocs"
+repository = "https://github.com/kodemore/chocs"
+documentation = "https://github.com/kodemore/chocs"
 
 keywords = ["rest", "http", "http framework", "wsgi", "request", "response", "cookies"]
 
