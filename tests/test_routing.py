@@ -1,10 +1,11 @@
 import pytest
 import re
 
+from typing import Callable
 from chocs.errors import NotFoundError
 from chocs.routing import Route
 from chocs.routing import Router
-from chocs import HttpMethod
+from chocs import HttpMethod, HttpRequest, HttpResponse, router
 
 
 def test_route_parsing():
@@ -83,3 +84,31 @@ def test_router_prioritise_routes_with_no_wildcards():
     route, controller = router.match("/pets/11a22")
 
     assert route.route == "/pets/{pet_id}"
+
+
+@pytest.mark.parametrize(
+    "router_decorator, method",
+    [
+        (router.get, HttpMethod.GET),
+        (router.post, HttpMethod.POST),
+        (router.put, HttpMethod.PUT),
+        (router.patch, HttpMethod.PATCH),
+        (router.options, HttpMethod.OPTIONS),
+        (router.delete, HttpMethod.DELETE),
+        (router.head, HttpMethod.HEAD),
+    ],
+)
+def test_router_method(router_decorator: Callable, method: HttpMethod):
+
+    ok_response = HttpResponse(200, "OK")
+    request = HttpRequest(method, "/pet")
+
+    def noop():
+        pass
+
+    @router_decorator("/pet")
+    def get_pet(req: HttpRequest) -> HttpResponse:
+        return ok_response
+
+    assert get_pet(HttpRequest(HttpMethod.GET)) == ok_response
+    assert router.handle(request, noop) == ok_response
