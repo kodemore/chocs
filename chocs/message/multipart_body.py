@@ -2,12 +2,7 @@ from cgi import parse_header
 from enum import Enum
 from io import BytesIO
 from tempfile import TemporaryFile
-from typing import Any
-from typing import Dict
-from typing import IO
-from typing import Text
-from typing import Tuple
-from typing import Union
+from typing import Any, Dict, IO, Tuple
 
 from .form_body import FormBody
 

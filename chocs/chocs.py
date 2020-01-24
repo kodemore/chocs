@@ -1,13 +1,8 @@
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import Union
+from typing import Any, Callable, Dict, Union
 
 from .http_method import HttpMethod
 from .http_request import HttpRequest
-from .middleware import Middleware
-from .middleware import MiddlewarePipeline
-from .middleware import RoutingMiddleware
+from .middleware import Middleware, MiddlewarePipeline, RoutingMiddleware
 from .routing.route import Route
 
 

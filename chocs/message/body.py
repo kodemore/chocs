@@ -1,6 +1,5 @@
 from collections import UserDict
-from typing import Any
-from typing import Optional
+from typing import Any, Optional
 
 
 class RequestBody(UserDict):

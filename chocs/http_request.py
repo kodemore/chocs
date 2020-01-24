@@ -1,13 +1,8 @@
 from cgi import parse_header
 from io import BytesIO
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Tuple
-from typing import Union
+from typing import Any, Dict, Optional, Tuple, Union
 
-from .cookie_jar import CookieJar
-from .cookie_jar import parse_cookie_header
+from .cookie_jar import CookieJar, parse_cookie_header
 from .headers import Headers
 from .http_method import HttpMethod
 from .message.body import RequestBody
@@ -51,13 +46,13 @@ class HttpRequest:
                 content_type[1].get("boundary", ""),
             )
         elif content_type[0] == "application/x-www-form-urlencoded":
-            body = FormBody.from_wsgi(self.body, content_type[1].get("charset", ""))
+            body = FormBody.from_wsgi(self.body, content_type[1].get("charset", "utf8"))
 
         elif content_type[0] == "application/json":
-            body = JsonBody.from_wsgi(self.body, content_type[1].get("charset", ""))
+            body = JsonBody.from_wsgi(self.body, content_type[1].get("charset", "utf8"))
         else:
             self.body.seek(0)
-            body = self.body.read().decode(content_type[1].get("charset", ""))
+            body = self.body.read().decode(content_type[1].get("charset", "utf8"))
 
         self._parsed_body = body
 

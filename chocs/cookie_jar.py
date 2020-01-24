@@ -1,12 +1,8 @@
 import re
 from datetime import datetime
-from typing import Dict
-from typing import ItemsView
-from typing import KeysView, Union
-from typing import Optional
-from typing import ValuesView
-from urllib.parse import quote, unquote
 from enum import Enum
+from typing import Dict, ItemsView, KeysView, Optional, Union, ValuesView
+from urllib.parse import quote, unquote
 
 from chocs.errors.cookie_error import CookieError
 

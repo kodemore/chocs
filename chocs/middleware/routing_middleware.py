@@ -1,5 +1,4 @@
-from typing import Callable
-from typing import Dict
+from typing import Callable, Dict
 
 from chocs.errors import HttpError
 from chocs.http_method import HttpMethod

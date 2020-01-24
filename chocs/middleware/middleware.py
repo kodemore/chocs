@@ -1,5 +1,4 @@
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse

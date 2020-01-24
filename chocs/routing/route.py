@@ -1,11 +1,6 @@
 import re
 from copy import copy
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Pattern
-from typing import Union
+from typing import Any, Dict, List, Optional, Pattern, Union
 
 _ROUTE_REGEX = r"\\\{\s*(?P<var>[a-z_][a-z0-9_-]*)\s*\\\}"
 _VAR_REGEX = "[^/]+"
