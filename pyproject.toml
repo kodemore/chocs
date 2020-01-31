@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "chocs"
-version = "0.2.1"
-description = "Lightweight and powerful layer for building rest applications based on wsgi servers."
+version = "0.2.5"
+description = "Lightweight and powerful wsgi rest framework for rapid building applications based on wsgi servers."
 authors = [
     "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>",
     "Gez Page <gezpage@gmail.com>"
@@ -13,11 +13,20 @@ homepage = "https://github.com/kodemore/chocs"
 repository = "https://github.com/kodemore/chocs"
 documentation = "https://github.com/kodemore/chocs"
 
-keywords = ["rest", "http", "http framework", "wsgi", "request", "response", "cookies"]
+keywords = ["http framework", "wsgi application", "router", "request", "response", "cookies", "routing", "rest", "http", "wsgi"]
 
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
     "Topic :: Software Development :: Libraries",
-    "Topic :: Software Development :: Libraries :: Python Modules"
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",
 ]
 
 # Requirements

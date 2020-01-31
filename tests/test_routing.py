@@ -5,10 +5,10 @@ from typing import Callable
 from chocs.errors import NotFoundError
 from chocs.routing import Route
 from chocs.routing import Router
-from chocs import HttpMethod, HttpRequest, HttpResponse, router
+from chocs import HttpMethod, HttpRequest, HttpResponse, router, HttpStatus
 
 
-def test_route_parsing():
+def test_route_parsing() -> None:
     route = Route("/example/{pattern}")
     assert route.match("/example/test")
 
@@ -17,21 +17,21 @@ def test_route_parsing():
     assert not route.match("/example/fail")
 
 
-def test_route_parsing_with_wildcards():
+def test_route_parsing_with_wildcards() -> None:
     route = Route("/example/{a}*")
     assert route.pattern == re.compile(r"^/example/([^/]+).*?$", re.I | re.M)
     assert route.match("/example/test/1/2/3")
     assert route.match("/example/11")
 
 
-def test_route_is_wildcard():
+def test_route_is_wildcard() -> None:
     route = Route("*")
 
     assert route.wildcard
     assert route.pattern == re.compile(r"^.*?$", re.I | re.M)
 
 
-def test_route_match():
+def test_route_match() -> None:
     route = Route("/pets/{pet_id}")
     route = route.match("/pets/11a22")
     assert route["pet_id"] == "11a22"
@@ -42,8 +42,8 @@ def test_route_match():
     assert route._attributes == {"pet_id": "22"}
 
 
-def test_router():
-    def test_controller():
+def test_router() -> None:
+    def test_controller() -> None:
         pass
 
     router = Router()
@@ -55,7 +55,7 @@ def test_router():
     assert router.match("/pets")
 
 
-def test_router_fail_matching():
+def test_router_fail_matching() -> None:
     def test_controller():
         pass
 
@@ -65,14 +65,14 @@ def test_router_fail_matching():
         router.match("/pets/12")
 
 
-def test_route_match_multiple_parameters():
+def test_route_match_multiple_parameters() -> None:
     route = Route("/pets/{pet_id}/{category}")
     route = route.match("/pets/11a22/test")
     assert route["pet_id"] == "11a22"
     assert route["category"] == "test"
 
 
-def test_router_prioritise_routes_with_no_wildcards():
+def test_router_prioritise_routes_with_no_wildcards() -> None:
     def test_controller():
         pass
 
@@ -98,7 +98,7 @@ def test_router_prioritise_routes_with_no_wildcards():
         (router.head, HttpMethod.HEAD),
     ],
 )
-def test_router_method(router_decorator: Callable, method: HttpMethod):
+def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
 
     ok_response = HttpResponse(200, "OK")
     request = HttpRequest(method, "/pet")
@@ -112,3 +112,12 @@ def test_router_method(router_decorator: Callable, method: HttpMethod):
 
     assert get_pet(HttpRequest(HttpMethod.GET)) == ok_response
     assert router.handle(request, noop) == ok_response
+
+
+def test_router_not_found() -> None:
+    def noop():
+        pass
+    request = HttpRequest(HttpMethod.GET, "/pet")
+    response = router.handle(request, noop)
+
+    assert response.status_code == HttpStatus.NOT_FOUND

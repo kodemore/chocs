@@ -82,3 +82,11 @@ def test_query_string_with_repeated_key_and_arrays():
 def test_query_string_with_repeated_key_and_dict():
     result = parse_qs("test_1=1&test_1[a]=2&test_1[b]=3")
     assert result == {"test_1": {"": "1", "a": "2", "b": "3"}}
+
+
+@mark.parametrize(
+    "query_string,expected",
+    [["a=1", {"a": "1"}], ["a%5B%5D=1", {"a": ["1"]}], ["a%5Ba%5D=1", {"a": {"a": "1"}}]],
+)
+def test_quoted_query_string(query_string: str, expected: dict) -> None:
+    assert parse_qs(query_string) == expected
