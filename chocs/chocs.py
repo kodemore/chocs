@@ -94,4 +94,4 @@ def serve(*middleware, host: str = "0.0.0.0", port: int = 80) -> None:
         )
 
 
-__all__ = ["Application", "router", "serve"]
+__all__ = ["Application", "ApplicationRouter", "router", "serve"]

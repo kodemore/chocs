@@ -5,7 +5,14 @@ from typing import Callable
 from chocs.errors import NotFoundError
 from chocs.routing import Route
 from chocs.routing import Router
-from chocs import HttpMethod, HttpRequest, HttpResponse, router, HttpStatus
+from chocs import (
+    HttpMethod,
+    HttpRequest,
+    HttpResponse,
+    ApplicationRouter,
+    HttpStatus,
+    router,
+)
 
 
 def test_route_parsing() -> None:
@@ -117,7 +124,9 @@ def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
 def test_router_not_found() -> None:
     def noop():
         pass
+
+    local_router = ApplicationRouter()
     request = HttpRequest(HttpMethod.GET, "/pet")
-    response = router.handle(request, noop)
+    response = local_router.handle(request, noop)
 
     assert response.status_code == HttpStatus.NOT_FOUND

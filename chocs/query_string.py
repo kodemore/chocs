@@ -16,7 +16,7 @@ def build_dict_from_path(path: str, value) -> Dict[str, Any]:
     if path[-1:] != "]":
         return {path: value}
     parsed_path = [path[:starting_bracket]]
-    parsed_path = parsed_path + path[starting_bracket + 1:-1].split("][")
+    parsed_path = parsed_path + path[starting_bracket + 1 : -1].split("][")
 
     for part in parsed_path:
         if "[" in part or "]" in part:
