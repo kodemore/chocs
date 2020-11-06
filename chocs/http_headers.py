@@ -18,16 +18,18 @@ def _normalize_header_name(name: str) -> str:
 def _normalize_headers(headers: dict) -> dict:
     normalized = {}
     for name, value in headers.items():
-        normalized[_normalize_header_name(name)] = value
+        if isinstance(value, list):
+            normalized[_normalize_header_name(name)] = value
+        else:
+            normalized[_normalize_header_name(name)] = [value]
 
     return normalized
 
 
-class Headers:
+class HttpHeaders:
     """
     Dict-like object containing http headers. Header names are case-insensitive, and
     their values are internally stored as sequences to conform RFC-2616 standard.
-
     .. _RFC-2616 Section 4.2: https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
     """
 
@@ -46,6 +48,10 @@ class Headers:
 
         self._headers[normalized_name].append(value)
 
+    def override(self, name: str, value: Union[str, list]) -> None:
+        normalized_name = _normalize_header_name(name)
+        self._headers[normalized_name] = value if isinstance(value, list) else [value]
+
     def get(self, name: str, default: str = "") -> Union[str, Sequence[str]]:
         if name in self:
             return self.__getitem__(name)
@@ -61,7 +67,10 @@ class Headers:
         """
         Returns string if header is unique otherwise sequence of strings is returned.
         """
-        value = self._headers[_normalize_header_name(name)]
+        value = self._headers.get(_normalize_header_name(name), None)
+        if value is None:
+            return ""
+
         if len(value) == 1:
             return value[0]
 
@@ -84,4 +93,4 @@ class Headers:
         return self._headers.keys()
 
 
-__all__ = ["Headers"]
+__all__ = ["HttpHeaders"]

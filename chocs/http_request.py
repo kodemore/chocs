@@ -1,85 +1,90 @@
 from cgi import parse_header
 from io import BytesIO
-from typing import Any, Dict, Optional, Tuple, Union
+from copy import copy
+from typing import Dict, Optional, Tuple, Union, Any
 
-from .cookie_jar import CookieJar, parse_cookie_header
-from .headers import Headers
+from .http_cookies import HttpCookieJar, parse_cookie_header
+from .http_headers import HttpHeaders
+from .http_message import HttpMessage, FormHttpMessage, JsonHttpMessage, MultipartHttpMessage
 from .http_method import HttpMethod
-from .message.body import RequestBody
-from .message.form_body import FormBody
-from .message.json_body import JsonBody
-from .message.multipart_body import MultipartBody
-from .query_string import QueryString
+from .http_query_string import HttpQueryString
 
 
 class HttpRequest:
     def __init__(
         self,
-        method: HttpMethod,
-        uri: str = "/",
-        body: Optional[BytesIO] = None,
-        query_string: Optional[QueryString] = None,
-        headers: Optional[Headers] = None,
+        method: Union[HttpMethod, str],
+        path: str = "/",
+        body: Union[Optional[BytesIO], str] = None,
+        query_string: Union[Optional[HttpQueryString], str] = None,
+        headers: Union[Optional[HttpHeaders], Dict[str, str]] = None,
     ):
-        self.headers = headers if headers else Headers()
-        self.body = body if body else BytesIO(b"")
+        if isinstance(method, str):
+            method = HttpMethod(method)
+
+        if isinstance(body, str):
+            body = BytesIO(body.encode("utf8"))
+
+        if isinstance(query_string, str):
+            query_string = HttpQueryString(query_string)
+
+        if isinstance(headers, dict):
+            headers = HttpHeaders(headers)
+
         self.method = method
-        self.uri = uri
+        self.path = path
         self.query_string = query_string
-        self._parsed_body: Union[RequestBody, str] = ""
-        self.attributes: Dict[str, str] = {}
-        self._cookies: Optional[CookieJar] = None
+        self.path_parameters: Dict[str, str] = {}
+        self.headers = headers if headers else HttpHeaders()
+
+        self._body = body if body else BytesIO(b"")
+        self._parsed_body: Optional[HttpMessage] = None
+        self._cookies: Optional[HttpCookieJar] = None
 
     @property
-    def parsed_body(self) -> Union[RequestBody, str]:
+    def body(self) -> BytesIO:
+        return copy(self._body)
+
+    @property
+    def parsed_body(self) -> HttpMessage:
         if self._parsed_body:
-            return self._parsed_body
+            return copy(self._parsed_body)
 
         content_type: Tuple[str, Dict[str, str]] = parse_header(
-            self.headers.get("Content-Type")  # type: ignore
+            self.headers["Content-Type"]  # type: ignore
         )
 
         if content_type[0] == "multipart/form-data":
-            body: Union[RequestBody, str] = MultipartBody.from_wsgi(
+            parsed_body = MultipartHttpMessage.from_bytes(
                 self.body,
                 content_type[1].get("charset", ""),
                 content_type[1].get("boundary", ""),
             )
         elif content_type[0] == "application/x-www-form-urlencoded":
-            body = FormBody.from_wsgi(self.body, content_type[1].get("charset", "utf8"))
+            parsed_body = FormHttpMessage.from_bytes(
+                self.body,
+                content_type[1].get("charset", "utf8")
+            )
 
         elif content_type[0] == "application/json":
-            body = JsonBody.from_wsgi(self.body, content_type[1].get("charset", "utf8"))
+            parsed_body = JsonHttpMessage.from_bytes(
+                self.body,
+                content_type[1].get("charset", "utf8")
+            )
         else:
             self.body.seek(0)
-            body = self.body.read().decode(content_type[1].get("charset", "utf8"))
+            parsed_body = self.body.read().decode(content_type[1].get("charset", "utf8"))
 
-        self._parsed_body = body
+        self._parsed_body = parsed_body
 
-        return self._parsed_body
-
-    @classmethod
-    def from_wsgi(cls, environ: Dict[str, Any]) -> "HttpRequest":
-        headers = Headers()
-        for key, value in environ.items():
-            if not key.startswith("HTTP"):
-                continue
-            headers.set(key, value)
-        headers.set("Content-Type", environ.get("CONTENT_TYPE", "text/plain"))
-        return cls(
-            method=HttpMethod(environ.get("REQUEST_METHOD", "GET").upper()),
-            uri=environ.get("PATH_INFO", "/"),
-            body=environ.get("wsgi.input", BytesIO(b"")),
-            query_string=QueryString(environ.get("QUERY_STRING", "")),
-            headers=headers,
-        )
+        return copy(self._parsed_body)
 
     @property
     def cookies(self):
         if self._cookies is None:
             self._cookies = parse_cookie_header(self.headers.get("cookie"))
 
-        return self._cookies
+        return copy(self._cookies)
 
 
 __all__ = ["HttpRequest"]

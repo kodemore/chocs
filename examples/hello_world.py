@@ -14,5 +14,3 @@ def hello(request: HttpRequest) -> HttpResponse:
 def default(request: HttpRequest) -> HttpResponse:
     return HttpResponse(HttpStatus.NOT_FOUND, "Not found")
 
-
-serve()

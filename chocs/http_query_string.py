@@ -82,7 +82,7 @@ def parse_qs(query: str) -> Dict[str, Any]:
     return result
 
 
-class QueryString:
+class HttpQueryString:
     def __init__(self, string: str):
         self._str = string
         self._params = parse_qs(string)
@@ -109,4 +109,4 @@ class QueryString:
         return self._params.keys()
 
 
-__all__ = ["QueryString", "parse_qs"]
+__all__ = ["HttpQueryString", "parse_qs"]

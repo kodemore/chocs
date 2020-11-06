@@ -1,10 +1,69 @@
 from cgi import parse_header
 from enum import Enum
-from io import BytesIO
 from tempfile import TemporaryFile
 from typing import Any, Dict, IO, Tuple
 
-from .form_body import FormBody
+
+class UploadedFile:
+    """
+    Proxy class for TemporaryFile (uploaded file)
+    """
+
+    def __init__(self, file: IO[Any], mimetype: str, filename: str):
+        self.file = file
+        self.mimetype = mimetype
+        self.filename = filename
+        self.length = 0
+        self._str = ""
+
+    def read(self) -> bytes:
+        return self.file.read()
+
+    def seek(self, offset: int) -> int:
+        return self.file.seek(offset)
+
+    def close(self) -> None:
+        self.file.close()
+
+    def save(self, path: str) -> IO[Any]:
+        if self.file.closed:
+            raise ValueError(f"Cannot save to file {path} of closed stream.")
+        with open(path, "wb") as file:
+            self.seek(0)
+            file.write(self.read())
+
+        return file
+
+    def __float__(self) -> None:
+        raise ValueError(
+            f"Cannot convert instance of {TemporaryFile.__name__} to float"
+        )
+
+    def __int__(self) -> None:
+        raise ValueError(f"Cannot convert instance of {TemporaryFile.__name__} to int")
+
+    def __len__(self) -> int:
+        if not self.length:
+            read_bytes = self.read()
+            self.seek(0)
+            self.length = len(read_bytes)
+        return self.length
+
+    def __bool__(self) -> bool:
+        return len(self) > 0
+
+    def __str__(self) -> str:
+
+        if not self._str:
+            self._str = self.read().decode()
+
+        return self._str
+
+    def __enter__(self) -> IO[Any]:
+        return self.file
+
+    def __exit__(self, *args: Any) -> None:
+        self.close()
 
 
 class ParserState(Enum):
@@ -16,30 +75,18 @@ class ParserState(Enum):
     END = 5
 
 
-class MultipartBody(FormBody):
-    @staticmethod
-    def from_wsgi(
-        wsgi_input: BytesIO, encoding: str = "utf8", boundary: str = ""
-    ) -> "MultipartBody":
-        assert boundary, (
-            "%s.from_wsgi requires boundary parameters." % MultipartBody.__name__
-        )
-        wsgi_input.seek(0)
-        return _parse_multipart_data(wsgi_input.read(), boundary, encoding)
-
-
-def _parse_multipart_data(
-    data: bytes, boundary: str, encoding: str = "utf8"
-) -> MultipartBody:
+def parse_multipart_message(
+        data: bytes, boundary: str, encoding: str = "utf8"
+) -> Dict[str, Any]:
     state = ParserState.PART_BOUNDARY
     prev_byte = None
     cursor = 0
     boundary_length = len(boundary)
     string_buffer = ""
-    body = MultipartBody()
+    body = {}
 
     def _append_content_to_body(
-        raw_content_disposition: str, _content_type: str, _content_data: bytes
+            raw_content_disposition: str, _content_type: str, _content_data: bytes
     ) -> None:
         parsed_content_disposition: Tuple[str, Dict[str, str]] = parse_header(
             raw_content_disposition[20:]
@@ -115,66 +162,4 @@ def _parse_multipart_data(
     return body
 
 
-class UploadedFile:
-    """
-    Proxy class for uploaded file
-    """
-
-    def __init__(self, file: IO[Any], mimetype: str, filename: str):
-        self.file = file
-        self.mimetype = mimetype
-        self.filename = filename
-        self.length = 0
-        self._str = ""
-
-    def read(self) -> bytes:
-        return self.file.read()
-
-    def seek(self, offset: int) -> int:
-        return self.file.seek(offset)
-
-    def close(self) -> None:
-        self.file.close()
-
-    def save(self, path: str) -> IO[Any]:
-        if self.file.closed:
-            raise ValueError(f"Cannot save to file {path} of closed stream.")
-        with open(path, "wb") as file:
-            self.seek(0)
-            file.write(self.read())
-
-        return file
-
-    def __float__(self) -> None:
-        raise ValueError(
-            f"Cannot convert instance of {TemporaryFile.__name__} to float"
-        )
-
-    def __int__(self) -> None:
-        raise ValueError(f"Cannot convert instance of {TemporaryFile.__name__} to int")
-
-    def __len__(self) -> int:
-        if not self.length:
-            bytes = self.read()
-            self.seek(0)
-            self.length = len(bytes)
-        return self.length
-
-    def __bool__(self) -> bool:
-        return len(self) > 0
-
-    def __str__(self) -> str:
-
-        if not self._str:
-            self._str = self.read().decode()
-
-        return self._str
-
-    def __enter__(self) -> IO[Any]:
-        return self.file
-
-    def __exit__(self, *args: Any) -> None:
-        self.close()
-
-
-__all__ = ["MultipartBody", "UploadedFile"]
+__all__ = ["UploadedFile", "parse_multipart_message"]

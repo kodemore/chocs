@@ -1,11 +1,22 @@
+from abc import ABC, abstractmethod
 from copy import deepcopy
 from queue import Queue
 from typing import Callable, Union
 
-from chocs.http_request import HttpRequest
-from chocs.http_response import HttpResponse
-from .middleware import Middleware
-from .middleware_handler import MiddlewareHandler
+from .http_request import HttpRequest
+from .http_response import HttpResponse
+
+
+class MiddlewareHandler(ABC):
+    @abstractmethod
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        pass
+
+
+class Middleware(ABC):
+    @abstractmethod
+    def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
+        pass
 
 
 class MiddlewareCursor(MiddlewareHandler):
@@ -45,6 +56,3 @@ class MiddlewarePipeline(MiddlewareHandler, Middleware):
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         return (MiddlewareCursor(self.queue, next)).__call__(request)
-
-
-__all__ = ["MiddlewarePipeline"]

@@ -1,0 +1,13 @@
+get_users:
+  handler: handler.get_users
+  events:
+    - httpApi:
+        method: GET
+        path: /users
+
+get_user:
+  handler: handler.get_users
+  events:
+    - httpApi:
+        method: "*"
+        path: /users/{id}

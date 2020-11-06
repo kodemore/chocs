@@ -4,18 +4,29 @@ from enum import Enum
 from typing import Dict, ItemsView, KeysView, Optional, Union, ValuesView
 from urllib.parse import quote, unquote
 
-from chocs.errors.cookie_error import CookieError
 
 COOKIE_NAME_VALIDATOR = re.compile(r"[a-z0-9!#$%&'*+.^_`|~\-]+", re.I)
 
 
-class CookieSameSitePolicy(Enum):
+class HttpCookieError(Exception):
+    pass
+
+
+class InvalidHttpCookieNameError(HttpCookieError, ValueError):
+    pass
+
+
+class InvalidHttpCookieValueError(HttpCookieError, ValueError):
+    pass
+
+
+class HttpCookieSameSitePolicy(Enum):
     STRICT = "Strict"
     LAX = "Lax"
     NONE = "None"
 
 
-class Cookie:
+class HttpCookie:
     def __init__(
         self,
         name: str,
@@ -26,10 +37,10 @@ class Cookie:
         max_age: Optional[int] = None,
         secure: bool = False,
         http_only: bool = False,
-        same_site: Union[bool, CookieSameSitePolicy] = False,
+        same_site: Union[bool, HttpCookieSameSitePolicy] = False,
     ):
         if not COOKIE_NAME_VALIDATOR.match(name):
-            raise CookieError(
+            raise InvalidHttpCookieNameError(
                 f"Invalid cookie name {name}, cookie name must be valid RFC 2616 token."
             )
         self._name: str = name
@@ -88,7 +99,7 @@ class Cookie:
             output += "; HttpOnly"
 
         if self.same_site:
-            if isinstance(self.same_site, CookieSameSitePolicy):
+            if isinstance(self.same_site, HttpCookieSameSitePolicy):
                 output += f"; SameSite={self.same_site.value}"
             else:
                 output += "; SameSite=Strict"
@@ -96,24 +107,24 @@ class Cookie:
         return output
 
 
-class CookieJar:
+class HttpCookieJar:
     def __init__(self):
-        self._cookies: Dict[str, Cookie] = {}
+        self._cookies: Dict[str, HttpCookie] = {}
 
-    def append(self, cookie: Cookie):
+    def append(self, cookie: HttpCookie):
         self._cookies[cookie.name] = cookie
 
     def __setitem__(self, key: str, value: str):
         if isinstance(value, str):
-            cookie = Cookie(key, value)
+            cookie = HttpCookie(key, value)
         else:
-            raise CookieError(
-                "`chocs.cookie_jar.CookieJar.__setitem__` accepts only string values. "
-                "To append new cookie use `chocs.cookie_jar.CookieJar.append` method instead."
+            raise InvalidHttpCookieValueError(
+                "`HttpCookieJar.__setitem__` accepts only string values. "
+                "To append new cookie use `HttpCookieJar.append` method instead."
             )
         self._cookies[key] = cookie
 
-    def __getitem__(self, key: str) -> Cookie:
+    def __getitem__(self, key: str) -> HttpCookie:
         return self._cookies[key]
 
     def __delitem__(self, key):
@@ -125,25 +136,24 @@ class CookieJar:
     def __len__(self) -> int:
         return len(self._cookies)
 
-    def items(self) -> ItemsView[str, Cookie]:
+    def items(self) -> ItemsView[str, HttpCookie]:
         return self._cookies.items()
 
-    def values(self) -> ValuesView[Cookie]:
+    def values(self) -> ValuesView[HttpCookie]:
         return self._cookies.values()
 
     def keys(self) -> KeysView[str]:
         return self._cookies.keys()
 
 
-def parse_cookie_header(header: str) -> CookieJar:
+def parse_cookie_header(header: str) -> HttpCookieJar:
     """
     When the user agent generates an HTTP request, the user agent MUST
     NOT attach more than one Cookie header field.
     https://tools.ietf.org/html/rfc6265#section-5.4
-
     Therefore parse_cookie_header will only accept a single header string
     """
-    result = CookieJar()
+    result = HttpCookieJar()
 
     cookies = header.split(";")
     for cookie in cookies:
@@ -152,14 +162,14 @@ def parse_cookie_header(header: str) -> CookieJar:
             continue
         try:
             result.append(
-                Cookie(
+                HttpCookie(
                     cookie[0:separator_position].strip(),
                     unquote(cookie[separator_position + 1 :].strip()),
                 )
             )
-        except CookieError:  # Invalid cookie name
+        except HttpCookieError:  # Invalid cookie name
             continue
     return result
 
 
-__all__ = ["Cookie", "CookieJar", "parse_cookie_header", "CookieSameSitePolicy"]
+__all__ = ["HttpCookie", "HttpCookieJar", "parse_cookie_header", "HttpCookieSameSitePolicy"]

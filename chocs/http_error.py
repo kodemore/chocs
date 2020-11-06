@@ -9,4 +9,14 @@ class HttpError(Exception):
         return self.__class__.__name__ + f"({self.status_code}, {self.http_message})"
 
 
-__all__ = ["HttpError"]
+class NotFoundError(HttpError):
+    status_code: int = 404
+    http_message = "Not Found"
+
+
+class BadRequestError(HttpError):
+    status_code: int = 400
+    http_message = "Bad Request"
+
+
+__all__ = ["HttpError", "NotFoundError", "BadRequestError"]

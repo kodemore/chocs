@@ -1,9 +1,11 @@
 # Chocs [![Build Status](https://travis-ci.org/kodemore/chocs.svg?branch=master)](https://travis-ci.org/kodemore/chocs) [![codecov](https://codecov.io/gh/kodemore/chocs/branch/master/graph/badge.svg)](https://codecov.io/gh/kodemore/chocs) [![Maintainability](https://api.codeclimate.com/v1/badges/9e3c979283b2361a9174/maintainability)](https://codeclimate.com/github/kodemore/chocs/maintainability)
-Chocs is a modern HTTP framework for WSGI compatible servers. Chocs aims to be small, expressive, and robust. 
+Chocs is a modern HTTP framework for building AWS HTTP API/REST API and WSGI compatible applications. 
+Chocs aims to be small, expressive, and robust. 
 It provides an elegant API for writing fault-proof, extensible microservices.  
 
 ## Features
 
+ - AWS Serverless integration
  - Elegant and easy API
  - No additional bloat like built-in template engines, session handlers, etc.
  - Compatible with all WSGI servers
@@ -255,3 +257,11 @@ def read_cookies(request: HttpRequest) -> HttpResponse:
 
 serve()
 ```
+
+# Contributing
+
+## Prerequisites
+
+- libev
+- python 3.8
+- docker
