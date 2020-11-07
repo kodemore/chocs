@@ -1,5 +1,6 @@
 from io import BytesIO
-from typing import Any, Dict
+from typing import Any
+from typing import Dict
 
 from .http_headers import HttpHeaders
 from .http_method import HttpMethod

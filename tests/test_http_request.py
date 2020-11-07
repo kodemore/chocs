@@ -1,7 +1,7 @@
 import json
 from io import BytesIO
 
-from chocs import Headers, HttpMethod, HttpRequest
+from chocs import HttpHeaders, HttpMethod, HttpRequest
 
 
 def test_can_instantiate() -> None:
@@ -11,7 +11,7 @@ def test_can_instantiate() -> None:
 
 def test_get_cookies() -> None:
     instance = HttpRequest(HttpMethod.GET)
-    instance.headers = Headers({"cookie": "key=value; anotherkey=anothervalue"})
+    instance.headers = HttpHeaders({"cookie": "key=value; anotherkey=anothervalue"})
     cookies = instance.cookies
 
     assert len(cookies) == 2
@@ -25,7 +25,7 @@ def test_create_json_request() -> None:
         HttpMethod.GET,
         "/json",
         BytesIO(json_data),
-        headers=Headers({"Content-Type": "application/json"}),
+        headers=HttpHeaders({"Content-Type": "application/json"}),
     )
 
     assert instance.parsed_body == {"test": "OK"}

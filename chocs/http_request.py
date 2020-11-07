@@ -1,11 +1,18 @@
 from cgi import parse_header
-from io import BytesIO
 from copy import copy
-from typing import Dict, Optional, Tuple, Union, Any
+from io import BytesIO
+from typing import Dict
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
-from .http_cookies import HttpCookieJar, parse_cookie_header
+from .http_cookies import HttpCookieJar
+from .http_cookies import parse_cookie_header
 from .http_headers import HttpHeaders
-from .http_message import HttpMessage, FormHttpMessage, JsonHttpMessage, MultipartHttpMessage
+from .http_message import FormHttpMessage
+from .http_message import HttpMessage
+from .http_message import JsonHttpMessage
+from .http_message import MultipartHttpMessage
 from .http_method import HttpMethod
 from .http_query_string import HttpQueryString
 
@@ -20,7 +27,7 @@ class HttpRequest:
         headers: Union[Optional[HttpHeaders], Dict[str, str]] = None,
     ):
         if isinstance(method, str):
-            method = HttpMethod(method)
+            method = HttpMethod(method.upper())
 
         if isinstance(body, str):
             body = BytesIO(body.encode("utf8"))
@@ -57,8 +64,8 @@ class HttpRequest:
         if content_type[0] == "multipart/form-data":
             parsed_body = MultipartHttpMessage.from_bytes(
                 self.body,
-                content_type[1].get("charset", ""),
                 content_type[1].get("boundary", ""),
+                content_type[1].get("charset", ""),
             )
         elif content_type[0] == "application/x-www-form-urlencoded":
             parsed_body = FormHttpMessage.from_bytes(

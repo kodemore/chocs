@@ -1,6 +1,9 @@
 import copy
 from io import BytesIO
-from typing import Dict, Optional, Sequence, Union
+from typing import Dict
+from typing import Optional
+from typing import Sequence
+from typing import Union
 
 from .http_cookies import HttpCookieJar
 from .http_headers import HttpHeaders

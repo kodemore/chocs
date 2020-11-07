@@ -1,9 +1,14 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Dict, ItemsView, KeysView, Optional, Union, ValuesView
-from urllib.parse import quote, unquote
-
+from typing import Dict
+from typing import ItemsView
+from typing import KeysView
+from typing import Optional
+from typing import Union
+from typing import ValuesView
+from urllib.parse import quote
+from urllib.parse import unquote
 
 COOKIE_NAME_VALIDATOR = re.compile(r"[a-z0-9!#$%&'*+.^_`|~\-]+", re.I)
 
@@ -172,4 +177,4 @@ def parse_cookie_header(header: str) -> HttpCookieJar:
     return result
 
 
-__all__ = ["HttpCookie", "HttpCookieJar", "parse_cookie_header", "HttpCookieSameSitePolicy"]
+__all__ = ["HttpCookie", "HttpCookieJar", "parse_cookie_header", "HttpCookieSameSitePolicy", "HttpCookieError"]

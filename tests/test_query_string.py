@@ -1,9 +1,9 @@
 from pytest import mark
 from pytest import raises
 
-from chocs.query_string import build_dict_from_path
-from chocs.query_string import parse_qs
-from chocs.query_string import QueryString
+from chocs.http_query_string import build_dict_from_path
+from chocs.http_query_string import parse_qs
+from chocs.http_query_string import HttpQueryString
 
 
 @mark.parametrize(
@@ -63,7 +63,7 @@ def test_parse_qs_with_broken_key():
 
 
 def test_query_string_instantiation():
-    instance = QueryString("test_1[0][]=1&test_1[0][]=2&test_1[0][]=3")
+    instance = HttpQueryString("test_1[0][]=1&test_1[0][]=2&test_1[0][]=3")
 
     assert "test_1" in instance
     assert instance["test_1"] == {"0": ["1", "2", "3"]}

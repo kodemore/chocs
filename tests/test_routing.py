@@ -1,27 +1,22 @@
-import pytest
 import re
-
 from typing import Callable
-from chocs.errors import NotFoundError
-from chocs.routing import Route
-from chocs.routing import Router
-from chocs import (
-    HttpMethod,
-    HttpRequest,
-    HttpResponse,
-    ApplicationRouter,
-    HttpStatus,
-    router,
-)
+
+import pytest
+
+from chocs import HttpMethod
+from chocs import HttpRequest
+from chocs import HttpResponse
+from chocs import HttpStatus
+from chocs import NotFoundError
+from chocs import Route
+from chocs import Router
+from chocs import http
+from chocs import HttpEndpoints
 
 
 def test_route_parsing() -> None:
     route = Route("/example/{pattern}")
     assert route.match("/example/test")
-
-    route = Route("/example/{pattern}", pattern=r"\d+")
-    assert route.match("/example/12")
-    assert not route.match("/example/fail")
 
 
 def test_route_parsing_with_wildcards() -> None:
@@ -34,7 +29,7 @@ def test_route_parsing_with_wildcards() -> None:
 def test_route_is_wildcard() -> None:
     route = Route("*")
 
-    assert route.wildcard
+    assert route.is_wildcard
     assert route.pattern == re.compile(r"^.*?$", re.I | re.M)
 
 
@@ -43,10 +38,9 @@ def test_route_match() -> None:
     route = route.match("/pets/11a22")
     assert route["pet_id"] == "11a22"
 
-    route = Route("/pets/{pet_id}", pet_id=r"\d+")
-    assert not route.match("/pets/11a22")
+    route = Route("/pets/{pet_id}")
     route = route.match("/pets/22")
-    assert route._attributes == {"pet_id": "22"}
+    assert route._parameters == {"pet_id": "22"}
 
 
 def test_router() -> None:
@@ -67,9 +61,9 @@ def test_router_fail_matching() -> None:
         pass
 
     router = Router()
-    router.append(Route("/pets/{pet_id}", pet_id="[a-z]+"), test_controller)
+    router.append(Route("/pets/{pet_id}"), test_controller)
     with pytest.raises(NotFoundError):
-        router.match("/pets/12")
+        router.match("/pet/12")
 
 
 def test_route_match_multiple_parameters() -> None:
@@ -96,17 +90,16 @@ def test_router_prioritise_routes_with_no_wildcards() -> None:
 @pytest.mark.parametrize(
     "router_decorator, method",
     [
-        (router.get, HttpMethod.GET),
-        (router.post, HttpMethod.POST),
-        (router.put, HttpMethod.PUT),
-        (router.patch, HttpMethod.PATCH),
-        (router.options, HttpMethod.OPTIONS),
-        (router.delete, HttpMethod.DELETE),
-        (router.head, HttpMethod.HEAD),
+        (http.get, HttpMethod.GET),
+        (http.post, HttpMethod.POST),
+        (http.put, HttpMethod.PUT),
+        (http.patch, HttpMethod.PATCH),
+        (http.options, HttpMethod.OPTIONS),
+        (http.delete, HttpMethod.DELETE),
+        (http.head, HttpMethod.HEAD),
     ],
 )
 def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
-
     ok_response = HttpResponse(200, "OK")
     request = HttpRequest(method, "/pet")
 
@@ -118,14 +111,14 @@ def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
         return ok_response
 
     assert get_pet(HttpRequest(HttpMethod.GET)) == ok_response
-    assert router.handle(request, noop) == ok_response
+    assert http.handle(request, noop) == ok_response
 
 
 def test_router_not_found() -> None:
     def noop():
         pass
 
-    local_router = ApplicationRouter()
+    local_router = HttpEndpoints()
     request = HttpRequest(HttpMethod.GET, "/pet")
     response = local_router.handle(request, noop)
 

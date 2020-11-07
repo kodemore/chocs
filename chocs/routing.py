@@ -10,9 +10,8 @@ _VAR_REGEX = "[^/]+"
 
 
 class Route:
-    def __init__(self, route: str, parameters: Optional[Dict[str, str]] = None):
+    def __init__(self, route: str):
         self.route = route
-        self._parameters_patterns = parameters if parameters else {}
         self._parameters_names: List[str] = []
         self._pattern: Pattern[str] = None  # type: ignore
         self._parameters: Dict[str, str] = {}
@@ -28,8 +27,6 @@ class Route:
         def _parse_var(match):
             param = match.group(1)
             self._parameters_names.append(param)
-            if param in self._parameters_patterns:
-                return f"({self._parameters_patterns[param]})"
             return f"({_VAR_REGEX})"
 
         pattern = re.escape(self.route)

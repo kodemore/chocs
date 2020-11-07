@@ -1,7 +1,10 @@
 from cgi import parse_header
 from enum import Enum
 from tempfile import TemporaryFile
-from typing import Any, Dict, IO, Tuple
+from typing import Any
+from typing import Dict
+from typing import IO
+from typing import Tuple
 
 
 class UploadedFile:
@@ -76,7 +79,9 @@ class ParserState(Enum):
 
 
 def parse_multipart_message(
-        data: bytes, boundary: str, encoding: str = "utf8"
+    data: bytes,
+    boundary: str,
+    encoding: str = "utf8"
 ) -> Dict[str, Any]:
     state = ParserState.PART_BOUNDARY
     prev_byte = None

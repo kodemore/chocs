@@ -1,10 +1,12 @@
 from io import BytesIO
 
 from chocs import HttpRequest
-from chocs.message import MultipartBody
-from chocs.message.multipart_body import UploadedFile
+from chocs import MultipartHttpMessage
+from chocs import UploadedFile
+from chocs import FormHttpMessage
+from chocs import JsonHttpMessage
 
-test_wsgi_body = {
+multipart_body = {
     "CONTENT_TYPE": "multipart/form-data; charset=utf-8; boundary=__TEST_BOUNDARY__",
     "REQUEST_METHOD": "POST",
     "wsgi.input": BytesIO(
@@ -31,11 +33,27 @@ test_wsgi_body = {
     ),
 }
 
+form_body = {
+    "CONTENT_TYPE": "application/x-www-form-urlencoded; charset=utf-8",
+    "REQUEST_METHOD": "POST",
+    "wsgi.input": BytesIO(b"test_1=1&test_2=Test+2&test_3=%7Btest+3%7D"),
+}
 
-def test_multipart_body():
-    request = HttpRequest.from_wsgi(test_wsgi_body)
+json_body = {
+    "CONTENT_TYPE": "application/json; charset=utf-8",
+    "REQUEST_METHOD": "POST",
+    "wsgi.input": BytesIO(b'{"test_1":"1","test_2":"Test 2","test_3":"{test 3}"}'),
+}
+
+
+def test_parse_multipart_body() -> None:
+    request = HttpRequest(
+        multipart_body["REQUEST_METHOD"],
+        body=multipart_body["wsgi.input"],
+        headers={"content-type": multipart_body["CONTENT_TYPE"]}
+    )
     body = request.parsed_body
-    assert isinstance(body, MultipartBody)
+    assert isinstance(body, MultipartHttpMessage)
     assert str(body["id"]) == "51b8a72aaaf909e303000034"
     assert str(body["test_1"]) == "only string value"
     assert str(body["test_2"]) == "1232"
@@ -45,3 +63,29 @@ def test_multipart_body():
     assert body["file_b"].filename == "yellow.gif"
     assert body.get("test2", "default") == "default"
     assert len(body["file_a"]) == 49
+
+
+def test_parse_form_body() -> None:
+    request = HttpRequest(
+        form_body["REQUEST_METHOD"],
+        body=form_body["wsgi.input"],
+        headers={"content-type": form_body["CONTENT_TYPE"]}
+    )
+    body = request.parsed_body
+    assert isinstance(body, FormHttpMessage)
+    assert str(body["test_1"]) == "1"
+    assert body.get("test2", "default") == "default"
+
+
+def test_parse_json_body() -> None:
+    request = HttpRequest(
+        json_body["REQUEST_METHOD"],
+        body=json_body["wsgi.input"],
+        headers={"content-type": json_body["CONTENT_TYPE"]}
+    )
+    body = request.parsed_body
+
+    assert isinstance(body, JsonHttpMessage)
+    assert "test_1" in body
+    assert body["test_1"] == "1"
+    assert body.get("test2", "default") == "default"

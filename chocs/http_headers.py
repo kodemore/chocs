@@ -1,4 +1,9 @@
-from typing import Generator, KeysView, Optional, Sequence, Union, ValuesView
+from typing import Generator
+from typing import KeysView
+from typing import Optional
+from typing import Sequence
+from typing import Union
+from typing import ValuesView
 
 
 def _normalize_header_name(name: str) -> str:

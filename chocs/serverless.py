@@ -2,7 +2,9 @@ import base64
 import logging
 import os
 from io import BytesIO
-from typing import Callable, Any, Dict
+from typing import Any
+from typing import Callable
+from typing import Dict
 
 from .http_headers import HttpHeaders
 from .http_query_string import HttpQueryString
@@ -74,13 +76,6 @@ def make_serverless_callback(func: Callable[[HttpRequest], HttpResponse]) -> Cal
 
         response.body.seek(0)
         body = response.body.read()
-        logger.info("Sending Response")
-        logger.info("status code")
-        logger.info(response.status_code)
-        logger.info(normalised_headers)
-        logger.info(base64.b64encode(body))
-
-
 
         return {
             "isBase64Encoded": True,

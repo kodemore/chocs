@@ -1,7 +1,9 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 from copy import deepcopy
 from queue import Queue
-from typing import Callable, Union
+from typing import Callable
+from typing import Union
 
 from .http_request import HttpRequest
 from .http_response import HttpResponse
@@ -10,13 +12,13 @@ from .http_response import HttpResponse
 class MiddlewareHandler(ABC):
     @abstractmethod
     def __call__(self, request: HttpRequest) -> HttpResponse:
-        pass
+        ...
 
 
 class Middleware(ABC):
     @abstractmethod
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
-        pass
+        ...
 
 
 class MiddlewareCursor(MiddlewareHandler):
