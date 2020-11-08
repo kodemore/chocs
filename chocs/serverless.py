@@ -13,6 +13,7 @@ from .http_request import HttpRequest
 from .http_response import HttpResponse
 from .routing import Route
 
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -70,15 +71,18 @@ def create_http_request_from_serverless_rest_api(event: Dict[str, Any], context:
     headers["Content-Length"] = str(body.getbuffer().nbytes)
 
     raw_query_string = ""
-    for key, values in event.get("multiValueQueryStringParameters", {}).items():
-        for value in values:
-            raw_query_string += f"&{key}={quote_plus(value)}"
+    if event.get("multiValueQueryStringParameters"):
+        for key, values in event.get("multiValueQueryStringParameters").items():
+            for value in values:
+                raw_query_string += f"&{key}={quote_plus(value)}"
+
+        raw_query_string = raw_query_string[1:]
 
     request = HttpRequest(
         method=event.get("httpMethod", "GET"),
         path=event.get("path", "/"),
         body=body,
-        query_string=HttpQueryString(raw_query_string[1:]),
+        query_string=HttpQueryString(raw_query_string),
         headers=HttpHeaders(headers)
     )
     request.path_parameters = event.get("pathParameters", {})
