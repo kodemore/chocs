@@ -11,5 +11,5 @@ logger.setLevel(logging.INFO)
 
 @http.get("/users")
 def get_users(request: HttpRequest) -> HttpResponse:
-    logger.log("Hello AWS!")
+    logger.info("Hello AWS!")
     return HttpResponse(HttpStatus.OK, '{"test": true}', headers={"Test": "test header"})
