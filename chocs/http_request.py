@@ -43,6 +43,7 @@ class HttpRequest:
         self.query_string = query_string
         self.path_parameters: Dict[str, str] = {}
         self.headers = headers if headers else HttpHeaders()
+        self.route = None  # type: ignore
 
         self._body = body if body else BytesIO(b"")
         self._parsed_body: Optional[HttpMessage] = None

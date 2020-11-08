@@ -11,7 +11,8 @@ from chocs import NotFoundError
 from chocs import Route
 from chocs import Router
 from chocs import http
-from chocs import HttpEndpoints
+from chocs import HttpApplication
+from chocs import RouterMiddleware
 
 
 def test_route_parsing() -> None:
@@ -102,6 +103,7 @@ def test_router_prioritise_routes_with_no_wildcards() -> None:
 def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
     ok_response = HttpResponse(200, "OK")
     request = HttpRequest(method, "/pet")
+    router = RouterMiddleware.from_http_application(http)
 
     def noop():
         pass
@@ -111,15 +113,16 @@ def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
         return ok_response
 
     assert get_pet(HttpRequest(HttpMethod.GET)) == ok_response
-    assert http.handle(request, noop) == ok_response
+    assert router.handle(request, noop) == ok_response
 
 
 def test_router_not_found() -> None:
     def noop():
         pass
 
-    local_router = HttpEndpoints()
+    app = HttpApplication()
+    router = RouterMiddleware.from_http_application(app)
     request = HttpRequest(HttpMethod.GET, "/pet")
-    response = local_router.handle(request, noop)
+    response = router.handle(request, noop)
 
     assert response.status_code == HttpStatus.NOT_FOUND

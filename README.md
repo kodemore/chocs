@@ -25,7 +25,7 @@ pip install chocs
 ## Quick start
 
 ```python
-from chocs import HttpRequest, HttpResponse, router, serve
+from chocs import HttpRequest, HttpResponse, http, serve
 
 @router.get("/hello/{name}")
 def hello(request: HttpRequest) -> HttpResponse:

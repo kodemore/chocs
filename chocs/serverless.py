@@ -10,6 +10,7 @@ from .http_headers import HttpHeaders
 from .http_query_string import HttpQueryString
 from .http_request import HttpRequest
 from .http_response import HttpResponse
+from .routing import Route
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -65,9 +66,11 @@ def get_normalised_body_from_serverless(event: Dict[str, Any]) -> BytesIO:
     return BytesIO(body)
 
 
-def make_serverless_callback(func: Callable[[HttpRequest], HttpResponse]) -> Callable:
+def make_serverless_callback(func: Callable[[HttpRequest], HttpResponse], route: Route) -> Callable:
     def _handle_serverless_request(event: Dict[str, Any], context: Dict[str, Any]) -> dict:
         request = create_http_request_from_serverless(event, context)
+        route._parameters = request.path_parameters
+        request.route = route
         response = func(request)
 
         normalised_headers = {}

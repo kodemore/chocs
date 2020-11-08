@@ -1,5 +1,4 @@
-from .application import Application
-from .application import HttpEndpoints
+from .application import HttpApplication
 from .application import http
 from .http_cookies import HttpCookie
 from .http_cookies import HttpCookieError
@@ -22,3 +21,4 @@ from .http_response import HttpResponse
 from .http_status import HttpStatus
 from .routing import Route
 from .routing import Router
+from .router_middleware import RouterMiddleware
