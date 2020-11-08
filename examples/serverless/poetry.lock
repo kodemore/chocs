@@ -27,7 +27,7 @@ description = "Lightweight and powerful wsgi rest framework for rapid building a
 name = "chocs"
 optional = false
 python-versions = ">=3.7,<4.0"
-version = "0.3.5b0"
+version = "0.3.9b0"
 
 [package.dependencies]
 typing_extensions = ">=3.7.4,<4.0.0"
@@ -135,7 +135,7 @@ python-versions = "*"
 version = "3.7.4.3"
 
 [metadata]
-content-hash = "901438ee75a67162ff25257ee7e9b6a34add900f29a095581cc2cf99face290b"
+content-hash = "aeda809f8dbc74aa91f19709d1ebf11471241d2d2c70d5bace845aeb4f91a787"
 lock-version = "1.0"
 python-versions = "^3.8"
 
@@ -149,8 +149,8 @@ attrs = [
     {file = "attrs-20.3.0.tar.gz", hash = "sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700"},
 ]
 chocs = [
-    {file = "chocs-0.3.5b0-py3-none-any.whl", hash = "sha256:158fd2b421cf3c084677a3cd1f12a7bfa6fa18ad599d4afdf925a37a030a1c43"},
-    {file = "chocs-0.3.5b0.tar.gz", hash = "sha256:5e48e3370f183f05799c1846c8c07089d20c9d6121b52ef1f0d8c653390b6eb4"},
+    {file = "chocs-0.3.9b0-py3-none-any.whl", hash = "sha256:d8edbc0afc311953603b51d9118ac4dcc26898ee70a9436b8fdb1c3d91eb0299"},
+    {file = "chocs-0.3.9b0.tar.gz", hash = "sha256:c71020348d336b9ab126f812034ebd7ac4834aedf1141c97c87db8d8bdaff201"},
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},

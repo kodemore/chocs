@@ -136,7 +136,8 @@ def make_serverless_callback(func: Callable[[HttpRequest], HttpResponse], route:
 
 
 def make_serverless_response(event: Dict[str, Any], response: HttpResponse) -> Dict[str, Any]:
-
+    logger.info("generating response")
+    logger.info(event)
     serverless_response = {"statusCode": int(response.status_code)}
 
     if "multiValueHeaders" in event:
@@ -147,23 +148,25 @@ def make_serverless_response(event: Dict[str, Any], response: HttpResponse) -> D
     # If the request comes from ALB we need to add a status description
     is_elb = event.get("requestContext", {}).get("elb")
     if is_elb:
+        logger.info("elb endpoint")
         serverless_response["statusDescription"] = str(response.status_code)
 
     mimetype = response.headers.get("content-type", "text/plain")
 
     # If there is no body or empty body we simply dont care about the rest
-    response.body.seek(0)
-    body = response.body.read()
+    body = str(response)
     if not body:
-        return serverless_response
+        logger.info("no body")
 
     if (mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES) and \
             not response.headers.get("Content-Encoding", ""):
 
-        serverless_response["body"] = response.body.read().decode("utf8")
+        serverless_response["body"] = body
         serverless_response["isBase64Encoded"] = False
     else:
-        serverless_response["body"] = base64.b64encode(body).decode("utf-8")
+        serverless_response["body"] = base64.b64encode(body.encode("utf8"))
         serverless_response["isBase64Encoded"] = True
+
+    logger.info(serverless_response)
 
     return serverless_response
