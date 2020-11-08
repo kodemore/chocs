@@ -1,0 +1,49 @@
+{
+  "version": "2.0",
+  "routeKey": "ANY /users/{id}",
+  "rawPath": "/users/123",
+  "rawQueryString": "param_1=value&param_2=value",
+  "cookies": [
+    "Cookie_1=value",
+    "Cookie_2=value",
+    "Cookie_3=value"
+  ],
+  "headers": {
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate, br",
+    "content-length": "0",
+    "host": "t7pwa0dvd9.execute-api.us-east-1.amazonaws.com",
+    "postman-token": "d16de3fe-254f-4c3f-83fb-d0c1ad9c784c",
+    "user-agent": "PostmanRuntime/7.26.5",
+    "x-amzn-trace-id": "Root=1-5fa80618-3813f74e7af413df144e0905",
+    "x-forwarded-for": "0.0.0.0",
+    "x-forwarded-port": "443",
+    "x-forwarded-proto": "https"
+  },
+  "queryStringParameters": {
+    "param_1": "value",
+    "param_2": "value"
+  },
+  "requestContext": {
+    "accountId": "955411480517",
+    "apiId": "t7pwa0dvd9",
+    "domainName": "t7pwa0dvd9.execute-api.us-east-1.amazonaws.com",
+    "domainPrefix": "t7pwa0dvd9",
+    "http": {
+      "method": "GET",
+      "path": "/users/123",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "0.0.0.0",
+      "userAgent": "PostmanRuntime/7.26.5"
+    },
+    "requestId": "VsXj4hvtIAMEMSA=",
+    "routeKey": "ANY /users/{id}",
+    "stage": "$default",
+    "time": "08/Nov/2020:14:52:08 +0000",
+    "timeEpoch": 1604847128781
+  },
+  "pathParameters": {
+    "id": "123"
+  },
+  "isBase64Encoded": false
+}

@@ -1,6 +1,7 @@
 from cgi import parse_header
 from copy import copy
 from io import BytesIO
+from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Tuple
@@ -44,7 +45,7 @@ class HttpRequest:
         self.path_parameters: Dict[str, str] = {}
         self.headers = headers if headers else HttpHeaders()
         self.route = None  # type: ignore
-
+        self.attributes: Dict[str, Any] = {}
         self._body = body if body else BytesIO(b"")
         self._parsed_body: Optional[HttpMessage] = None
         self._cookies: Optional[HttpCookieJar] = None

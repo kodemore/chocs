@@ -1,13 +1,27 @@
-get_users:
-  handler: handler.get_users
+test_http_api:
+  handler: handler.test_handler
   events:
     - httpApi:
         method: GET
         path: /users
 
-get_user:
-  handler: handler.get_users
+test_http_api_wildcard:
+  handler: handler.test_handler
   events:
     - httpApi:
         method: "*"
         path: /users/{id}
+
+test_rest_api:
+  handler: handler.test_handler
+  events:
+    - http:
+        path: /test
+        method: GET
+
+test_rest_api_wildcard:
+  handler: handler.test_handler
+  events:
+    - http:
+        path: /test/{id}
+        method: ANY

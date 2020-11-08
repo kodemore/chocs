@@ -4,3 +4,5 @@ __pycache__
 *.egg-info
 .mypy_cache
 /dist
+/examples/serverless/node_modules
+/examples/serverless/.serverless

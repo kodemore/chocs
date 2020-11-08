@@ -10,6 +10,8 @@ logger.setLevel(logging.INFO)
 
 
 @http.get("/users")
-def get_users(request: HttpRequest) -> HttpResponse:
+def test_handler(request: HttpRequest) -> HttpResponse:
     logger.info("Hello AWS!")
+    logger.info(request.attributes["aws_context"])
+    logger.info(request.attributes["aws_event"])
     return HttpResponse(HttpStatus.OK, '{"test": true}', headers={"Test": "test header"})
