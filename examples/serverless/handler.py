@@ -14,7 +14,7 @@ def test_handler(request: HttpRequest) -> HttpResponse:
     logger.info("Hello AWS!")
     logger.info(request.attributes.get("aws_context"))
     logger.info(request.attributes.get("aws_event"))
-    return HttpResponse(HttpStatus.OK, '{"test": true}', headers={"Test": "test header"})
+    return HttpResponse('{"test": true}', headers={"Test": "test header"})
 
 
 __all__ = ["test_handler"]
