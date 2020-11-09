@@ -1,13 +1,14 @@
+from datetime import datetime
+
+from chocs import HttpCookie
 from chocs import HttpRequest
 from chocs import HttpResponse
 from chocs import HttpStatus
-from chocs import Cookie
-from chocs import router
+from chocs import http
 from chocs import serve
-from datetime import datetime
 
 
-@router.get("*")
+@http.get("*")
 def default(request: HttpRequest) -> HttpResponse:
     """Shows how cookie work"""
     client_cookies = request.cookies
@@ -15,7 +16,7 @@ def default(request: HttpRequest) -> HttpResponse:
     response = HttpResponse(HttpStatus.NOT_FOUND, "Not found")
     response.cookies["simple_cookie"] = "value"
     response.cookies.append(
-        Cookie(
+        HttpCookie(
             "advanced_cookie", "Advanced value {test 1}", expires=datetime(2021, 1, 1)
         )
     )

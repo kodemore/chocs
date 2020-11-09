@@ -2,7 +2,7 @@ from io import BytesIO
 from typing import Any
 from typing import Callable
 from typing import Dict
-from typing import List
+from typing import Union
 
 from . import HttpResponse
 from .application import http
@@ -33,7 +33,7 @@ def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
     )
 
 
-def create_wsgi_handler(debug: bool = False, middleware: List[Middleware] = http.middleware) -> Callable[[Dict[str, Any]], Callable]:
+def create_wsgi_handler(*middleware: Union[Callable, Middleware], debug: bool = False) -> Callable[[Dict[str, Any]], Callable]:
 
     def _handler(environ: Dict[str, Any], start: Callable) -> Any:
         # Prepare pipeline
@@ -68,3 +68,11 @@ def create_wsgi_handler(debug: bool = False, middleware: List[Middleware] = http
         return response.body
 
     return _handler
+
+
+def serve(*middleware: Union[Callable, Middleware], host: str = "127.0.0.1", port=80, debug: bool = False) -> None:
+    import bjoern
+
+    wsgi_handler = create_wsgi_handler(*middleware, debug=debug)
+
+    bjoern.run(wsgi_handler, host, port)

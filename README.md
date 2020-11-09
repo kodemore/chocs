@@ -25,11 +25,14 @@ pip install chocs
 ## Quick start
 
 ```python
-from chocs import HttpRequest, HttpResponse, http, serve
+from chocs import HttpRequest
+from chocs import HttpResponse
+from chocs import http
+from chocs import serve
 
-@router.get("/hello/{name}")
+@http.get("/hello/{name}")
 def hello(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(f"Hello {request.attributes['name']}!")
+    return HttpResponse(f"Hello {request.path_parameters.get('name')}!")
 
 serve()
 ```
@@ -41,28 +44,84 @@ serve()
 
 ```python
 # myapp.py
-from chocs import Application, HttpRequest, HttpResponse, router
+from chocs import HttpRequest
+from chocs import HttpResponse
+from chocs import create_wsgi_handler
+from chocs import http
 
-@router.get("/hello/{name}*")
+@http.get("/hello/{name}*")
 def hello(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(f"Hello {request.attributes['name']}!")
+    return HttpResponse(f"Hello {request.path_parameters.get('name')}!")
 
-app = Application(router)
+app = create_wsgi_handler(debug=False)
 ```
 
 ```bash
 gunicorn -w 4 myapp:app
 ```
 
+## Running application in AWS Lambda (Http api or rest api)
+
+`handler.py`
+```python
+import logging
+
+from chocs import HttpRequest
+from chocs import HttpResponse
+from chocs import http
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+
+@http.get("/hello/{name}")
+def hello_handler(request: HttpRequest) -> HttpResponse:
+    logger.info("Hello AWS!")
+    logger.info(request.attributes.get("aws_context"))
+    logger.info(request.attributes.get("aws_event"))
+    return HttpResponse(f"Hello {request.path_parameters.get('name')}")
+
+
+__all__ = ["hello_handler"]
+```
+
+`serverless.yml`
+```yaml
+service: aws-hello-name
+
+provider:
+  name: aws
+  runtime: python3.8
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+functions:
+  hello_name:
+    handler: handler.hello_handler
+    events:
+      - httpApi:
+          method: GET
+          path: /hello/{name}
+```
+
+```bash
+serverless deploy
+```
+
 ## Routing
 Chocs is shipped with a built-in routing module. The easiest way to utilise chocs' routing is to use `chocs.router` object.
-`chocs.router` is an instance of the module's internal class `chocs.chocs.ApplicationRouter`, which provides a simple API 
+`chocs.router` is an instance of the module's internal class `chocs.application.HttpApplication`, which provides a simple API 
 where each function is a decorator corresponding to an HTTP method.
 
 ```python
-from chocs import router, HttpResponse, HttpRequest
+from chocs import http, HttpResponse, HttpRequest
 
-@router.get("/hello")
+@http.get("/hello")
 def hello(req: HttpRequest) -> HttpResponse:
     ...
 ```
@@ -84,9 +143,9 @@ Available methods:
 Routes can contain parameterised parts. Parameters must be enclosed within `{` and `}`.
 
 ```python
-from chocs import router
+from chocs import http
 
-@router.get("/pet/{id}")
+@http.get("/pet/{id}")
 def hello():
     ...
 ```
@@ -94,19 +153,6 @@ Will match the following URIs:
  - `/pet/1`
  - `/pet/abc`
  - `/pet/abc1`
-
-Advanced matching can be achieved by passing a regex to the function.
-Consider the following example:
-
-```python
-from chocs import router
-
-@router.get("/pet/{id}", id=r"\d+")
-def hello():
-    ...
-```
-This restricts the `id` parameter to accept only digits, so `/pet/abc` and `/pet/abc1` will no longer match route's 
-pattern.
  
 ### Wildcard routes
 
@@ -114,9 +160,9 @@ Asterisks (`*`) can be used in the route's pattern to match any possible combina
 _do not_ contain wildcards are prioritised over routes with wildcards.
 
 ```python
-from chocs import router
+from chocs import http
 
-@router.get("/pet/*", id)
+@http.get("/pet/*", id)
 def hello():
     ...
 ```
@@ -128,7 +174,7 @@ The above example will match following URIs:
 
 ## Defining and using a custom middleware
 
-Middleware are functions or classes that inherit `chocs.middleware.Middleware`. Middlewares have access to the request 
+Middleware are functions or classes that inherit `chocs.Middleware`. Middlewares have access to the request 
 object and the next function is used to control middleware stack flow. Successful middleware execution should call
 the `next` function *(which accepts a `chocs.HttpRequest` instance and returns `chocs.HttpReponse`)* and return a
 valid `chocs.HttpResponse` instance.
@@ -158,33 +204,37 @@ serve(my_custom_middleware)
 `chocs.Request` object is an abstraction around WSGI's environment and `wsgi.input` data with handy interface 
 to ease everyday work.
 
-#### `chocs.Request.headers:dict`
+#### `chocs.Request.headers:chocs.HttpHeaders (read-only)`
 Keeps parsed headers in dict-like object.
 
 #### `chocs.Request.body:io.BytesIO` 
 Raw body data
 
-#### `Request.parsed_body:chocs.message.RequestBody`
+#### `Request.parsed_body:chocs.HttpMessage`
 Depending on the content type it could be one of the following:
- - `chocs.message.FormBody`
- - `chocs.message.JsonBody`
- - `chocs.message.MultiPartBody`
+ - `chocs.FormHttpMessage`
+ - `chocs.JsonHttpMessage`
+ - `chocs.MultipartHttpMessage`
  
-#### `chocs.Request.cookies:typing.List[chocs.cookies.Cookie]` 
+#### `chocs.Request.cookies:typing.List[chocs.HttpCookie]` 
 Request's cookies
 
 #### `chocs.Request.method:chocs.HttpMethod`
 The request's method
 
-#### `chocs.Request.uri:str`
-The request's URI
+#### `chocs.Request.path:str`
+The request's path
 
-#### `chocs.Request.query_string:chocs.QueryString`
+#### `chocs.Request.query_string:chocs.HttpQueryString`
 A dict like object with parsed query string with JSON forms support
         
-#### `chocs.Request.attributes:dict`
-Matched route attributes, for example when `/users/john` matches the `/users/{name}` route, attributes will contain a 
+#### `chocs.Request.path_parameters:dict`
+Matched route parameters, for example when `/users/john` matches the `/users/{name}` route, parameters will contain a 
 `name` key with a value of `john`
+
+#### `chocs.Request.attributes:dict`
+Other environmental or custom attributes attached to the request object, eg.: `aws_event` or `aws_context`
+when running chocs app as aws lambda.
 
 ## Response
 `chocs.Response` object is a part of request-response flow and it is required to be returned by all functions
@@ -194,13 +244,10 @@ generate real response served to your clients.
 #### `chocs.Response.body: io.BytesIO` 
 Body served to server's clients.
 
-### `chocs.Response.status_code: Union[chocs.HttpStatus, int]`
+### `chocs.Response.status_code: chocs.HttpStatus`
 Valid response code, instance of `chocs.HttpStatus` enum can be used or just a status code's number.
 
-#### `chocs.Request.headers (read-only)`
-Keeps parsed headers in dict-like object. This property is read-only and can be set only on object instantiation.
-
-#### `chocs.Response.cookies:typing.List[chocs.cookies.Cookie]` 
+#### `chocs.Response.cookies:chocs.HttpCookieJar` 
 Response's cookies
 
 #### `chocs.Response.write(body: Union[bytes, str, bytearray])`
@@ -214,8 +261,8 @@ Indicates whether response's body is writable.
 
 ## Working with cookies
 
-`chocs.CookieJar` object takes care of cookie handling. It can be accessed in dict-like manner, when item is requested,
-instance of `chocs.Cookie` is returned to user. 
+`chocs.HttpCookieJar` object takes care of cookie handling. It can be accessed in dict-like manner, when item is requested,
+instance of `chocs.HttpCookie` is returned to user. 
 
 Cookies can be set either by passing string value to the `chocs.CookieJar`'s key, or by calling `chocs.CookieJar.append` 
 method which accepts instance of `chocs.Cookie`.
@@ -226,10 +273,13 @@ Cookies can be easily accessed from `chocs.Request.cookies` object which is inje
 registered as route handler. Consider the following example:
 
 ```python
-from chocs import HttpRequest, HttpResponse, serve, router
+from chocs import HttpRequest
+from chocs import HttpResponse
+from chocs import http
+from chocs import serve
 
 
-@router.get("/cookies")
+@http.get("/cookies")
 def read_cookies(request: HttpRequest) -> HttpResponse:
 
     message = "Hello"
@@ -244,15 +294,20 @@ serve()
 
 ### Setting cookies
 ```python
-from chocs import HttpRequest, HttpResponse, serve, router, Cookie
 from datetime import datetime
 
+from chocs import HttpCookie
+from chocs import HttpRequest
+from chocs import HttpResponse
+from chocs import http
+from chocs import serve
 
-@router.get("/cookies")
+
+@http.get("/cookies")
 def read_cookies(request: HttpRequest) -> HttpResponse:
     response = HttpResponse(body="Hi! I have baked some cookies for ya!")
     response.cookies['simple-cookie'] = "Simple cookie for simple people"
-    response.cookies.append(Cookie("advanced-cookie", "This cookie will expire in 2021-01-01", expires=datetime(2021, 1, 1)))
+    response.cookies.append(HttpCookie("advanced-cookie", "This cookie will expire in 2021-01-01", expires=datetime(2021, 1, 1)))
     return response
 
 serve()
@@ -265,3 +320,7 @@ serve()
 - libev
 - python 3.8
 - docker
+
+## Installation
+
+`poetry install`

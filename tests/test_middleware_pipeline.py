@@ -13,7 +13,7 @@ class ErrorCatchingMiddleware(Middleware):
             assert len(next.queue.queue) == 2
             response = next(request)
         except Exception as e:
-            response = HttpResponse(500)
+            response = HttpResponse(status=500)
             response.body = e
 
         return response
@@ -37,7 +37,7 @@ class ErroringMiddleware(Middleware):
 
 class RespondingMiddleware(Middleware):
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
-        response = HttpResponse(201)
+        response = HttpResponse(status=201)
         response.write("Created")
         return response
 
@@ -50,7 +50,7 @@ def test_erroring_middleware_pipeline():
 
     response = pipeline(HttpRequest("get"))
 
-    assert response.status_code == 500
+    assert 500 == int(response.status_code)
     assert isinstance(response.body, RuntimeError)
 
 
@@ -69,5 +69,5 @@ def test_successing_pipeline():
 
     response = pipeline(HttpRequest("get"))
     response.body.seek(0)
-    assert response.status_code == 201
+    assert int(response.status_code) == 201
     assert response.body.read() == b"Created Proxed Response"

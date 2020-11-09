@@ -69,5 +69,13 @@ class HttpStatus(Enum):
     def __int__(self) -> int:
         return self.value[0]
 
+    @classmethod
+    def from_int(cls, status: int) -> 'HttpStatus':
+        value = [item for item in cls if item.value[0] == status]
+        if value:
+            return value[0]
+
+        raise ValueError(f"Invalid status value `{status}`")
+
 
 __all__ = ["HttpStatus"]

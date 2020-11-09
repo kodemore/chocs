@@ -1,17 +1,18 @@
 import pytest
 
+from chocs import HttpCookie
 from chocs import HttpHeaders
 from chocs import HttpResponse
-from chocs import HttpCookie, HttpCookieJar
+from chocs import HttpStatus
 
 
 def test_can_instantiate():
-    instance = HttpResponse(200)
+    instance = HttpResponse(status=200)
     assert isinstance(instance, HttpResponse)
 
 
 def test_can_write_and_read_body():
-    instance = HttpResponse(200)
+    instance = HttpResponse(status=200)
     instance.write("Example text")
     assert str(instance) == "Example text"
     instance.body.seek(0)
@@ -19,7 +20,7 @@ def test_can_write_and_read_body():
 
 
 def test_can_close_body():
-    instance = HttpResponse(200)
+    instance = HttpResponse(status=HttpStatus.OK)
     instance.write("Test")
     assert instance.writable
     instance.close()

@@ -1,8 +1,15 @@
 from chocs import HttpStatus
 
 
-def test_http_status_str():
+def test_http_status_str() -> None:
     status = HttpStatus.OK
+
+    assert "200 OK" == str(status)
+    assert 200 == int(status)
+
+
+def test_http_status_from_int() -> None:
+    status = HttpStatus.from_int(200)
 
     assert "200 OK" == str(status)
     assert 200 == int(status)

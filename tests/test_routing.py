@@ -101,7 +101,7 @@ def test_router_prioritise_routes_with_no_wildcards() -> None:
     ],
 )
 def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
-    ok_response = HttpResponse(200, "OK")
+    ok_response = HttpResponse("OK", HttpStatus.OK)
     request = HttpRequest(method, "/pet")
     router = RouterMiddleware.from_http_application(http)
 
