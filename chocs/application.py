@@ -84,6 +84,21 @@ class HttpApplication:
 
         return _options
 
+    def any(self, route: str) -> Callable:
+        def _any(handler: Callable) -> Callable:
+            self.methods[HttpMethod.GET].append(Route(route), handler)
+            self.methods[HttpMethod.POST].append(Route(route), handler)
+            self.methods[HttpMethod.PUT].append(Route(route), handler)
+            self.methods[HttpMethod.PATCH].append(Route(route), handler)
+            self.methods[HttpMethod.DELETE].append(Route(route), handler)
+            self.methods[HttpMethod.HEAD].append(Route(route), handler)
+            self.methods[HttpMethod.OPTIONS].append(Route(route), handler)
+            if IS_SERVERLESS_ENVIRONMENT:
+                return make_serverless_callback(handler, Route(route))
+            return handler
+
+        return _any
+
 
 http = HttpApplication()
 
