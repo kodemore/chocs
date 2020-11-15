@@ -12,6 +12,7 @@ from .http_query_string import HttpQueryString
 from .http_request import HttpRequest
 from .http_response import HttpResponse
 from .routing import Route
+from .http_status import HttpStatus
 
 
 logger = logging.getLogger()
@@ -38,6 +39,17 @@ def is_http_api_lambda(event: Dict[str, Any]) -> bool:
         return True
 
     return False
+
+
+def create_http_request_from_serverless_event(event: Dict[str, Any], context: Dict[str, Any]) -> HttpRequest:
+    is_http_api = is_http_api_lambda(event)
+
+    if is_http_api:
+        request = create_http_request_from_serverless_http_api(event, context)
+    else:
+        request = create_http_request_from_serverless_rest_api(event, context)
+
+    return request
 
 
 def create_http_request_from_serverless_http_api(event: Dict[str, Any], context: Dict[str, Any]) -> HttpRequest:
@@ -121,17 +133,15 @@ def make_serverless_callback(func: Callable[[HttpRequest], HttpResponse], route:
     def _handle_serverless_request(event: Dict[str, Any], context: Dict[str, Any]) -> dict:
 
         if event.get("source") in ["aws.events", "serverless-plugin-warmup"]:  # lambda warmup should be ignored
-            return {}
+            return {
+                "statusCode": int(HttpStatus.CONTINUE),
+            }
 
-        is_http_api = is_http_api_lambda(event)
-
-        if is_http_api:
-            request = create_http_request_from_serverless_http_api(event, context)
-        else:
-            request = create_http_request_from_serverless_rest_api(event, context)
+        request = create_http_request_from_serverless_event(event, context)
 
         route._parameters = request.path_parameters
         request.route = route
+
         response = func(request)
 
         return make_serverless_response(event, response)

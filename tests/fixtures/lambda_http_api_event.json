@@ -1,12 +1,11 @@
 {
   "version": "2.0",
-  "routeKey": "ANY /users/{id}",
-  "rawPath": "/users/123",
-  "rawQueryString": "param_1=value&param_2=value",
+  "routeKey": "ANY /test/{id}",
+  "rawPath": "/test/123",
+  "rawQueryString": "param_1=value1&param_2=value2",
   "cookies": [
     "Cookie_1=value",
-    "Cookie_2=value",
-    "Cookie_3=value"
+    "Cookie_2=value"
   ],
   "headers": {
     "accept": "*/*",
@@ -31,13 +30,13 @@
     "domainPrefix": "t7pwa0dvd9",
     "http": {
       "method": "GET",
-      "path": "/users/123",
+      "path": "/test/123",
       "protocol": "HTTP/1.1",
       "sourceIp": "0.0.0.0",
       "userAgent": "PostmanRuntime/7.26.5"
     },
     "requestId": "VsXj4hvtIAMEMSA=",
-    "routeKey": "ANY /users/{id}",
+    "routeKey": "ANY /test/{id}",
     "stage": "$default",
     "time": "08/Nov/2020:14:52:08 +0000",
     "timeEpoch": 1604847128781

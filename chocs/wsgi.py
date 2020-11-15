@@ -35,7 +35,7 @@ def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
 
 def create_wsgi_handler(*middleware: Union[Callable, Middleware], debug: bool = False) -> Callable[[Dict[str, Any]], Callable]:
 
-    def _handler(environ: Dict[str, Any], start: Callable) -> Any:
+    def _handler(environ: Dict[str, Any], start: Callable) -> bytes:
         # Prepare pipeline
         middleware_pipeline = MiddlewarePipeline()
         for item in middleware:
@@ -49,18 +49,18 @@ def create_wsgi_handler(*middleware: Union[Callable, Middleware], debug: bool = 
             try:
                 response = middleware_pipeline(request)
             except HttpError as http_error:
-                response = HttpResponse(http_error.status_code, http_error.http_message)
+                response = HttpResponse(http_error.http_message, http_error.status_code)
         else:
             # Always send a response
             try:
                 response = middleware_pipeline(request)
             except HttpError as http_error:
-                response = HttpResponse(http_error.status_code, http_error.http_message)
+                response = HttpResponse(http_error.http_message, http_error.status_code)
             except Exception:
-                response = HttpResponse(500, "Internal Server Error")
+                response = HttpResponse("Internal Server Error", 500)
 
         start(
-            str(response.status_code),
+            str(int(response.status_code)),
             [(key, value) for key, value in response.headers.items()],
         )
 
