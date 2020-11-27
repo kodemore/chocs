@@ -3,7 +3,7 @@ import os
 from chocs import create_wsgi_handler
 from chocs import serve
 
-from handler import *
+from .handler import *
 
 app = create_wsgi_handler(debug=True)
 

@@ -17,7 +17,7 @@ class HttpApplication:
     schema - for handling json schema
     timeout - for time - outing
     """
-    def __init__(self) -> None:
+    def __init__(self, openapi: str = None) -> None:
         self.middleware: List[Middleware] = []
         self.methods: Dict[HttpMethod, Router] = {key: Router() for key in HttpMethod}
 

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "chocs"
 version = "0.3.13b"
-description = "Lightweight and powerful wsgi rest framework for rapid building applications based on wsgi servers."
+description = "Lightweight and powerful http api framework for rapid building micro service based applications."
 authors = [
     "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
 ]
@@ -12,7 +12,7 @@ homepage = "https://github.com/kodemore/chocs"
 repository = "https://github.com/kodemore/chocs"
 documentation = "https://github.com/kodemore/chocs"
 
-keywords = ["http framework", "wsgi application", "router", "request", "response", "cookies", "routing", "rest", "http", "wsgi"]
+keywords = ["http", "lambda", "microservices", "microservice", "aws", "amazon", "api", "router", "request", "response", "cookies", "routing", "rest", "wsgi"]
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -32,6 +32,8 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.7"
 typing_extensions = "^3.7.4"
+jsonschema = "^3.2.0"
+pyyaml = "^5.3.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.1.0"
