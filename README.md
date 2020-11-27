@@ -25,10 +25,13 @@ pip install chocs
 ## Quick start
 
 ```python
+from chocs import HttpApplication
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import http
 from chocs import serve
+
+
+http = HttpApplication()
 
 @http.get("/hello/{name}")
 def hello(request: HttpRequest) -> HttpResponse:
@@ -44,16 +47,20 @@ serve()
 
 ```python
 # myapp.py
+from chocs import HttpApplication
 from chocs import HttpRequest
 from chocs import HttpResponse
 from chocs import create_wsgi_handler
-from chocs import http
+
+
+http = HttpApplication()
+
 
 @http.get("/hello/{name}*")
 def hello(request: HttpRequest) -> HttpResponse:
     return HttpResponse(f"Hello {request.path_parameters.get('name')}!")
 
-app = create_wsgi_handler(debug=False)
+app = create_wsgi_handler(http, debug=False)
 ```
 
 ```bash
@@ -68,10 +75,13 @@ import logging
 
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import http
+from chocs import HttpApplication
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+
+http = HttpApplication()
 
 
 @http.get("/hello/{name}")
@@ -119,7 +129,11 @@ Chocs is shipped with a built-in routing module. The easiest way to utilise choc
 where each function is a decorator corresponding to an HTTP method.
 
 ```python
-from chocs import http, HttpResponse, HttpRequest
+from chocs import HttpApplication, HttpResponse, HttpRequest
+
+
+http = HttpApplication()
+
 
 @http.get("/hello")
 def hello(req: HttpRequest) -> HttpResponse:
@@ -143,7 +157,10 @@ Available methods:
 Routes can contain parameterised parts. Parameters must be enclosed within `{` and `}`.
 
 ```python
-from chocs import http
+from chocs import HttpApplication
+
+http = HttpApplication()
+
 
 @http.get("/pet/{id}")
 def hello():
@@ -160,7 +177,10 @@ Asterisks (`*`) can be used in the route's pattern to match any possible combina
 _do not_ contain wildcards are prioritised over routes with wildcards.
 
 ```python
-from chocs import http
+from chocs import HttpApplication
+
+http = HttpApplication()
+
 
 @http.get("/pet/*", id)
 def hello():
@@ -190,14 +210,14 @@ Middlewares are different to functions decorated by `router.*` decorators as the
 happens and they are not bound to the URI.
  
 ```python
-from chocs import HttpRequest, HttpResponse, serve
+from chocs import HttpRequest, HttpResponse, HttpApplication, serve
 from chocs.middleware import MiddlewareHandler
 
 def my_custom_middleware(request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
     name = request.query_string.get("name", "John")
     return HttpResponse(body=f"Hello {name}")
 
-serve(my_custom_middleware)
+serve(HttpApplication(), my_custom_middleware)
 ```
 
 ## Request
@@ -275,8 +295,10 @@ registered as route handler. Consider the following example:
 ```python
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import http
+from chocs import HttpApplication
 from chocs import serve
+
+http = HttpApplication()
 
 
 @http.get("/cookies")
@@ -289,7 +311,7 @@ def read_cookies(request: HttpRequest) -> HttpResponse:
 
     return HttpResponse(body=message)
 
-serve()
+serve(http)
 ```
 
 ### Setting cookies
@@ -299,8 +321,10 @@ from datetime import datetime
 from chocs import HttpCookie
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import http
+from chocs import HttpApplication
 from chocs import serve
+
+http = HttpApplication()
 
 
 @http.get("/cookies")
@@ -310,7 +334,7 @@ def read_cookies(request: HttpRequest) -> HttpResponse:
     response.cookies.append(HttpCookie("advanced-cookie", "This cookie will expire in 2021-01-01", expires=datetime(2021, 1, 1)))
     return response
 
-serve()
+serve(http)
 ```
 
 # Contributing

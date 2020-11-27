@@ -1,15 +1,14 @@
 import os
 
-from chocs import create_wsgi_handler
-from chocs import serve
-
+from app import app
 from handler import *
 
-app = create_wsgi_handler(debug=True)
+from chocs import serve
 
 if __name__ == "__main__":
     print("Running server on port 8080")
     serve(
+        app,
         host="0.0.0.0",
         port=int(os.environ.get("PORT", 8080)),
         debug=True

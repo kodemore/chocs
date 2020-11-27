@@ -1,5 +1,4 @@
 import base64
-import logging
 import os
 from io import BytesIO
 from typing import Any
@@ -7,17 +6,15 @@ from typing import Callable
 from typing import Dict
 from urllib.parse import quote_plus
 
+from .http_error import HttpError
 from .http_headers import HttpHeaders
 from .http_query_string import HttpQueryString
 from .http_request import HttpRequest
 from .http_response import HttpResponse
-from .routing import Route
 from .http_status import HttpStatus
-
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
+from .middleware import MiddlewareHandler
+from .middleware import MiddlewarePipeline
+from .routing import Route
 
 IS_SERVERLESS_ENVIRONMENT = bool(
     os.environ.get("AWS_LAMBDA_FUNCTION_VERSION") or
@@ -129,7 +126,7 @@ def get_normalised_body_from_serverless(event: Dict[str, Any]) -> BytesIO:
     return BytesIO(body)
 
 
-def make_serverless_callback(func: Callable[[HttpRequest], HttpResponse], route: Route) -> Callable:
+def make_serverless_callback(middleware_pipeline: MiddlewarePipeline, func: Callable[[HttpRequest], HttpResponse], route: Route) -> Callable:
     def _handle_serverless_request(event: Dict[str, Any], context: Dict[str, Any]) -> dict:
 
         if event.get("source") in ["aws.events", "serverless-plugin-warmup"]:  # lambda warmup should be ignored
@@ -138,11 +135,19 @@ def make_serverless_callback(func: Callable[[HttpRequest], HttpResponse], route:
             }
 
         request = create_http_request_from_serverless_event(event, context)
-
         route._parameters = request.path_parameters
         request.route = route
 
-        response = func(request)
+        def response_middleware(_request: HttpRequest, _next: MiddlewareHandler) -> HttpResponse:
+            return func(_request)
+
+        local_middleware = MiddlewarePipeline(middleware_pipeline.queue)
+        local_middleware.append(response_middleware)
+
+        try:
+            response = local_middleware(request)
+        except HttpError as http_error:
+            response = HttpResponse(http_error.http_message, http_error.status_code)
 
         return make_serverless_response(event, response)
 
@@ -150,8 +155,6 @@ def make_serverless_callback(func: Callable[[HttpRequest], HttpResponse], route:
 
 
 def make_serverless_response(event: Dict[str, Any], response: HttpResponse) -> Dict[str, Any]:
-    logger.info("generating response")
-    logger.info(event)
     serverless_response = {"statusCode": int(response.status_code)}
 
     if "multiValueHeaders" in event:
@@ -162,15 +165,11 @@ def make_serverless_response(event: Dict[str, Any], response: HttpResponse) -> D
     # If the request comes from ALB we need to add a status description
     is_elb = event.get("requestContext", {}).get("elb")
     if is_elb:
-        logger.info("elb endpoint")
         serverless_response["statusDescription"] = str(response.status_code)
 
     mimetype = response.headers.get("content-type", "text/plain")
 
-    # If there is no body or empty body we simply dont care about the rest
     body = str(response)
-    if not body:
-        logger.info("no body")
 
     if (mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES) and \
             not response.headers.get("Content-Encoding", ""):
@@ -180,7 +179,5 @@ def make_serverless_response(event: Dict[str, Any], response: HttpResponse) -> D
     else:
         serverless_response["body"] = base64.b64encode(body.encode("utf8"))
         serverless_response["isBase64Encoded"] = True
-
-    logger.info(serverless_response)
 
     return serverless_response

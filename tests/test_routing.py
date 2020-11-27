@@ -10,7 +10,6 @@ from chocs import HttpStatus
 from chocs import NotFoundError
 from chocs import Route
 from chocs import Router
-from chocs import http
 from chocs import HttpApplication
 from chocs import RouterMiddleware
 
@@ -86,6 +85,9 @@ def test_router_prioritise_routes_with_no_wildcards() -> None:
     route, controller = router.match("/pets/11a22")
 
     assert route.route == "/pets/{pet_id}"
+
+
+http = HttpApplication()
 
 
 @pytest.mark.parametrize(

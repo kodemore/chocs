@@ -1,14 +1,18 @@
 import json
 import os
+from typing import Callable
 
+import pytest
+
+from chocs import HttpApplication
 from chocs import HttpCookie
-from chocs import HttpRequest
 from chocs import HttpQueryString
+from chocs import HttpRequest
 from chocs import HttpResponse
 from chocs import Route
+from chocs.middleware import MiddlewarePipeline
 from chocs.serverless import create_http_request_from_serverless_event
 from chocs.serverless import make_serverless_callback
-import pytest
 
 
 @pytest.mark.parametrize("event_file", [
@@ -37,7 +41,7 @@ def test_make_serverless_callback() -> None:
     def test_callaback(request: HttpRequest) -> HttpResponse:
         return HttpResponse(request.path)
 
-    serverless_callback = make_serverless_callback(test_callaback, Route("/test/{id}"))
+    serverless_callback = make_serverless_callback(MiddlewarePipeline(), test_callaback, Route("/test/{id}"))
     dir_path = os.path.dirname(os.path.realpath(__file__))
     event_json = json.load(open(os.path.join(dir_path, "fixtures/lambda_http_api_event.json")))
 
@@ -48,3 +52,27 @@ def test_make_serverless_callback() -> None:
     assert "headers" in response
     assert "body" in response
     assert response["body"] == "/test/123"
+
+
+def test_middleware_for_serverless() -> None:
+
+    def cors_middleware(request: HttpRequest, next: Callable[[HttpRequest], HttpResponse]) -> HttpResponse:
+        response = next(request)
+        response._headers.set("Access-Control-Allow-Origin", "*")
+
+        return response
+
+    app = HttpApplication(cors_middleware)
+
+    def ok_handler(request: HttpRequest) -> HttpResponse:
+        return HttpResponse(status=200)
+
+    serverless_callback = make_serverless_callback(app.middleware, ok_handler, Route("/test/{id}"))
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    event_json = json.load(open(os.path.join(dir_path, "fixtures/lambda_http_api_event.json")))
+
+    response = serverless_callback(event_json, {})
+
+    assert "headers" in response
+    assert "access-control-allow-origin" in response["headers"]
+

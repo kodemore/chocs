@@ -1,13 +1,15 @@
 import time
 
+from chocs import HttpApplication
 from chocs import HttpRequest
 from chocs import HttpResponse
 from chocs import serve
 from chocs.middleware import MiddlewareHandler
-from chocs import http
+
+app = HttpApplication()
 
 
-@http.get("/hello/{name}")
+@app.get("/hello/{name}")
 def hello(request: HttpRequest) -> HttpResponse:
     return HttpResponse(body=f"Hello {request.attributes['name']}!")
 
@@ -22,4 +24,4 @@ def time_load_middleware(request: HttpRequest, next: MiddlewareHandler) -> HttpR
     return response
 
 
-serve(time_load_middleware)
+serve(app, time_load_middleware)
