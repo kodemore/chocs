@@ -2,7 +2,6 @@ from io import BytesIO
 from typing import Any
 from typing import Callable
 from typing import Dict
-from typing import Union
 
 from .application import HttpApplication
 from .http_error import HttpError
@@ -11,7 +10,6 @@ from .http_method import HttpMethod
 from .http_query_string import HttpQueryString
 from .http_request import HttpRequest
 from .http_response import HttpResponse
-from .middleware import Middleware
 from .middleware import MiddlewarePipeline
 from .router_middleware import RouterMiddleware
 
@@ -33,14 +31,11 @@ def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
     )
 
 
-def create_wsgi_handler(application: HttpApplication, *middleware: Union[Callable, Middleware], debug: bool = False) -> Callable[[Dict[str, Any]], Callable]:
+def create_wsgi_handler(application: HttpApplication, debug: bool = False) -> Callable[[Dict[str, Any]], Callable]:
 
     def _handler(environ: Dict[str, Any], start: Callable) -> bytes:
         # Prepare pipeline
-        middleware_pipeline = MiddlewarePipeline()
-        for item in middleware:
-            middleware_pipeline.append(item)
-
+        middleware_pipeline = MiddlewarePipeline(application.middleware.queue)
         middleware_pipeline.append(RouterMiddleware.from_http_application(application))
 
         request = create_http_request_from_wsgi(environ)
@@ -70,9 +65,9 @@ def create_wsgi_handler(application: HttpApplication, *middleware: Union[Callabl
     return _handler
 
 
-def serve(application: HttpApplication, *middleware: Union[Callable, Middleware], host: str = "127.0.0.1", port=80, debug: bool = False) -> None:
+def serve(application: HttpApplication, host: str = "127.0.0.1", port=80, debug: bool = False) -> None:
     import bjoern
 
-    wsgi_handler = create_wsgi_handler(application, *middleware, debug=debug)
+    wsgi_handler = create_wsgi_handler(application, debug=debug)
 
     bjoern.run(wsgi_handler, host, port)

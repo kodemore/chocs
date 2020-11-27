@@ -16,8 +16,8 @@ def test_create_wsgi_handler() -> None:
         assert request.method == HttpMethod.POST
         return HttpResponse("OK")
 
-    app = HttpApplication()
-    handler = create_wsgi_handler(app, _serve_response)
+    app = HttpApplication(_serve_response)
+    handler = create_wsgi_handler(app)
 
     handler({
         "CONTENT_TYPE": "text/plain",

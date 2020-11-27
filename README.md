@@ -217,7 +217,9 @@ def my_custom_middleware(request: HttpRequest, next: MiddlewareHandler) -> HttpR
     name = request.query_string.get("name", "John")
     return HttpResponse(body=f"Hello {name}")
 
-serve(HttpApplication(), my_custom_middleware)
+app = HttpApplication(my_custom_middleware)
+
+serve(app)
 ```
 
 ## Request

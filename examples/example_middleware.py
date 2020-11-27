@@ -6,13 +6,6 @@ from chocs import HttpResponse
 from chocs import serve
 from chocs.middleware import MiddlewareHandler
 
-app = HttpApplication()
-
-
-@app.get("/hello/{name}")
-def hello(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(body=f"Hello {request.attributes['name']}!")
-
 
 def time_load_middleware(request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
     started_at = time.time()
@@ -24,4 +17,12 @@ def time_load_middleware(request: HttpRequest, next: MiddlewareHandler) -> HttpR
     return response
 
 
-serve(app, time_load_middleware)
+app = HttpApplication(time_load_middleware)
+
+
+@app.get("/hello/{name}")
+def hello(request: HttpRequest) -> HttpResponse:
+    return HttpResponse(body=f"Hello {request.attributes['name']}!")
+
+
+serve(app)
