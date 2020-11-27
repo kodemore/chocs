@@ -79,9 +79,7 @@ class ParserState(Enum):
 
 
 def parse_multipart_message(
-    data: bytes,
-    boundary: str,
-    encoding: str = "utf8"
+    data: bytes, boundary: str, encoding: str = "utf8"
 ) -> Dict[str, Any]:
     state = ParserState.PART_BOUNDARY
     prev_byte = None
@@ -91,7 +89,7 @@ def parse_multipart_message(
     body = {}
 
     def _append_content_to_body(
-            raw_content_disposition: str, _content_type: str, _content_data: bytes
+        raw_content_disposition: str, _content_type: str, _content_data: bytes
     ) -> None:
         parsed_content_disposition: Tuple[str, Dict[str, str]] = parse_header(
             raw_content_disposition[20:]
@@ -106,7 +104,8 @@ def parse_multipart_message(
                 parsed_content_disposition[1]["filename"],
             )
         else:
-            body[parsed_content_disposition[1]["name"]] = _content_data.decode(encoding)
+            # mypy bug?
+            body[parsed_content_disposition[1]["name"]] = _content_data.decode(encoding)  # type: ignore
 
     content_disposition = ""
     content_type = ""

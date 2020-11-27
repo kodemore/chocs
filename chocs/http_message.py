@@ -3,6 +3,7 @@ from collections import UserDict
 from io import BytesIO
 from json.decoder import JSONDecodeError
 from typing import Any
+from typing import Dict
 from typing import Optional
 
 from .http_multipart_message_parser import parse_multipart_message
@@ -41,19 +42,22 @@ class JsonHttpMessage(CompositeHttpMessage):
         body.seek(0)
         decoded_input = body.read().decode(encoding)
 
+        parsed_body: Dict[str, Any] = {}
         try:
-            body = json.loads(decoded_input)
+            parsed_body = json.loads(decoded_input)
         except JSONDecodeError:
-            body = {}
+            ...  # ignore
 
-        instance = JsonHttpMessage(body)
+        instance = JsonHttpMessage(parsed_body)
 
         return instance
 
 
 class MultipartHttpMessage(CompositeHttpMessage):
     @staticmethod
-    def from_bytes(body: BytesIO, boundary: str, encoding: str = "utf8") -> "MultipartHttpMessage":
+    def from_bytes(
+        body: BytesIO, boundary: str, encoding: str = "utf8"
+    ) -> "MultipartHttpMessage":
         body.seek(0)
         fields = parse_multipart_message(body.read(), boundary, encoding)
 
@@ -65,4 +69,10 @@ class MultipartHttpMessage(CompositeHttpMessage):
         return instance
 
 
-__all__ = ["HttpMessage", "CompositeHttpMessage", "FormHttpMessage", "JsonHttpMessage", "MultipartHttpMessage"]
+__all__ = [
+    "HttpMessage",
+    "CompositeHttpMessage",
+    "FormHttpMessage",
+    "JsonHttpMessage",
+    "MultipartHttpMessage",
+]

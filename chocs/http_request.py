@@ -16,6 +16,7 @@ from .http_message import JsonHttpMessage
 from .http_message import MultipartHttpMessage
 from .http_method import HttpMethod
 from .http_query_string import HttpQueryString
+from .routing import Route
 
 
 class HttpRequest:
@@ -44,7 +45,7 @@ class HttpRequest:
         self.query_string = query_string
         self.path_parameters: Dict[str, str] = {}
         self.headers = headers if headers else HttpHeaders()
-        self.route = None  # type: ignore
+        self.route: Optional[Route] = None  # type: ignore
         self.attributes: Dict[str, Any] = {}
         self._body = body if body else BytesIO(b"")
         self._parsed_body: Optional[HttpMessage] = None
@@ -63,6 +64,8 @@ class HttpRequest:
             self.headers["Content-Type"]  # type: ignore
         )
 
+        parsed_body: HttpMessage
+
         if content_type[0] == "multipart/form-data":
             parsed_body = MultipartHttpMessage.from_bytes(
                 self.body,
@@ -71,18 +74,18 @@ class HttpRequest:
             )
         elif content_type[0] == "application/x-www-form-urlencoded":
             parsed_body = FormHttpMessage.from_bytes(
-                self.body,
-                content_type[1].get("charset", "utf8")
+                self.body, content_type[1].get("charset", "utf8")
             )
 
         elif content_type[0] == "application/json":
             parsed_body = JsonHttpMessage.from_bytes(
-                self.body,
-                content_type[1].get("charset", "utf8")
+                self.body, content_type[1].get("charset", "utf8")
             )
         else:
             self.body.seek(0)
-            parsed_body = self.body.read().decode(content_type[1].get("charset", "utf8"))
+            parsed_body = HttpMessage(
+                self.body.read().decode(content_type[1].get("charset", "utf8"))
+            )
 
         self._parsed_body = parsed_body
 

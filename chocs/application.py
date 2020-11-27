@@ -19,6 +19,7 @@ class HttpApplication:
     schema - for handling json schema
     timeout - for time - outing
     """
+
     def __init__(self, *middleware: Union[Middleware, Callable]):
 
         self.middleware = MiddlewarePipeline()

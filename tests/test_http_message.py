@@ -50,7 +50,7 @@ def test_parse_multipart_body() -> None:
     request = HttpRequest(
         multipart_body["REQUEST_METHOD"],
         body=multipart_body["wsgi.input"],
-        headers={"content-type": multipart_body["CONTENT_TYPE"]}
+        headers={"content-type": multipart_body["CONTENT_TYPE"]},
     )
     body = request.parsed_body
     assert isinstance(body, MultipartHttpMessage)
@@ -69,7 +69,7 @@ def test_parse_form_body() -> None:
     request = HttpRequest(
         form_body["REQUEST_METHOD"],
         body=form_body["wsgi.input"],
-        headers={"content-type": form_body["CONTENT_TYPE"]}
+        headers={"content-type": form_body["CONTENT_TYPE"]},
     )
     body = request.parsed_body
     assert isinstance(body, FormHttpMessage)
@@ -81,7 +81,7 @@ def test_parse_json_body() -> None:
     request = HttpRequest(
         json_body["REQUEST_METHOD"],
         body=json_body["wsgi.input"],
-        headers={"content-type": json_body["CONTENT_TYPE"]}
+        headers={"content-type": json_body["CONTENT_TYPE"]},
     )
     body = request.parsed_body
 

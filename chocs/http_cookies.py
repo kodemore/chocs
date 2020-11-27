@@ -178,4 +178,10 @@ def parse_cookie_header(header: str) -> HttpCookieJar:
     return result
 
 
-__all__ = ["HttpCookie", "HttpCookieJar", "parse_cookie_header", "HttpCookieSameSitePolicy", "HttpCookieError"]
+__all__ = [
+    "HttpCookie",
+    "HttpCookieJar",
+    "parse_cookie_header",
+    "HttpCookieSameSitePolicy",
+    "HttpCookieError",
+]

@@ -19,10 +19,11 @@ def test_create_wsgi_handler() -> None:
     app = HttpApplication(_serve_response)
     handler = create_wsgi_handler(app)
 
-    handler({
-        "CONTENT_TYPE": "text/plain",
-        "REQUEST_METHOD": "POST",
-        "wsgi.input": BytesIO(b"Test input"),
-    }, _http_start)
-
-
+    handler(
+        {
+            "CONTENT_TYPE": "text/plain",
+            "REQUEST_METHOD": "POST",
+            "wsgi.input": BytesIO(b"Test input"),
+        },
+        _http_start,
+    )

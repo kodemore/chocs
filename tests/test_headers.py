@@ -9,7 +9,9 @@ def test_can_instantiate():
 
 
 def test_normalize_wsgi_headers():
-    headers = HttpHeaders({"HTTP_USER_AGENT": "Test Agent", "HTTP_ACCEPT": "plain/text"})
+    headers = HttpHeaders(
+        {"HTTP_USER_AGENT": "Test Agent", "HTTP_ACCEPT": "plain/text"}
+    )
 
     assert headers["User-Agent"] == "Test Agent"
     assert headers["HTTP_USER_AGENT"] == "Test Agent"

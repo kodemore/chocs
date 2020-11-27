@@ -31,9 +31,10 @@ def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
     )
 
 
-def create_wsgi_handler(application: HttpApplication, debug: bool = False) -> Callable[[Dict[str, Any]], Callable]:
-
-    def _handler(environ: Dict[str, Any], start: Callable) -> bytes:
+def create_wsgi_handler(
+    application: HttpApplication, debug: bool = False
+) -> Callable[[Dict[str, Any], Callable[..., Any]], BytesIO]:
+    def _handler(environ: Dict[str, Any], start: Callable) -> BytesIO:
         # Prepare pipeline
         middleware_pipeline = MiddlewarePipeline(application.middleware.queue)
         middleware_pipeline.append(RouterMiddleware.from_http_application(application))
@@ -65,7 +66,9 @@ def create_wsgi_handler(application: HttpApplication, debug: bool = False) -> Ca
     return _handler
 
 
-def serve(application: HttpApplication, host: str = "127.0.0.1", port=80, debug: bool = False) -> None:
+def serve(
+    application: HttpApplication, host: str = "127.0.0.1", port=80, debug: bool = False
+) -> None:
     import bjoern
 
     wsgi_handler = create_wsgi_handler(application, debug=debug)

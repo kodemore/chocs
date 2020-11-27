@@ -58,4 +58,3 @@ class MiddlewarePipeline(MiddlewareHandler, Middleware):
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         return (MiddlewareCursor(self.queue, next)).__call__(request)
-

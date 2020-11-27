@@ -17,9 +17,9 @@ from .middleware import MiddlewarePipeline
 from .routing import Route
 
 IS_SERVERLESS_ENVIRONMENT = bool(
-    os.environ.get("AWS_LAMBDA_FUNCTION_VERSION") or
-    os.environ.get("LAMBDA_RUNTIME_DIR") or
-    os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
+    os.environ.get("AWS_LAMBDA_FUNCTION_VERSION")
+    or os.environ.get("LAMBDA_RUNTIME_DIR")
+    or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
 )
 
 TEXT_MIME_TYPES = [
@@ -38,7 +38,9 @@ def is_http_api_lambda(event: Dict[str, Any]) -> bool:
     return False
 
 
-def create_http_request_from_serverless_event(event: Dict[str, Any], context: Dict[str, Any]) -> HttpRequest:
+def create_http_request_from_serverless_event(
+    event: Dict[str, Any], context: Dict[str, Any]
+) -> HttpRequest:
     is_http_api = is_http_api_lambda(event)
 
     if is_http_api:
@@ -49,7 +51,9 @@ def create_http_request_from_serverless_event(event: Dict[str, Any], context: Di
     return request
 
 
-def create_http_request_from_serverless_http_api(event: Dict[str, Any], context: Dict[str, Any]) -> HttpRequest:
+def create_http_request_from_serverless_http_api(
+    event: Dict[str, Any], context: Dict[str, Any]
+) -> HttpRequest:
     body = get_normalised_body_from_serverless(event)
     request_context = event.get("requestContext", {})
     http_context = request_context.get("http", {})
@@ -63,7 +67,7 @@ def create_http_request_from_serverless_http_api(event: Dict[str, Any], context:
         path=http_context["path"],
         body=body,
         query_string=HttpQueryString(event.get("rawQueryString", "")),
-        headers=HttpHeaders(headers)
+        headers=HttpHeaders(headers),
     )
     request.path_parameters = event.get("pathParameters", {})
 
@@ -73,7 +77,9 @@ def create_http_request_from_serverless_http_api(event: Dict[str, Any], context:
     return request
 
 
-def create_http_request_from_serverless_rest_api(event: Dict[str, Any], context: Dict[str, Any]) -> HttpRequest:
+def create_http_request_from_serverless_rest_api(
+    event: Dict[str, Any], context: Dict[str, Any]
+) -> HttpRequest:
     body = get_normalised_body_from_serverless(event)
 
     headers = get_normalised_headers_from_serverless(event)
@@ -81,7 +87,7 @@ def create_http_request_from_serverless_rest_api(event: Dict[str, Any], context:
 
     raw_query_string = ""
     if event.get("multiValueQueryStringParameters"):
-        for key, values in event.get("multiValueQueryStringParameters").items():
+        for key, values in event.get("multiValueQueryStringParameters", {}).items():
             for value in values:
                 raw_query_string += f"&{key}={quote_plus(value)}"
 
@@ -92,7 +98,7 @@ def create_http_request_from_serverless_rest_api(event: Dict[str, Any], context:
         path=event.get("path", "/"),
         body=body,
         query_string=HttpQueryString(raw_query_string),
-        headers=HttpHeaders(headers)
+        headers=HttpHeaders(headers),
     )
     request.path_parameters = event.get("pathParameters", {})
 
@@ -104,7 +110,9 @@ def create_http_request_from_serverless_rest_api(event: Dict[str, Any], context:
 
 def get_normalised_headers_from_serverless(event: Dict[str, Any]) -> Dict[str, str]:
     headers = event["headers"]
-    request_context = event.get("requestContext", {})  # Set serverless related additional headers
+    request_context = event.get(
+        "requestContext", {}
+    )  # Set serverless related additional headers
     if request_context.get("requestId"):
         headers["x-serverless-request-id"] = request_context.get("requestId")
     if request_context.get("stage"):
@@ -126,10 +134,19 @@ def get_normalised_body_from_serverless(event: Dict[str, Any]) -> BytesIO:
     return BytesIO(body)
 
 
-def make_serverless_callback(middleware_pipeline: MiddlewarePipeline, func: Callable[[HttpRequest], HttpResponse], route: Route) -> Callable:
-    def _handle_serverless_request(event: Dict[str, Any], context: Dict[str, Any]) -> dict:
+def make_serverless_callback(
+    middleware_pipeline: MiddlewarePipeline,
+    func: Callable[[HttpRequest], HttpResponse],
+    route: Route,
+) -> Callable:
+    def _handle_serverless_request(
+        event: Dict[str, Any], context: Dict[str, Any]
+    ) -> dict:
 
-        if event.get("source") in ["aws.events", "serverless-plugin-warmup"]:  # lambda warmup should be ignored
+        if event.get("source") in [
+            "aws.events",
+            "serverless-plugin-warmup",
+        ]:  # lambda warmup should be ignored
             return {
                 "statusCode": int(HttpStatus.CONTINUE),
             }
@@ -138,7 +155,9 @@ def make_serverless_callback(middleware_pipeline: MiddlewarePipeline, func: Call
         route._parameters = request.path_parameters
         request.route = route
 
-        def response_middleware(_request: HttpRequest, _next: MiddlewareHandler) -> HttpResponse:
+        def response_middleware(
+            _request: HttpRequest, _next: MiddlewareHandler
+        ) -> HttpResponse:
             return func(_request)
 
         local_middleware = MiddlewarePipeline(middleware_pipeline.queue)
@@ -154,13 +173,17 @@ def make_serverless_callback(middleware_pipeline: MiddlewarePipeline, func: Call
     return _handle_serverless_request
 
 
-def make_serverless_response(event: Dict[str, Any], response: HttpResponse) -> Dict[str, Any]:
-    serverless_response = {"statusCode": int(response.status_code)}
+def make_serverless_response(
+    event: Dict[str, Any], response: HttpResponse
+) -> Dict[str, Any]:
+    serverless_response: Dict[str, Any] = {"statusCode": int(response.status_code)}
 
     if "multiValueHeaders" in event:
         serverless_response["multiValueHeaders"] = response.headers._headers
     else:
-        serverless_response["headers"] = {key: value for key, value in response.headers.items()}
+        serverless_response["headers"] = {
+            key: value for key, value in response.headers.items()
+        }
 
     # If the request comes from ALB we need to add a status description
     is_elb = event.get("requestContext", {}).get("elb")
@@ -168,11 +191,14 @@ def make_serverless_response(event: Dict[str, Any], response: HttpResponse) -> D
         serverless_response["statusDescription"] = str(response.status_code)
 
     mimetype = response.headers.get("content-type", "text/plain")
+    if not isinstance(mimetype, str):
+        mimetype = mimetype[0]
 
     body = str(response)
 
-    if (mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES) and \
-            not response.headers.get("Content-Encoding", ""):
+    if (
+        mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES
+    ) and not response.headers.get("Content-Encoding", ""):
 
         serverless_response["body"] = body
         serverless_response["isBase64Encoded"] = False

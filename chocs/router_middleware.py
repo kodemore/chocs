@@ -17,7 +17,9 @@ class RouterMiddleware(Middleware):
         self.methods: Dict[HttpMethod, Router] = {key: Router() for key in HttpMethod}
 
     @classmethod
-    def from_http_application(cls, http_application: HttpApplication) -> "RouterMiddleware":
+    def from_http_application(
+        cls, http_application: HttpApplication
+    ) -> "RouterMiddleware":
         instance = cls()
         instance.methods = http_application.methods
 
