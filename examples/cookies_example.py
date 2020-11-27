@@ -4,16 +4,19 @@ from chocs import HttpCookie
 from chocs import HttpRequest
 from chocs import HttpResponse
 from chocs import HttpStatus
-from chocs import http
+from chocs import HttpApplication
 from chocs import serve
 
 
-@http.get("*")
+app = HttpApplication()
+
+
+@app.get("/")
 def default(request: HttpRequest) -> HttpResponse:
     """Shows how cookie work"""
     client_cookies = request.cookies
 
-    response = HttpResponse(HttpStatus.NOT_FOUND, "Not found")
+    response = HttpResponse("Not found", HttpStatus.NOT_FOUND)
     response.cookies["simple_cookie"] = "value"
     response.cookies.append(
         HttpCookie(
@@ -23,4 +26,4 @@ def default(request: HttpRequest) -> HttpResponse:
     return response
 
 
-serve(host="127.0.0.1", port=8080)
+serve(app, host="127.0.0.1", port=8080)

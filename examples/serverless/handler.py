@@ -1,20 +1,20 @@
 import logging
 
-from chocs import http
+from app import app
+
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import HttpStatus
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-@http.get("/users")
+@app.get("/users")
 def test_handler(request: HttpRequest) -> HttpResponse:
     logger.info("Hello AWS!")
     logger.info(request.attributes.get("aws_context"))
     logger.info(request.attributes.get("aws_event"))
-    request.parsed_body
+
     return HttpResponse('{"test": true}', headers={"Test": "test header"})
 
 
