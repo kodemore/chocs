@@ -1,0 +1,4 @@
+test_http_api:
+  handler: handler.test_handler
+  events:
+    - httpApi: '*'

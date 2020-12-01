@@ -1,0 +1,15 @@
+service: chocs-serverless-test
+
+provider:
+  name: aws
+  runtime: python3.8
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+functions:
+  ${file(./routes.yml)}

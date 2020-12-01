@@ -1,4 +1,4 @@
-from .application import HttpApplication
+from .application import Application
 from .http_cookies import HttpCookie
 from .http_cookies import HttpCookieError
 from .http_cookies import HttpCookieJar

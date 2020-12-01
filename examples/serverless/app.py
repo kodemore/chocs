@@ -1,4 +1,4 @@
-from chocs import HttpApplication
+from chocs import Application
 from chocs import HttpRequest
 from chocs import HttpResponse
 from chocs.middleware import Middleware
@@ -24,4 +24,4 @@ class CorsMiddleware(Middleware):
         return response
 
 
-app = HttpApplication(CorsMiddleware('*'))
+app = Application(CorsMiddleware('*'))

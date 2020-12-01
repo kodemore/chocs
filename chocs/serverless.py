@@ -16,7 +16,7 @@ from .middleware import MiddlewareHandler
 from .middleware import MiddlewarePipeline
 from .routing import Route
 
-IS_SERVERLESS_ENVIRONMENT = bool(
+IS_AWS_ENVIRONMENT = bool(
     os.environ.get("AWS_LAMBDA_FUNCTION_VERSION")
     or os.environ.get("LAMBDA_RUNTIME_DIR")
     or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
@@ -134,11 +134,21 @@ def get_normalised_body_from_serverless(event: Dict[str, Any]) -> BytesIO:
     return BytesIO(body)
 
 
-def make_serverless_callback(
-    middleware_pipeline: MiddlewarePipeline,
+def wrap_handler(
     func: Callable[[HttpRequest], HttpResponse],
     route: Route,
+    middleware_pipeline: MiddlewarePipeline
 ) -> Callable:
+
+    if IS_AWS_ENVIRONMENT:
+        func._route_ = route
+        func._middleware_ = middleware_pipeline.queue
+        return create_serverless_handler(func)
+
+    return func
+
+
+def create_serverless_handler(func: Callable[[HttpRequest], HttpResponse]) -> Callable:
     def _handle_serverless_request(
         event: Dict[str, Any], context: Dict[str, Any]
     ) -> dict:
@@ -152,19 +162,30 @@ def make_serverless_callback(
             }
 
         request = create_http_request_from_serverless_event(event, context)
-        route._parameters = request.path_parameters
-        request.route = route
 
-        def response_middleware(
-            _request: HttpRequest, _next: MiddlewareHandler
-        ) -> HttpResponse:
-            return func(_request)
+        if func.__name__ != "Application":
+            def response_middleware(
+                _request: HttpRequest, _next: MiddlewareHandler
+            ) -> HttpResponse:
+                route = Route("/")
+                if hasattr(func, "_route_"):
+                    route = func._route_
 
-        local_middleware = MiddlewarePipeline(middleware_pipeline.queue)
-        local_middleware.append(response_middleware)
+                route._parameters = request.path_parameters
+                request.route = route
+
+                return func(_request)
+
+            handler = MiddlewarePipeline()
+            if hasattr(func, "_middleware_"):
+                handler = MiddlewarePipeline(func._middleware_.queue)
+
+            handler.append(response_middleware)
+        else:
+            handler = func
 
         try:
-            response = local_middleware(request)
+            response = handler(request)
         except HttpError as http_error:
             response = HttpResponse(http_error.http_message, http_error.status_code)
 

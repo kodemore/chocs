@@ -9,25 +9,15 @@ from .middleware import Middleware
 from .middleware import MiddlewareHandler
 from .routing import Route
 from .routing import Router
-from .application import HttpApplication
 
 
 class RouterMiddleware(Middleware):
     def __init__(self):
-        self.methods: Dict[HttpMethod, Router] = {key: Router() for key in HttpMethod}
-
-    @classmethod
-    def from_http_application(
-        cls, http_application: HttpApplication
-    ) -> "RouterMiddleware":
-        instance = cls()
-        instance.methods = http_application.methods
-
-        return instance
+        self.routes: Dict[HttpMethod, Router] = {key: Router() for key in HttpMethod}
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         try:
-            route, controller = self.methods[request.method].match(
+            route, controller = self.routes[request.method].match(
                 request.path
             )  # type: Route, Callable
 
