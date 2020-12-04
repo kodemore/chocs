@@ -4,11 +4,11 @@ from chocs import HttpCookie
 from chocs import HttpRequest
 from chocs import HttpResponse
 from chocs import HttpStatus
-from chocs import HttpApplication
+from chocs import Application
 from chocs import serve
 
 
-app = HttpApplication()
+app = Application()
 
 
 @app.get("/")

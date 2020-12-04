@@ -10,7 +10,7 @@ from chocs import HttpStatus
 from chocs import NotFoundError
 from chocs import Route
 from chocs import Router
-from chocs import HttpApplication
+from chocs import Application
 from chocs import RouterMiddleware
 
 
@@ -87,7 +87,7 @@ def test_router_prioritise_routes_with_no_wildcards() -> None:
     assert route.route == "/pets/{pet_id}"
 
 
-http = HttpApplication()
+http = Application()
 
 
 @pytest.mark.parametrize(
@@ -105,7 +105,8 @@ http = HttpApplication()
 def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
     ok_response = HttpResponse("OK", HttpStatus.OK)
     request = HttpRequest(method, "/pet")
-    router = RouterMiddleware.from_http_application(http)
+    router = RouterMiddleware()
+    router.routes = http.routes
 
     def noop():
         pass
@@ -119,12 +120,9 @@ def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
 
 
 def test_router_not_found() -> None:
-    def noop():
-        pass
+    app = Application()
 
-    app = HttpApplication()
-    router = RouterMiddleware.from_http_application(app)
     request = HttpRequest(HttpMethod.GET, "/pet")
-    response = router.handle(request, noop)
+    response = app(request)
 
     assert response.status_code == HttpStatus.NOT_FOUND

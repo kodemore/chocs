@@ -16,17 +16,13 @@ class HttpResponse:
         body: Union[bytes, bytearray, str, None] = None,
         status: Union[int, HttpStatus] = HttpStatus.OK,
         encoding: str = "utf-8",
-        headers: Optional[
-            Union[Dict[str, Union[str, Sequence[str]]], HttpHeaders]
-        ] = None,
+        headers: Optional[Union[Dict[str, Union[str, Sequence[str]]], HttpHeaders]] = None,
     ):
-        self._headers = (
-            headers if isinstance(headers, HttpHeaders) else HttpHeaders(headers)
-        )
+        self._headers = headers if isinstance(headers, HttpHeaders) else HttpHeaders(headers)
         if isinstance(status, int):
             status = HttpStatus.from_int(status)
         self.status_code = status
-        self.body = BytesIO()
+        self.body: BytesIO = BytesIO()
         self.encoding = encoding
         self.cookies = HttpCookieJar()
 
@@ -56,6 +52,17 @@ class HttpResponse:
     def __str__(self) -> str:
         self.body.seek(0)
         return self.body.read().decode(self.encoding)
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, HttpResponse):
+            return False
+
+        return (
+            self.headers == other.headers
+            and self.status_code == other.status_code
+            and self.encoding == other.encoding
+            and self.body.getbuffer().nbytes == other.body.getbuffer().nbytes
+        )
 
 
 __all__ = ["HttpResponse"]

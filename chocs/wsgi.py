@@ -3,15 +3,13 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 
-from .application import HttpApplication
+from .application import Application
 from .http_error import HttpError
 from .http_headers import HttpHeaders
 from .http_method import HttpMethod
 from .http_query_string import HttpQueryString
 from .http_request import HttpRequest
 from .http_response import HttpResponse
-from .middleware import MiddlewarePipeline
-from .router_middleware import RouterMiddleware
 
 
 def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
@@ -32,32 +30,27 @@ def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
 
 
 def create_wsgi_handler(
-    application: HttpApplication, debug: bool = False
+    application: Application, debug: bool = False
 ) -> Callable[[Dict[str, Any], Callable[..., Any]], BytesIO]:
     def _handler(environ: Dict[str, Any], start: Callable) -> BytesIO:
-        # Prepare pipeline
-        middleware_pipeline = MiddlewarePipeline(application.middleware.queue)
-        middleware_pipeline.append(RouterMiddleware.from_http_application(application))
-
         request = create_http_request_from_wsgi(environ)
 
         if debug:
             try:
-                response = middleware_pipeline(request)
+                response = application(request)
             except HttpError as http_error:
                 response = HttpResponse(http_error.http_message, http_error.status_code)
         else:
             # Always send a response
             try:
-                response = middleware_pipeline(request)
+                response = application(request)
             except HttpError as http_error:
                 response = HttpResponse(http_error.http_message, http_error.status_code)
             except Exception:
                 response = HttpResponse("Internal Server Error", 500)
 
         start(
-            str(int(response.status_code)),
-            [(key, value) for key, value in response.headers.items()],
+            str(int(response.status_code)), [(key, value) for key, value in response.headers.items()],
         )
 
         response.body.seek(0)
@@ -66,9 +59,7 @@ def create_wsgi_handler(
     return _handler
 
 
-def serve(
-    application: HttpApplication, host: str = "127.0.0.1", port=80, debug: bool = False
-) -> None:
+def serve(application: Application, host: str = "127.0.0.1", port=80, debug: bool = False) -> None:
     import bjoern
 
     wsgi_handler = create_wsgi_handler(application, debug=debug)

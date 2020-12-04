@@ -1,5 +1,4 @@
 from enum import Enum
-from http import HTTPStatus
 
 
 class HttpStatus(Enum):

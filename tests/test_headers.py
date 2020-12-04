@@ -47,3 +47,19 @@ def test_non_unique_headers():
         ("set-cookie", "456"),
         ("set-cookie", "789"),
     ]
+
+
+def test_eq_headers() -> None:
+    headers = HttpHeaders()
+    headers_copy = HttpHeaders()
+
+    assert headers == headers_copy
+
+    headers['test'] = 'value'
+    headers_copy['test'] = 'value'
+
+    assert headers == headers_copy
+
+    headers_copy['test_2'] = 'value'
+
+    assert not headers == headers_copy

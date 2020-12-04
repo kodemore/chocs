@@ -38,9 +38,7 @@ class UploadedFile:
         return file
 
     def __float__(self) -> None:
-        raise ValueError(
-            f"Cannot convert instance of {TemporaryFile.__name__} to float"
-        )
+        raise ValueError(f"Cannot convert instance of {TemporaryFile.__name__} to float")
 
     def __int__(self) -> None:
         raise ValueError(f"Cannot convert instance of {TemporaryFile.__name__} to int")
@@ -78,9 +76,7 @@ class ParserState(Enum):
     END = 5
 
 
-def parse_multipart_message(
-    data: bytes, boundary: str, encoding: str = "utf8"
-) -> Dict[str, Any]:
+def parse_multipart_message(data: bytes, boundary: str, encoding: str = "utf8") -> Dict[str, Any]:
     state = ParserState.PART_BOUNDARY
     prev_byte = None
     cursor = 0
@@ -88,20 +84,14 @@ def parse_multipart_message(
     string_buffer = ""
     body = {}
 
-    def _append_content_to_body(
-        raw_content_disposition: str, _content_type: str, _content_data: bytes
-    ) -> None:
-        parsed_content_disposition: Tuple[str, Dict[str, str]] = parse_header(
-            raw_content_disposition[20:]
-        )
+    def _append_content_to_body(raw_content_disposition: str, _content_type: str, _content_data: bytes) -> None:
+        parsed_content_disposition: Tuple[str, Dict[str, str]] = parse_header(raw_content_disposition[20:])
         if "filename" in parsed_content_disposition[1]:
             tmp_file = TemporaryFile()
             tmp_file.write(_content_data)
             tmp_file.seek(0)
             body[parsed_content_disposition[1]["name"]] = UploadedFile(
-                tmp_file,
-                _content_type[14:].lower(),
-                parsed_content_disposition[1]["filename"],
+                tmp_file, _content_type[14:].lower(), parsed_content_disposition[1]["filename"],
             )
         else:
             # mypy bug?
@@ -123,18 +113,13 @@ def parse_multipart_message(
                 string_buffer = ""
                 state = ParserState.CONTENT_DISPOSITION
             else:
-                raise IOError(
-                    "Could not parse message body, body is malformed or incorrect boundary was passed."
-                )
+                raise IOError("Could not parse message body, body is malformed or incorrect boundary was passed.")
 
         elif state is ParserState.CONTENT_DISPOSITION and line_break:
             content_disposition = string_buffer
             string_buffer = ""
             state = ParserState.CONTENT_TYPE
-            if (
-                data[cursor + 1 : cursor + 13].decode(encoding).lower()
-                != "content-type"
-            ):
+            if data[cursor + 1 : cursor + 13].decode(encoding).lower() != "content-type":
                 state = ParserState.CONTENT_HEADER
         elif state is ParserState.CONTENT_TYPE and line_break:
             content_type = string_buffer

@@ -68,24 +68,16 @@ class HttpRequest:
 
         if content_type[0] == "multipart/form-data":
             parsed_body = MultipartHttpMessage.from_bytes(
-                self.body,
-                content_type[1].get("boundary", ""),
-                content_type[1].get("charset", ""),
+                self.body, content_type[1].get("boundary", ""), content_type[1].get("charset", ""),
             )
         elif content_type[0] == "application/x-www-form-urlencoded":
-            parsed_body = FormHttpMessage.from_bytes(
-                self.body, content_type[1].get("charset", "utf8")
-            )
+            parsed_body = FormHttpMessage.from_bytes(self.body, content_type[1].get("charset", "utf8"))
 
         elif content_type[0] == "application/json":
-            parsed_body = JsonHttpMessage.from_bytes(
-                self.body, content_type[1].get("charset", "utf8")
-            )
+            parsed_body = JsonHttpMessage.from_bytes(self.body, content_type[1].get("charset", "utf8"))
         else:
             self.body.seek(0)
-            parsed_body = HttpMessage(
-                self.body.read().decode(content_type[1].get("charset", "utf8"))
-            )
+            parsed_body = HttpMessage(self.body.read().decode(content_type[1].get("charset", "utf8")))
 
         self._parsed_body = parsed_body
 
@@ -97,6 +89,18 @@ class HttpRequest:
             self._cookies = parse_cookie_header(self.headers.get("cookie"))
 
         return copy(self._cookies)
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, HttpRequest):
+            return False
+
+        return (
+            self.method == other.method
+            and self.headers == other.headers
+            and self.path == other.path
+            and self.query_string == other.query_string
+            and self.body.getbuffer().nbytes == other.body.getbuffer().nbytes
+        )
 
 
 __all__ = ["HttpRequest"]
