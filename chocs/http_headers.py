@@ -97,5 +97,11 @@ class HttpHeaders:
     def keys(self) -> KeysView[str]:
         return self._headers.keys()
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, HttpHeaders):
+            return False
+
+        return self._headers == other._headers
+
 
 __all__ = ["HttpHeaders"]

@@ -90,5 +90,17 @@ class HttpRequest:
 
         return copy(self._cookies)
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, HttpRequest):
+            return False
+
+        return (
+            self.method == other.method
+            and self.headers == other.headers
+            and self.path == other.path
+            and self.query_string == other.query_string
+            and self.body.getbuffer().nbytes == other.body.getbuffer().nbytes
+        )
+
 
 __all__ = ["HttpRequest"]

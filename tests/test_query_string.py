@@ -94,3 +94,15 @@ def test_query_string_with_repeated_key_and_dict():
 )
 def test_quoted_query_string(query_string: str, expected: dict) -> None:
     assert parse_qs(query_string) == expected
+
+
+def test_compare_query_string() -> None:
+    qs = HttpQueryString("")
+    qs_copy = HttpQueryString("")
+    assert qs == qs_copy
+
+    qs = HttpQueryString("param=1")
+    assert not qs == qs_copy
+
+    qs_copy = HttpQueryString("param=1")
+    assert qs == qs_copy

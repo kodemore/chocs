@@ -41,8 +41,26 @@ def test_set_cookie() -> None:
     assert instance.headers.get("Set-Cookie") == "name=value"
 
 
-def test_two_instances_are_equal() -> None:
-    instance = HttpResponse()
-    instance_2 = HttpResponse()
+@pytest.mark.parametrize('instance, instance_copy', [
+    [HttpResponse(), HttpResponse()],
+    [HttpResponse(status=HttpStatus.OK), HttpResponse(status=HttpStatus.OK)],
+    [HttpResponse(headers={"test": "1"}), HttpResponse(headers={"test": "1"})],
+    [HttpResponse(encoding="iso-8859-1"), HttpResponse(encoding="iso-8859-1")],
+    [HttpResponse(body="test 1"), HttpResponse(body="test 2")],  # HttpResponse only compares size of bodies not the exact values
+    [HttpResponse(status=HttpStatus.OK, headers={"test": "1"}, encoding="iso-8859-1"), HttpResponse(status=HttpStatus.OK, headers={"test": "1"}, encoding="iso-8859-1")],
+])
+def test_two_response_instances_are_equal(instance: HttpResponse, instance_copy: HttpResponse) -> None:
 
+    assert instance == instance_copy
+
+
+@pytest.mark.parametrize('instance, instance_copy', [
+        [HttpResponse(), HttpResponse(status=HttpStatus.CREATED)],
+        [HttpResponse(status=HttpStatus.OK), HttpResponse(status=HttpStatus.OK, headers={"test": "1"})],
+        [HttpResponse(), HttpResponse(encoding="iso-8859-2")],
+        [HttpResponse(), HttpResponse(body="iso-8859-2")]
+])
+def test_two_response_instances_are_different(instance: HttpResponse, instance_copy: HttpResponse) -> None:
+
+    assert not instance == instance_copy
 
