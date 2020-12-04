@@ -45,4 +45,4 @@ def test_two_instances_are_equal() -> None:
     instance = HttpResponse()
     instance_2 = HttpResponse()
 
-    
+
