@@ -10,8 +10,6 @@ from .http_method import HttpMethod
 from .http_query_string import HttpQueryString
 from .http_request import HttpRequest
 from .http_response import HttpResponse
-from .middleware import MiddlewarePipeline
-from .router_middleware import RouterMiddleware
 
 
 def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
@@ -52,8 +50,7 @@ def create_wsgi_handler(
                 response = HttpResponse("Internal Server Error", 500)
 
         start(
-            str(int(response.status_code)),
-            [(key, value) for key, value in response.headers.items()],
+            str(int(response.status_code)), [(key, value) for key, value in response.headers.items()],
         )
 
         response.body.seek(0)
@@ -62,9 +59,7 @@ def create_wsgi_handler(
     return _handler
 
 
-def serve(
-    application: Application, host: str = "127.0.0.1", port=80, debug: bool = False
-) -> None:
+def serve(application: Application, host: str = "127.0.0.1", port=80, debug: bool = False) -> None:
     import bjoern
 
     wsgi_handler = create_wsgi_handler(application, debug=debug)

@@ -11,7 +11,7 @@ from .middleware import MiddlewarePipeline
 from .router_middleware import RouterMiddleware
 from .routing import Route
 from .routing import Router
-from .serverless import wrap_handler
+from .serverless.wrapper import create_serverless_function
 
 
 class Application:
@@ -41,7 +41,7 @@ class Application:
         def _get(handler: Callable) -> Callable:
             r = self._create_route(route)
             self._append_route(HttpMethod.GET, r, handler)
-            return wrap_handler(handler, r, self.middleware)
+            return create_serverless_function(handler, r, self.middleware)
 
         return _get
 
@@ -49,7 +49,7 @@ class Application:
         def _post(handler: Callable) -> Callable:
             r = self._create_route(route)
             self._append_route(HttpMethod.POST, r, handler)
-            return wrap_handler(handler, r, self.middleware)
+            return create_serverless_function(handler, r, self.middleware)
 
         return _post
 
@@ -57,7 +57,7 @@ class Application:
         def _put(handler: Callable) -> Callable:
             r = self._create_route(route)
             self._append_route(HttpMethod.PUT, r, handler)
-            return wrap_handler(handler, r, self.middleware)
+            return create_serverless_function(handler, r, self.middleware)
 
         return _put
 
@@ -65,7 +65,7 @@ class Application:
         def _patch(handler: Callable) -> Callable:
             r = self._create_route(route)
             self._append_route(HttpMethod.PATCH, r, handler)
-            return wrap_handler(handler, r, self.middleware)
+            return create_serverless_function(handler, r, self.middleware)
 
         return _patch
 
@@ -73,7 +73,7 @@ class Application:
         def _delete(handler: Callable) -> Callable:
             r = self._create_route(route)
             self._append_route(HttpMethod.DELETE, r, handler)
-            return wrap_handler(handler, r, self.middleware)
+            return create_serverless_function(handler, r, self.middleware)
 
         return _delete
 
@@ -81,7 +81,7 @@ class Application:
         def _head(handler: Callable) -> Callable:
             r = self._create_route(route)
             self._append_route(HttpMethod.HEAD, r, handler)
-            return wrap_handler(handler, r, self.middleware)
+            return create_serverless_function(handler, r, self.middleware)
 
         return _head
 
@@ -89,7 +89,7 @@ class Application:
         def _options(handler: Callable) -> Callable:
             r = self._create_route(route)
             self._append_route(HttpMethod.OPTIONS, r, handler)
-            return wrap_handler(handler, r, self.middleware)
+            return create_serverless_function(handler, r, self.middleware)
 
         return _options
 
@@ -104,15 +104,15 @@ class Application:
             self._append_route(HttpMethod.HEAD, r, handler)
             self._append_route(HttpMethod.OPTIONS, r, handler)
 
-            return wrap_handler(handler, r, self.middleware)
+            return create_serverless_function(handler, r, self.middleware)
 
         return _any
 
-    def group(self, base_route: str) -> 'Application':
+    def group(self, base_route: str) -> "Application":
         self.namespace.append(base_route)
         return self
 
-    def __enter__(self) -> 'Application':
+    def __enter__(self) -> "Application":
         child_app = Application()
         child_app.middleware = self.middleware
         child_app.namespace = self.namespace
@@ -120,7 +120,7 @@ class Application:
 
         return child_app
 
-    def __exit__(self, *args) -> 'Application':
+    def __exit__(self, *args) -> "Application":
         self.namespace.pop()
         return self
 

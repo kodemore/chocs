@@ -2,3 +2,19 @@ test_http_api:
   handler: handler.test_handler
   events:
     - httpApi: '*'
+
+
+users_module:
+  handler: handler.users_module
+  events:
+    - http:
+      route: /users/*
+      method: *
+
+
+companies_module:
+  handler: handler.companies_module
+  events:
+    - http:
+      route: /companies/*
+      method: *

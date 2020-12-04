@@ -21,6 +21,9 @@ class Middleware(ABC):
         ...
 
 
+MiddlewareFunction = Callable[[HttpRequest, MiddlewareHandler], HttpResponse]
+
+
 class MiddlewareCursor(MiddlewareHandler):
     def __init__(self, queue: Queue, parent: MiddlewareHandler):
         self.queue: Queue[Middleware] = Queue()
@@ -31,7 +34,7 @@ class MiddlewareCursor(MiddlewareHandler):
         if self.queue.empty():
             return self.parent(request)
 
-        middleware: Union[Middleware, Callable] = self.queue.get()
+        middleware: Union[Middleware, MiddlewareFunction] = self.queue.get()
         next = MiddlewareCursor(self.queue, self)
 
         if isinstance(middleware, Middleware):
@@ -58,3 +61,10 @@ class MiddlewarePipeline(MiddlewareHandler, Middleware):
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         return (MiddlewareCursor(self.queue, next)).__call__(request)
+
+    @property
+    def empty(self) -> bool:
+        return self.queue.qsize() > 0
+
+
+__all__ = ['MiddlewareHandler', 'Middleware', 'MiddlewareFunction', 'MiddlewareCursor', 'MiddlewarePipeline']

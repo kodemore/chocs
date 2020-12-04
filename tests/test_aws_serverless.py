@@ -9,11 +9,8 @@ from chocs import HttpCookie
 from chocs import HttpQueryString
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import Route
-from chocs.middleware import MiddlewarePipeline
-from chocs.serverless import create_http_request_from_serverless_event
-from chocs.serverless import create_serverless_handler
-from chocs.serverless import wrap_handler
+from chocs.serverless.serverless import create_http_request_from_serverless_event
+from chocs.serverless.serverless import create_serverless_handler
 
 
 @pytest.mark.parametrize(
