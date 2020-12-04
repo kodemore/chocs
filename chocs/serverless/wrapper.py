@@ -10,7 +10,7 @@ from .serverless import ServerlessFunction
 
 
 def create_serverless_function(
-        func: Callable[[HttpRequest], HttpResponse], route: Route, middleware_pipeline: MiddlewarePipeline
+    func: Callable[[HttpRequest], HttpResponse], route: Route, middleware_pipeline: MiddlewarePipeline
 ) -> Callable:
 
     if IS_AWS_ENVIRONMENT:
@@ -19,4 +19,4 @@ def create_serverless_function(
     return ServerlessFunction(func, route, middleware_pipeline)
 
 
-__all__ = ['create_serverless_function']
+__all__ = ["create_serverless_function"]

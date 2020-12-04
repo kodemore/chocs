@@ -75,13 +75,6 @@ class Route:
     def __contains__(self, key: str) -> bool:
         return key in self._parameters
 
-    def __copy__(self) -> 'Route':
-        route = Route.__new__(self.__class__)
-        route.route = self.route
-        route.is_wildcard = self.is_wildcard
-
-        return route
-
     def get(self, key: str, default: Optional[Any] = None):
         if key in self:
             return self[key]

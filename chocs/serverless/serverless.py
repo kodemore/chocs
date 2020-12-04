@@ -1,21 +1,22 @@
 import os
 from copy import copy
 from typing import Any
-from typing import Callable
 
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
 from chocs.middleware import MiddlewareHandler
 from chocs.middleware import MiddlewarePipeline
 from chocs.routing import Route
+from chocs.types import HttpHandlerFunction
 
 
 class ServerlessFunction:
-    route: Route
-    middleware_pipeline: MiddlewarePipeline
-    function: Callable[[HttpRequest], HttpResponse]
-
-    def __init__(self, function: Callable[[HttpRequest], HttpResponse], route: Route, middleware_pipeline: MiddlewarePipeline):
+    def __init__(
+        self,
+        function: HttpHandlerFunction,
+        route: Route = Route("/"),
+        middleware_pipeline: MiddlewarePipeline = MiddlewarePipeline(),
+    ):
         self._function = function
         self._route = route
         self._middleware_pipeline = MiddlewarePipeline(middleware_pipeline.queue)
@@ -31,7 +32,7 @@ class ServerlessFunction:
         self.middleware_pipeline.append(_function_middleware)
 
     @property
-    def function(self) -> Callable[[HttpRequest], HttpResponse]:
+    def function(self) -> HttpHandlerFunction:
         return self._function
 
     @property
@@ -50,11 +51,11 @@ class ServerlessFunction:
     def middleware_enabled(self, value: bool) -> None:
         self._middleware_enabled = value
 
-    def __call__(self, *args, **kwargs) -> Any:
+    def __call__(self, *args) -> Any:
         if self._middleware_enabled and not self._middleware_pipeline.empty:
-            return self._middleware_pipeline(*args, **kwargs)
+            return self._middleware_pipeline(*args)
 
-        return self._function(*args, **kwargs)
+        return self._function(*args)
 
 
 IS_AWS_ENVIRONMENT = bool(
@@ -64,4 +65,4 @@ IS_AWS_ENVIRONMENT = bool(
 )
 
 
-__all__ = ['ServerlessFunction', 'IS_AWS_ENVIRONMENT']
+__all__ = ["ServerlessFunction", "IS_AWS_ENVIRONMENT"]

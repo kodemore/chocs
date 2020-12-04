@@ -19,15 +19,18 @@ class RouterMiddleware(Middleware):
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         try:
-            route, controller = self.routes[request.method].\
-                match(request.path)  # type: Route, Union[Callable, ServerlessFunction]
+            route, controller = self.routes[request.method].match(
+                request.path
+            )  # type: Route, Union[Callable, ServerlessFunction]
 
             request.path_parameters = route.parameters
             request.route = route
+
+            response: HttpResponse
             if isinstance(controller, ServerlessFunction):
                 response = controller.function(request)
             else:
-                response: HttpResponse = controller(request)
+                response = controller(request)
 
             return response
         except HttpError as error:

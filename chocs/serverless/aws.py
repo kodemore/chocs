@@ -28,7 +28,10 @@ class AwsServerlessFunction(ServerlessFunction):
         super().__init__(*args, **kwargs)
         self.middleware_enabled = True
 
-    def __call__(self, event: AwsEvent, context: AwsContext):
+    def __call__(self, *args):
+        event: AwsEvent = args[0]
+        context: AwsContext = args[0]
+
         if event.get("source") in [
             "aws.events",
             "serverless-plugin-warmup",
@@ -68,7 +71,7 @@ def format_response_to_aws(event: AwsEvent, response: HttpResponse) -> Dict[str,
     body = str(response)
 
     if (mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES) and not response.headers.get(
-            "Content-Encoding", ""
+        "Content-Encoding", ""
     ):
 
         serverless_response["body"] = body
@@ -168,4 +171,4 @@ def get_normalised_body_from_aws(event: AwsEvent) -> BytesIO:
     return BytesIO(body)
 
 
-__all__ = ['AwsEvent', 'AwsContext', 'AwsServerlessFunction']
+__all__ = ["AwsEvent", "AwsContext", "AwsServerlessFunction", "create_http_request_from_aws_event"]

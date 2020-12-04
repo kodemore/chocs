@@ -64,7 +64,7 @@ class MiddlewarePipeline(MiddlewareHandler, Middleware):
 
     @property
     def empty(self) -> bool:
-        return self.queue.qsize() > 0
+        return self.queue.qsize() <= 0
 
 
-__all__ = ['MiddlewareHandler', 'Middleware', 'MiddlewareFunction', 'MiddlewareCursor', 'MiddlewarePipeline']
+__all__ = ["MiddlewareHandler", "Middleware", "MiddlewareFunction", "MiddlewareCursor", "MiddlewarePipeline"]
