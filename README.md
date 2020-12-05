@@ -1,4 +1,4 @@
-# Chocs [![Build Status](https://travis-ci.org/kodemore/chocs.svg?branch=master)](https://travis-ci.org/kodemore/chocs) [![codecov](https://codecov.io/gh/kodemore/chocs/branch/master/graph/badge.svg)](https://codecov.io/gh/kodemore/chocs) [![Maintainability](https://api.codeclimate.com/v1/badges/9e3c979283b2361a9174/maintainability)](https://codeclimate.com/github/kodemore/chocs/maintainability)
+# Chocs [![PyPI version](https://badge.fury.io/py/chocs.svg)](https://pypi.org/project/chocs/) ![Release](https://github.com/kodemore/chocs/workflows/Release/badge.svg) ![Linting and Tests](https://github.com/kodemore/chocs/workflows/Linting%20and%20Tests/badge.svg) [![codecov](https://codecov.io/gh/kodemore/chocs/branch/master/graph/badge.svg)](https://codecov.io/gh/kodemore/chocs) [![Maintainability](https://api.codeclimate.com/v1/badges/9e3c979283b2361a9174/maintainability)](https://codeclimate.com/github/kodemore/chocs/maintainability)
 Chocs is a modern HTTP framework for building AWS HTTP API/REST API and WSGI compatible applications. 
 Chocs aims to be small, expressive, and robust. 
 It provides an elegant API for writing fault-proof, extensible microservices.  
@@ -25,10 +25,13 @@ pip install chocs
 ## Quick start
 
 ```python
+from chocs import Application
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import http
 from chocs import serve
+
+
+http = Application()
 
 @http.get("/hello/{name}")
 def hello(request: HttpRequest) -> HttpResponse:
@@ -44,16 +47,20 @@ serve()
 
 ```python
 # myapp.py
+from chocs import Application
 from chocs import HttpRequest
 from chocs import HttpResponse
 from chocs import create_wsgi_handler
-from chocs import http
+
+
+http = Application()
+
 
 @http.get("/hello/{name}*")
 def hello(request: HttpRequest) -> HttpResponse:
     return HttpResponse(f"Hello {request.path_parameters.get('name')}!")
 
-app = create_wsgi_handler(debug=False)
+app = create_wsgi_handler(http, debug=False)
 ```
 
 ```bash
@@ -68,10 +75,13 @@ import logging
 
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import http
+from chocs import Application
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+
+http = Application()
 
 
 @http.get("/hello/{name}")
@@ -115,11 +125,15 @@ serverless deploy
 
 ## Routing
 Chocs is shipped with a built-in routing module. The easiest way to utilise chocs' routing is to use `chocs.router` object.
-`chocs.router` is an instance of the module's internal class `chocs.application.HttpApplication`, which provides a simple API 
+`chocs.router` is an instance of the module's internal class `chocs.application.Application`, which provides a simple API 
 where each function is a decorator corresponding to an HTTP method.
 
 ```python
-from chocs import http, HttpResponse, HttpRequest
+from chocs import Application, HttpResponse, HttpRequest
+
+
+http = Application()
+
 
 @http.get("/hello")
 def hello(req: HttpRequest) -> HttpResponse:
@@ -143,7 +157,10 @@ Available methods:
 Routes can contain parameterised parts. Parameters must be enclosed within `{` and `}`.
 
 ```python
-from chocs import http
+from chocs import Application
+
+http = Application()
+
 
 @http.get("/pet/{id}")
 def hello():
@@ -160,7 +177,10 @@ Asterisks (`*`) can be used in the route's pattern to match any possible combina
 _do not_ contain wildcards are prioritised over routes with wildcards.
 
 ```python
-from chocs import http
+from chocs import Application
+
+http = Application()
+
 
 @http.get("/pet/*", id)
 def hello():
@@ -171,6 +191,55 @@ The above example will match following URIs:
 - `/pet/a`
 - `/pet/a/b/c`
 - `/pet/12jd/fds`
+
+### Route groups
+
+Chocs supports route groups. Route groups is implemented through [context lib interface](https://docs.python.org/3/library/contextlib.html).
+If you need to split your application in smaller chunks with standalone req/res handlers consider the
+following example:
+
+```python
+from threading import Thread
+
+from chocs.wsgi import serve 
+from chocs import Application
+from chocs import HttpRequest
+from chocs import HttpResponse
+
+main_app = Application()
+
+with main_app.group("/users/{id}") as user_module:
+    
+    @user_module.post("/profile_picture")  # POST /users/{id}/profile_pictures
+    def create_profile_picture(request: HttpRequest) -> HttpResponse:
+        ...
+    
+    @user_module.get("/profile_picture")  # GET /users/{id}/profile_pictures
+    def get_profile_picture(request: HttpRequest) -> HttpResponse:
+        ...
+    
+    @user_module.get("/badges") # GET /users/{id}/badges
+    def badges(request: HttpRequest) -> HttpResponse:
+        ...
+
+with main_app.group("/payments") as payment_module:
+
+    @payment_module.get("/analytics") # GET /payments/analytics
+    def get_analytics(request: HttpRequest) -> HttpResponse:
+        ...
+
+if __name__ == '__main__':
+    def wsgi_user_module():
+        serve(user_module, port=8081)
+    def wsgi_payment_module():
+        serve(payment_module, port=8082)
+
+    Thread(target=wsgi_user_module).start()
+    payment_module()
+```
+
+The above example shows how to run two different modules, which support their own routes
+on two different ports in the one process.
 
 ## Defining and using a custom middleware
 
@@ -190,14 +259,16 @@ Middlewares are different to functions decorated by `router.*` decorators as the
 happens and they are not bound to the URI.
  
 ```python
-from chocs import HttpRequest, HttpResponse, serve
+from chocs import HttpRequest, HttpResponse, Application, serve
 from chocs.middleware import MiddlewareHandler
 
 def my_custom_middleware(request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
     name = request.query_string.get("name", "John")
     return HttpResponse(body=f"Hello {name}")
 
-serve(my_custom_middleware)
+app = Application(my_custom_middleware)
+
+serve(app)
 ```
 
 ## Request
@@ -275,8 +346,10 @@ registered as route handler. Consider the following example:
 ```python
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import http
+from chocs import Application
 from chocs import serve
+
+http = Application()
 
 
 @http.get("/cookies")
@@ -289,7 +362,7 @@ def read_cookies(request: HttpRequest) -> HttpResponse:
 
     return HttpResponse(body=message)
 
-serve()
+serve(http)
 ```
 
 ### Setting cookies
@@ -299,8 +372,10 @@ from datetime import datetime
 from chocs import HttpCookie
 from chocs import HttpRequest
 from chocs import HttpResponse
-from chocs import http
+from chocs import Application
 from chocs import serve
+
+http = Application()
 
 
 @http.get("/cookies")
@@ -310,7 +385,7 @@ def read_cookies(request: HttpRequest) -> HttpResponse:
     response.cookies.append(HttpCookie("advanced-cookie", "This cookie will expire in 2021-01-01", expires=datetime(2021, 1, 1)))
     return response
 
-serve()
+serve(http)
 ```
 
 # Contributing

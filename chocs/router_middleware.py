@@ -1,5 +1,6 @@
 from typing import Callable
 from typing import Dict
+from typing import Union
 
 from .http_error import HttpError
 from .http_method import HttpMethod
@@ -9,29 +10,27 @@ from .middleware import Middleware
 from .middleware import MiddlewareHandler
 from .routing import Route
 from .routing import Router
-from .application import HttpApplication
+from .serverless.serverless import ServerlessFunction
 
 
 class RouterMiddleware(Middleware):
     def __init__(self):
-        self.methods: Dict[HttpMethod, Router] = {key: Router() for key in HttpMethod}
-
-    @classmethod
-    def from_http_application(cls, http_application: HttpApplication) -> "RouterMiddleware":
-        instance = cls()
-        instance.methods = http_application.methods
-
-        return instance
+        self.routes: Dict[HttpMethod, Router] = {key: Router() for key in HttpMethod}
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         try:
-            route, controller = self.methods[request.method].match(
+            route, controller = self.routes[request.method].match(
                 request.path
-            )  # type: Route, Callable
+            )  # type: Route, Union[Callable, ServerlessFunction]
 
             request.path_parameters = route.parameters
             request.route = route
-            response: HttpResponse = controller(request)
+
+            response: HttpResponse
+            if isinstance(controller, ServerlessFunction):
+                response = controller.function(request)
+            else:
+                response = controller(request)
 
             return response
         except HttpError as error:

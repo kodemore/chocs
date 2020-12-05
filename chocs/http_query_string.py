@@ -112,5 +112,11 @@ class HttpQueryString:
     def keys(self) -> KeysView:
         return self._params.keys()
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, HttpQueryString):
+            return False
 
-__all__ = ["HttpQueryString", "parse_qs"]
+        return other._str == self._str
+
+
+__all__ = ["HttpQueryString", "build_dict_from_path", "parse_qs"]

@@ -1,6 +1,7 @@
 from io import BytesIO
 from typing import Callable
 
+from chocs import Application
 from chocs import HttpMethod
 from chocs import HttpRequest
 from chocs import HttpResponse
@@ -15,12 +16,14 @@ def test_create_wsgi_handler() -> None:
         assert request.method == HttpMethod.POST
         return HttpResponse("OK")
 
-    handler = create_wsgi_handler(_serve_response)
+    app = Application(_serve_response)
+    handler = create_wsgi_handler(app)
 
-    handler({
-        "CONTENT_TYPE": "text/plain",
-        "REQUEST_METHOD": "POST",
-        "wsgi.input": BytesIO(b"Test input"),
-    }, _http_start)
-
-
+    handler(
+        {
+            "CONTENT_TYPE": "text/plain",
+            "REQUEST_METHOD": "POST",
+            "wsgi.input": BytesIO(b"Test input"),
+        },
+        _http_start,
+    )
