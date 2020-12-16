@@ -1,9 +1,4 @@
-from .array_validators import (
-    validate_items,
-    validate_maximum_items,
-    validate_minimum_items,
-    validate_unique,
-)
+from .array_validators import validate_items, validate_maximum_items, validate_minimum_items, validate_unique
 from .number_validators import (
     validate_exclusive_maximum,
     validate_exclusive_minimum,

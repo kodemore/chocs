@@ -5,12 +5,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 from .http_cookies import HttpCookieJar, parse_cookie_header
 from .http_headers import HttpHeaders
-from .http_message import (
-    FormHttpMessage,
-    HttpMessage,
-    JsonHttpMessage,
-    MultipartHttpMessage,
-)
+from .http_message import FormHttpMessage, HttpMessage, JsonHttpMessage, MultipartHttpMessage
 from .http_method import HttpMethod
 from .http_query_string import HttpQueryString
 from .routing import Route

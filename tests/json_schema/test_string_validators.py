@@ -1,15 +1,7 @@
 import pytest
 
-from chocs.json_schema.errors import (
-    FormatValidationError,
-    MaximumLengthError,
-    MinimumLengthError,
-)
-from chocs.json_schema.validators import (
-    validate_maximum_length,
-    validate_minimum_length,
-    validate_string_pattern,
-)
+from chocs.json_schema.errors import FormatValidationError, MaximumLengthError, MinimumLengthError
+from chocs.json_schema.validators import validate_maximum_length, validate_minimum_length, validate_string_pattern
 
 
 @pytest.mark.parametrize(
