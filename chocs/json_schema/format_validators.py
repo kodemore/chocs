@@ -28,11 +28,6 @@ def validate_format_pattern(value: Any) -> Pattern[str]:
 
 
 def validate_format_bytes(value: Any) -> bytes:
-    if isinstance(value, bytes):
-        return value
-    if isinstance(value, bytearray):
-        return bytes(value)
-
     try:
         return base64.b64decode(value)
     except Exception:
