@@ -65,7 +65,7 @@ class MinimumRangeError(RangeValidationError):
     message = "Passed value must be greater or equal to set minimum `{expected_minimum}`."
 
 
-class MinimumExclusiveRangeError(RangeValidationError):
+class MinimumExclusiveRangeError(MinimumRangeError):
     code = "minimum_error"
     message = "Passed value must be greater than set minimum `{expected_minimum}`."
 
@@ -75,7 +75,7 @@ class MaximumRangeError(RangeValidationError):
     message = "Passed value must be lower or equal to set maximum `{expected_maximum}`."
 
 
-class MaximumExclusiveRangeError(RangeValidationError):
+class MaximumExclusiveRangeError(MaximumRangeError):
     code = "maximum_exclusive_error"
     message = "Passed value must be lower than set maximum `{expected_maximum}`."
 

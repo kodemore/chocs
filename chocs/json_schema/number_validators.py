@@ -51,5 +51,5 @@ def validate_exclusive_maximum(value: Number, expected_maximum: Number) -> Numbe
         return value
 
     raise MaximumExclusiveRangeError(
-        expected_minimum=expected_maximum
+        expected_maximum=expected_maximum
     )

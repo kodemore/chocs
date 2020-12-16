@@ -5,7 +5,6 @@ from datetime import datetime
 from datetime import time
 from datetime import timedelta
 from decimal import Decimal
-from enum import Enum
 from ipaddress import AddressValueError
 from ipaddress import IPv4Address
 from ipaddress import IPv6Address
@@ -21,31 +20,11 @@ from .iso_datetime import parse_iso_duration_string
 from .iso_datetime import parse_iso_time_string
 
 
-class StringFormats(Enum):
-    EMAIL = "email"
-    BYTE = "byte"
-    PATTERN = "pattern"
-    BOOLEAN = "boolean"
-    DATE_TIME = "date-time"
-    DATE = "date"
-    TIME = "time"
-    TIME_DURATION = "time-duration"
-    HOSTNAME = "hostname"
-    IP_ADDRESS = "ip-address"
-    IP_ADDRESS_V4 = "ip-address-v4"
-    IP_ADDRESS_V6 = "ip-address-v6"
-    SEMVER = "semver"
-    URI = "uri"
-    URL = "url"
-    UUID = "uuid"
-    DECIMAL = "decimal"
-
-
 def validate_format_pattern(value: Any) -> Pattern[str]:
     try:
         return re.compile(value)
     except Exception:
-        raise FormatValidationError(expected_format=StringFormats.PATTERN)
+        raise FormatValidationError(expected_format="pattern")
 
 
 def validate_format_bytes(value: Any) -> bytes:
@@ -59,7 +38,7 @@ def validate_format_bytes(value: Any) -> bytes:
     except Exception:
         pass
 
-    raise FormatValidationError(expected_format=StringFormats.BYTE)
+    raise FormatValidationError(expected_format="byte")
 
 
 FALSY_EXPRESSION = {0, "0", "no", "n", "nope", "false", "f", "off"}
@@ -73,7 +52,7 @@ def validate_format_boolean(value: Any) -> bool:
     if value in TRUTHY_EXPRESSION:
         return True
 
-    raise FormatValidationError(expected_format=StringFormats.BOOLEAN)
+    raise FormatValidationError(expected_format="boolean")
 
 
 def validate_format_datetime(value: Any) -> datetime:
@@ -84,7 +63,7 @@ def validate_format_datetime(value: Any) -> datetime:
     try:
         return parse_iso_datetime_string(value)
     except ValueError:
-        raise FormatValidationError(expected_format=StringFormats.DATE_TIME)
+        raise FormatValidationError(expected_format="date-time")
 
 
 def validate_format_date(value: Any) -> date:
@@ -95,7 +74,7 @@ def validate_format_date(value: Any) -> date:
     try:
         return parse_iso_date_string(value)
     except ValueError:
-        raise FormatValidationError(expected_format=StringFormats.DATE)
+        raise FormatValidationError(expected_format="date")
 
 
 def validate_format_time(value: Any) -> time:
@@ -105,7 +84,7 @@ def validate_format_time(value: Any) -> time:
     try:
         return parse_iso_time_string(value)
     except ValueError:
-        raise FormatValidationError(expected_format=StringFormats.TIME)
+        raise FormatValidationError(expected_format="time")
 
 
 def validate_format_time_duration(value: Any) -> timedelta:
@@ -116,7 +95,7 @@ def validate_format_time_duration(value: Any) -> timedelta:
     try:
         return parse_iso_duration_string(value)
     except Exception:
-        raise FormatValidationError(expected_format=StringFormats.TIME_DURATION)
+        raise FormatValidationError(expected_format="time-duration")
 
 
 # https://www.w3.org/TR/html5/forms.html#valid-e-mail-address
@@ -133,9 +112,9 @@ def validate_format_email(value: str) -> str:
     a message and receive confirmation from the recipient.
     """
     if not EMAIL_REGEX.match(value):
-        raise FormatValidationError(expected_format=StringFormats.EMAIL)
+        raise FormatValidationError(expected_format="email")
     if ".." in value:
-        raise FormatValidationError(expected_format=StringFormats.EMAIL)
+        raise FormatValidationError(expected_format="email")
 
     return value
 
@@ -145,7 +124,7 @@ HOSTNAME_REGEX = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9]
 
 def validate_format_hostname(value: str) -> str:
     if not HOSTNAME_REGEX.match(value):
-        raise FormatValidationError(expected_format=StringFormats.HOSTNAME)
+        raise FormatValidationError(expected_format="hostname")
 
     return value
 
@@ -157,10 +136,10 @@ def validate_format_decimal(value: Any) -> Decimal:
     try:
         value = Decimal(value)
         if not value.is_finite():
-            raise FormatValidationError(expected_format=StringFormats.DECIMAL)
+            raise FormatValidationError(expected_format="decimal")
 
     except Exception:
-        raise FormatValidationError(expected_format=StringFormats.DECIMAL)
+        raise FormatValidationError(expected_format="decimal")
 
     return value
 
@@ -169,14 +148,14 @@ def validate_format_ip_address_v4(value: Any) -> IPv4Address:
     try:
         return IPv4Address(value)
     except AddressValueError:
-        raise FormatValidationError(expected_format=StringFormats.IP_ADDRESS_V4)
+        raise FormatValidationError(expected_format="ip-address-v4")
 
 
 def validate_format_ip_address_v6(value: Any) -> IPv6Address:
     try:
         return IPv6Address(value)
     except AddressValueError:
-        raise FormatValidationError(expected_format=StringFormats.IP_ADDRESS_V6)
+        raise FormatValidationError(expected_format="ip-address-v6")
 
 
 def validate_format_ip_address(value: Any) -> Union[IPv4Address, IPv6Address]:
@@ -186,7 +165,7 @@ def validate_format_ip_address(value: Any) -> Union[IPv4Address, IPv6Address]:
         try:
             return IPv6Address(value)
         except AddressValueError:
-            raise FormatValidationError(expected_format=StringFormats.IP_ADDRESS)
+            raise FormatValidationError(expected_format="ip-address")
 
 
 SEMVER_REGEX = re.compile(
@@ -197,7 +176,7 @@ SEMVER_REGEX = re.compile(
 def validate_format_semver(value: Any) -> str:
     value = str(value)
     if not SEMVER_REGEX.match(value):
-        raise FormatValidationError(expected_format=StringFormats.SEMVER)
+        raise FormatValidationError(expected_format="semver")
 
     return value
 
@@ -208,7 +187,7 @@ URI_REGEX = re.compile(r"^(?:[a-z][a-z0-9+-.]*:)(?:\\/?\\/)?[^\s]*$", re.I)
 def validate_format_uri(value: Any) -> str:
     value = str(value)
     if not URI_REGEX.match(value):
-        raise FormatValidationError(expected_format=StringFormats.URI)
+        raise FormatValidationError(expected_format="uri")
 
     return value
 
@@ -222,7 +201,7 @@ URL_REGEX = re.compile(
 def validate_format_url(value: Any) -> str:
     value = str(value)
     if not URL_REGEX.match(value):
-        raise FormatValidationError(expected_format=StringFormats.URL)
+        raise FormatValidationError(expected_format="url")
 
     return value
 
@@ -231,5 +210,25 @@ def validate_format_uuid(value: Any) -> UUID:
     try:
         return UUID(value)
     except Exception:
-        raise FormatValidationError(expected_format=StringFormats.UUID)
+        raise FormatValidationError(expected_format="uuid")
 
+
+__all__ = [
+    "validate_format_boolean",
+    "validate_format_bytes",
+    "validate_format_date",
+    "validate_format_datetime",
+    "validate_format_decimal",
+    "validate_format_email",
+    "validate_format_hostname",
+    "validate_format_ip_address",
+    "validate_format_ip_address_v4",
+    "validate_format_ip_address_v6",
+    "validate_format_pattern",
+    "validate_format_semver",
+    "validate_format_time",
+    "validate_format_time_duration",
+    "validate_format_uri",
+    "validate_format_url",
+    "validate_format_uuid",
+]

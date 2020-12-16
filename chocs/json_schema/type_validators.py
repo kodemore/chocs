@@ -1,9 +1,9 @@
+from decimal import Decimal
 from numbers import Number
 from typing import Any
-from typing import Collection
+from typing import Callable
 from typing import List
 from typing import Union
-from typing import Callable
 
 from .errors import EnumValidationError
 from .errors import TypeValidationError
@@ -23,9 +23,10 @@ def validate_boolean(value: Any) -> bool:
     raise TypeValidationError(expected_type=bool)
 
 
-def validate_enum(value: Any, values: List[Union[str, int, float]]) -> Union[str, int, float]:
-    if value in values:
-        return value
+def validate_enum(value: Any, values: List[Union[str, int, float, bool]]) -> Union[str, int, float, bool]:
+    for item in values:  # `if value in values` expression does casting and we dont want it
+        if item is value:
+            return value
 
     raise EnumValidationError(expected_values=values)
 
@@ -38,6 +39,9 @@ def validate_integer(value: Any) -> int:
 
 
 def validate_number(value: Any) -> Number:
+    if value is True or value is False:
+        raise TypeValidationError(expected_type=Number)
+
     if isinstance(value, Number):
         return value
 
