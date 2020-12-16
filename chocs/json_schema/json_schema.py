@@ -1,12 +1,8 @@
-from collections import UserDict
-from numbers import Number
-from typing import Dict
-from typing import List
-from typing import Union
-
 import yaml
-from jsonschema import Draft7Validator
-from jsonschema import RefResolver
+from collections import UserDict
+from jsonschema import Draft7Validator, RefResolver
+from numbers import Number
+from typing import Dict, List, Union
 
 
 class SchemaStorage(UserDict):

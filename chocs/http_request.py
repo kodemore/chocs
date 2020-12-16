@@ -1,19 +1,16 @@
 from cgi import parse_header
 from copy import copy
 from io import BytesIO
-from typing import Any
-from typing import Dict
-from typing import Optional
-from typing import Tuple
-from typing import Union
+from typing import Any, Dict, Optional, Tuple, Union
 
-from .http_cookies import HttpCookieJar
-from .http_cookies import parse_cookie_header
+from .http_cookies import HttpCookieJar, parse_cookie_header
 from .http_headers import HttpHeaders
-from .http_message import FormHttpMessage
-from .http_message import HttpMessage
-from .http_message import JsonHttpMessage
-from .http_message import MultipartHttpMessage
+from .http_message import (
+    FormHttpMessage,
+    HttpMessage,
+    JsonHttpMessage,
+    MultipartHttpMessage,
+)
 from .http_method import HttpMethod
 from .http_query_string import HttpQueryString
 from .routing import Route
@@ -68,16 +65,24 @@ class HttpRequest:
 
         if content_type[0] == "multipart/form-data":
             parsed_body = MultipartHttpMessage.from_bytes(
-                self.body, content_type[1].get("boundary", ""), content_type[1].get("charset", ""),
+                self.body,
+                content_type[1].get("boundary", ""),
+                content_type[1].get("charset", ""),
             )
         elif content_type[0] == "application/x-www-form-urlencoded":
-            parsed_body = FormHttpMessage.from_bytes(self.body, content_type[1].get("charset", "utf8"))
+            parsed_body = FormHttpMessage.from_bytes(
+                self.body, content_type[1].get("charset", "utf8")
+            )
 
         elif content_type[0] == "application/json":
-            parsed_body = JsonHttpMessage.from_bytes(self.body, content_type[1].get("charset", "utf8"))
+            parsed_body = JsonHttpMessage.from_bytes(
+                self.body, content_type[1].get("charset", "utf8")
+            )
         else:
             self.body.seek(0)
-            parsed_body = HttpMessage(self.body.read().decode(content_type[1].get("charset", "utf8")))
+            parsed_body = HttpMessage(
+                self.body.read().decode(content_type[1].get("charset", "utf8"))
+            )
 
         self._parsed_body = parsed_body
 

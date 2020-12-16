@@ -1,16 +1,11 @@
-from typing import Callable
-from typing import Dict
-from typing import Optional
-from typing import Union
+from typing import Callable, Dict, Optional, Union
 
 from .http_method import HttpMethod
 from .http_request import HttpRequest
 from .http_response import HttpResponse
-from .middleware import Middleware
-from .middleware import MiddlewarePipeline
+from .middleware import Middleware, MiddlewarePipeline
 from .router_middleware import RouterMiddleware
-from .routing import Route
-from .routing import Router
+from .routing import Route, Router
 from .serverless.wrapper import create_serverless_function
 
 
@@ -24,7 +19,12 @@ class Application:
         self.namespace = ["/"]
         self.routes: Dict[HttpMethod, Router] = {key: Router() for key in HttpMethod}
 
-    def _append_route(self, method: HttpMethod, route: Route, handler: Callable[[HttpRequest], HttpResponse]):
+    def _append_route(
+        self,
+        method: HttpMethod,
+        route: Route,
+        handler: Callable[[HttpRequest], HttpResponse],
+    ):
         if self.parent:
             self.parent._append_route(method, route, handler)
 

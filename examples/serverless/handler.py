@@ -1,9 +1,7 @@
 import logging
-
 from app import app
 
-from chocs import HttpRequest
-from chocs import HttpResponse
+from chocs import HttpRequest, HttpResponse
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

@@ -1,17 +1,18 @@
+import pytest
 import re
 from typing import Callable
 
-import pytest
-
-from chocs import HttpMethod
-from chocs import HttpRequest
-from chocs import HttpResponse
-from chocs import HttpStatus
-from chocs import NotFoundError
-from chocs import Route
-from chocs import Router
-from chocs import Application
-from chocs import RouterMiddleware
+from chocs import (
+    Application,
+    HttpMethod,
+    HttpRequest,
+    HttpResponse,
+    HttpStatus,
+    NotFoundError,
+    Route,
+    Router,
+    RouterMiddleware,
+)
 
 
 def test_route_parsing() -> None:

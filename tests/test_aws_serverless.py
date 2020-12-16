@@ -1,17 +1,11 @@
 import json
 import os
+import pytest
 from typing import Callable
 
-import pytest
-
-from chocs import HttpCookie
-from chocs import HttpQueryString
-from chocs import HttpRequest
-from chocs import HttpResponse
-from chocs import Route
+from chocs import HttpCookie, HttpQueryString, HttpRequest, HttpResponse, Route
 from chocs.middleware import MiddlewarePipeline
-from chocs.serverless import AwsServerlessFunction
-from chocs.serverless import create_http_request_from_aws_event
+from chocs.serverless import AwsServerlessFunction, create_http_request_from_aws_event
 
 
 @pytest.mark.parametrize(
@@ -69,7 +63,9 @@ def test_middleware_for_serverless() -> None:
 
     middleware_pipeline = MiddlewarePipeline()
     middleware_pipeline.append(cors_middleware)
-    serverless_callback = AwsServerlessFunction(ok_handler, Route("/"), middleware_pipeline)
+    serverless_callback = AwsServerlessFunction(
+        ok_handler, Route("/"), middleware_pipeline
+    )
     dir_path = os.path.dirname(os.path.realpath(__file__))
     event_json = json.load(
         open(os.path.join(dir_path, "fixtures/lambda_http_api_event.json"))

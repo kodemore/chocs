@@ -62,7 +62,9 @@ class RangeValidationError(ArithmeticValidationError):
 
 class MinimumRangeError(RangeValidationError):
     code = "minimum_error"
-    message = "Passed value must be greater or equal to set minimum `{expected_minimum}`."
+    message = (
+        "Passed value must be greater or equal to set minimum `{expected_minimum}`."
+    )
 
 
 class MinimumExclusiveRangeError(MinimumRangeError):

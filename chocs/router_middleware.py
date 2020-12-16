@@ -1,15 +1,11 @@
-from typing import Callable
-from typing import Dict
-from typing import Union
+from typing import Callable, Dict, Union
 
 from .http_error import HttpError
 from .http_method import HttpMethod
 from .http_request import HttpRequest
 from .http_response import HttpResponse
-from .middleware import Middleware
-from .middleware import MiddlewareHandler
-from .routing import Route
-from .routing import Router
+from .middleware import Middleware, MiddlewareHandler
+from .routing import Route, Router
 from .serverless.serverless import ServerlessFunction
 
 

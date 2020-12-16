@@ -1,7 +1,6 @@
 import base64
 from io import BytesIO
-from typing import Any
-from typing import Dict
+from typing import Any, Dict
 from urllib.parse import quote_plus
 
 from chocs.http_headers import HttpHeaders
@@ -9,6 +8,7 @@ from chocs.http_query_string import HttpQueryString
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
 from chocs.http_status import HttpStatus
+
 from .serverless import ServerlessFunction
 
 TEXT_MIME_TYPES = [
@@ -57,7 +57,9 @@ def format_response_to_aws(event: AwsEvent, response: HttpResponse) -> Dict[str,
     if "multiValueHeaders" in event:
         serverless_response["multiValueHeaders"] = response.headers._headers
     else:
-        serverless_response["headers"] = {key: value for key, value in response.headers.items()}
+        serverless_response["headers"] = {
+            key: value for key, value in response.headers.items()
+        }
 
     # If the request comes from ALB we need to add a status description
     is_elb = event.get("requestContext", {}).get("elb")
@@ -70,9 +72,9 @@ def format_response_to_aws(event: AwsEvent, response: HttpResponse) -> Dict[str,
 
     body = str(response)
 
-    if (mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES) and not response.headers.get(
-        "Content-Encoding", ""
-    ):
+    if (
+        mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES
+    ) and not response.headers.get("Content-Encoding", ""):
 
         serverless_response["body"] = body
         serverless_response["isBase64Encoded"] = False
@@ -83,7 +85,9 @@ def format_response_to_aws(event: AwsEvent, response: HttpResponse) -> Dict[str,
     return serverless_response
 
 
-def create_http_request_from_aws_event(event: AwsEvent, context: AwsContext) -> HttpRequest:
+def create_http_request_from_aws_event(
+    event: AwsEvent, context: AwsContext
+) -> HttpRequest:
     is_http_api = is_http_api_lambda(event)
 
     if is_http_api:
@@ -94,7 +98,9 @@ def create_http_request_from_aws_event(event: AwsEvent, context: AwsContext) -> 
     return request
 
 
-def create_http_request_from_aws_http_api(event: AwsEvent, context: AwsContext) -> HttpRequest:
+def create_http_request_from_aws_http_api(
+    event: AwsEvent, context: AwsContext
+) -> HttpRequest:
     body = get_normalised_body_from_aws(event)
     request_context = event.get("requestContext", {})
     http_context = request_context.get("http", {})
@@ -118,7 +124,9 @@ def create_http_request_from_aws_http_api(event: AwsEvent, context: AwsContext) 
     return request
 
 
-def create_http_request_from_aws_rest_api(event: AwsEvent, context: AwsContext) -> HttpRequest:
+def create_http_request_from_aws_rest_api(
+    event: AwsEvent, context: AwsContext
+) -> HttpRequest:
     body = get_normalised_body_from_aws(event)
 
     headers = get_normalised_headers_from_aws(event)
@@ -149,7 +157,9 @@ def create_http_request_from_aws_rest_api(event: AwsEvent, context: AwsContext) 
 
 def get_normalised_headers_from_aws(event: AwsEvent) -> Dict[str, str]:
     headers = event["headers"]
-    request_context = event.get("requestContext", {})  # Set serverless related additional headers
+    request_context = event.get(
+        "requestContext", {}
+    )  # Set serverless related additional headers
     if request_context.get("requestId"):
         headers["x-serverless-request-id"] = request_context.get("requestId")
     if request_context.get("stage"):
@@ -171,4 +181,9 @@ def get_normalised_body_from_aws(event: AwsEvent) -> BytesIO:
     return BytesIO(body)
 
 
-__all__ = ["AwsEvent", "AwsContext", "AwsServerlessFunction", "create_http_request_from_aws_event"]
+__all__ = [
+    "AwsEvent",
+    "AwsContext",
+    "AwsServerlessFunction",
+    "create_http_request_from_aws_event",
+]

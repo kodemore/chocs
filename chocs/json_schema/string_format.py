@@ -1,22 +1,24 @@
 from typing import Callable
 
-from chocs.json_schema.format_validators import validate_format_boolean
-from chocs.json_schema.format_validators import validate_format_bytes
-from chocs.json_schema.format_validators import validate_format_date
-from chocs.json_schema.format_validators import validate_format_datetime
-from chocs.json_schema.format_validators import validate_format_decimal
-from chocs.json_schema.format_validators import validate_format_email
-from chocs.json_schema.format_validators import validate_format_hostname
-from chocs.json_schema.format_validators import validate_format_ip_address
-from chocs.json_schema.format_validators import validate_format_ip_address_v4
-from chocs.json_schema.format_validators import validate_format_ip_address_v6
-from chocs.json_schema.format_validators import validate_format_pattern
-from chocs.json_schema.format_validators import validate_format_semver
-from chocs.json_schema.format_validators import validate_format_time
-from chocs.json_schema.format_validators import validate_format_time_duration
-from chocs.json_schema.format_validators import validate_format_uri
-from chocs.json_schema.format_validators import validate_format_url
-from chocs.json_schema.format_validators import validate_format_uuid
+from chocs.json_schema.format_validators import (
+    validate_format_boolean,
+    validate_format_bytes,
+    validate_format_date,
+    validate_format_datetime,
+    validate_format_decimal,
+    validate_format_email,
+    validate_format_hostname,
+    validate_format_ip_address,
+    validate_format_ip_address_v4,
+    validate_format_ip_address_v6,
+    validate_format_pattern,
+    validate_format_semver,
+    validate_format_time,
+    validate_format_time_duration,
+    validate_format_uri,
+    validate_format_url,
+    validate_format_uuid,
+)
 
 
 class _StringFormat:

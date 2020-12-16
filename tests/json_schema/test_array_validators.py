@@ -1,13 +1,17 @@
 import pytest
 
-from chocs.json_schema.errors import MaximumLengthError
-from chocs.json_schema.errors import MinimumLengthError
-from chocs.json_schema.errors import UniqueValidationError
-from chocs.json_schema.validators import validate_integer
-from chocs.json_schema.validators import validate_items
-from chocs.json_schema.validators import validate_maximum_items
-from chocs.json_schema.validators import validate_minimum_items
-from chocs.json_schema.validators import validate_unique
+from chocs.json_schema.errors import (
+    MaximumLengthError,
+    MinimumLengthError,
+    UniqueValidationError,
+)
+from chocs.json_schema.validators import (
+    validate_integer,
+    validate_items,
+    validate_maximum_items,
+    validate_minimum_items,
+    validate_unique,
+)
 
 
 def test_pass_validate_unique() -> None:

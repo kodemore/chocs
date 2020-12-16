@@ -1,16 +1,13 @@
-from datetime import date
-from datetime import datetime
-from datetime import time
-from datetime import timedelta
-from datetime import timezone
-
 import pytest
+from datetime import date, datetime, time, timedelta, timezone
 
-from chocs.json_schema.iso_datetime import parse_iso_date_string
-from chocs.json_schema.iso_datetime import parse_iso_datetime_string
-from chocs.json_schema.iso_datetime import parse_iso_duration_string
-from chocs.json_schema.iso_datetime import parse_iso_time_string
-from chocs.json_schema.iso_datetime import timedelta_to_iso_string
+from chocs.json_schema.iso_datetime import (
+    parse_iso_date_string,
+    parse_iso_datetime_string,
+    parse_iso_duration_string,
+    parse_iso_time_string,
+    timedelta_to_iso_string,
+)
 
 
 @pytest.mark.parametrize(
@@ -20,8 +17,8 @@ from chocs.json_schema.iso_datetime import timedelta_to_iso_string
         ("20:20:10", time(hour=20, minute=20, second=10)),
         ("20:20:10Z", time(hour=20, minute=20, second=10, tzinfo=timezone.utc)),
         (
-                "20:20:10+02:00",
-                time(hour=20, minute=20, second=10, tzinfo=timezone(timedelta(hours=2))),
+            "20:20:10+02:00",
+            time(hour=20, minute=20, second=10, tzinfo=timezone(timedelta(hours=2))),
         ),
     ],
 )
@@ -77,21 +74,47 @@ def test_parse_timedelta_to_iso_string(given: timedelta, expected: str) -> None:
     assert timedelta_to_iso_string(given) == expected
 
 
-@pytest.mark.parametrize("given, expected", [
-    ("20201010T202010", datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10)),
-    ("2020-10-10T20:20:10", datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10)),
-    ("2020-10-10 20:20:10", datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10)),
-    ("2020-10-10 20:20:10Z", datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10, tzinfo=timezone.utc)),
-])
+@pytest.mark.parametrize(
+    "given, expected",
+    [
+        (
+            "20201010T202010",
+            datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10),
+        ),
+        (
+            "2020-10-10T20:20:10",
+            datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10),
+        ),
+        (
+            "2020-10-10 20:20:10",
+            datetime(year=2020, month=10, day=10, hour=20, minute=20, second=10),
+        ),
+        (
+            "2020-10-10 20:20:10Z",
+            datetime(
+                year=2020,
+                month=10,
+                day=10,
+                hour=20,
+                minute=20,
+                second=10,
+                tzinfo=timezone.utc,
+            ),
+        ),
+    ],
+)
 def test_parse_iso_datetime_string(given: str, expected: datetime) -> None:
     assert parse_iso_datetime_string(given) == expected
 
 
-@pytest.mark.parametrize("given, expected", [
-    ("20201210", date(year=2020, month=12, day=10)),
-    ("2020-12-10", date(year=2020, month=12, day=10)),
-    ("2020-1210", date(year=2020, month=12, day=10)),
-    ("202012-10", date(year=2020, month=12, day=10)),
-])
+@pytest.mark.parametrize(
+    "given, expected",
+    [
+        ("20201210", date(year=2020, month=12, day=10)),
+        ("2020-12-10", date(year=2020, month=12, day=10)),
+        ("2020-1210", date(year=2020, month=12, day=10)),
+        ("202012-10", date(year=2020, month=12, day=10)),
+    ],
+)
 def test_parse_iso_date_string(given: str, expected: date) -> None:
     assert parse_iso_date_string(given) == expected

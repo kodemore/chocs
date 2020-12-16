@@ -1,6 +1,7 @@
+import pytest
+
 from chocs.json_schema import StringFormat
 from chocs.json_schema.validators import validate_string_format
-import pytest
 
 
 def test_can_define_new_format() -> None:
@@ -13,7 +14,7 @@ def test_can_define_new_format() -> None:
     with pytest.raises(KeyError):
         validate_string_format("valid value", "my-format")
 
-    StringFormat['my-format'] = my_format_validator
+    StringFormat["my-format"] = my_format_validator
 
     assert validate_string_format("valid value", "my-format")
 

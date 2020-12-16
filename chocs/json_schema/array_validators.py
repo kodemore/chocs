@@ -1,8 +1,6 @@
 from typing import Callable
 
-from .errors import MaximumLengthError
-from .errors import MinimumLengthError
-from .errors import UniqueValidationError
+from .errors import MaximumLengthError, MinimumLengthError, UniqueValidationError
 from .type_validators import validate_array
 
 
@@ -14,7 +12,7 @@ def validate_unique(value: list) -> list:
         for unique_item in unique_items:
             if item is unique_item:
                 raise UniqueValidationError()
-            
+
         unique_items.add(item)
 
     return value

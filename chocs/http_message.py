@@ -2,9 +2,7 @@ import json
 from collections import UserDict
 from io import BytesIO
 from json.decoder import JSONDecodeError
-from typing import Any
-from typing import Dict
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from .http_multipart_message_parser import parse_multipart_message
 from .http_query_string import parse_qs
@@ -55,7 +53,9 @@ class JsonHttpMessage(CompositeHttpMessage):
 
 class MultipartHttpMessage(CompositeHttpMessage):
     @staticmethod
-    def from_bytes(body: BytesIO, boundary: str, encoding: str = "utf8") -> "MultipartHttpMessage":
+    def from_bytes(
+        body: BytesIO, boundary: str, encoding: str = "utf8"
+    ) -> "MultipartHttpMessage":
         body.seek(0)
         fields = parse_multipart_message(body.read(), boundary, encoding)
 

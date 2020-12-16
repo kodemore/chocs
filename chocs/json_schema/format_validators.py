@@ -1,23 +1,18 @@
 import base64
 import re
-from datetime import date
-from datetime import datetime
-from datetime import time
-from datetime import timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
-from ipaddress import AddressValueError
-from ipaddress import IPv4Address
-from ipaddress import IPv6Address
-from typing import Any
-from typing import Pattern
-from typing import Union
+from ipaddress import AddressValueError, IPv4Address, IPv6Address
+from typing import Any, Pattern, Union
 from uuid import UUID
 
 from .errors import FormatValidationError
-from .iso_datetime import parse_iso_date_string
-from .iso_datetime import parse_iso_datetime_string
-from .iso_datetime import parse_iso_duration_string
-from .iso_datetime import parse_iso_time_string
+from .iso_datetime import (
+    parse_iso_date_string,
+    parse_iso_datetime_string,
+    parse_iso_duration_string,
+    parse_iso_time_string,
+)
 
 
 def validate_format_pattern(value: Any) -> Pattern[str]:
@@ -114,7 +109,10 @@ def validate_format_email(value: str) -> str:
     return value
 
 
-HOSTNAME_REGEX = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*$", re.I,)
+HOSTNAME_REGEX = re.compile(
+    r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*$",
+    re.I,
+)
 
 
 def validate_format_hostname(value: str) -> str:
@@ -164,7 +162,8 @@ def validate_format_ip_address(value: Any) -> Union[IPv4Address, IPv6Address]:
 
 
 SEMVER_REGEX = re.compile(
-    r"^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)(?:\+([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)$", re.I,
+    r"^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)(?:\+([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)$",
+    re.I,
 )
 
 
@@ -190,7 +189,7 @@ def validate_format_uri(value: Any) -> str:
 URL_REGEX = re.compile(
     r"^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9_]+-?)*[a-z\u00a1-\uffff0-9_]+)(?:\.(?:[a-z\u00a1-\uffff0-9_]+-?)*[a-z\u00a1-\uffff0-9_]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$",
     re.I | re.U,
-    )
+)
 
 
 def validate_format_url(value: Any) -> str:

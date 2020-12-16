@@ -1,6 +1,7 @@
-from chocs import HttpCookieJar, HttpCookie
 import pytest
 from datetime import datetime
+
+from chocs import HttpCookie, HttpCookieJar
 
 
 def test_can_instantiate():

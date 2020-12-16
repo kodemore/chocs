@@ -1,6 +1,6 @@
 import json
-from io import BytesIO
 import pytest
+from io import BytesIO
 
 from chocs import HttpHeaders, HttpMethod, HttpRequest
 
@@ -32,19 +32,37 @@ def test_create_json_request() -> None:
     assert instance.parsed_body == {"test": "OK"}
 
 
-@pytest.mark.parametrize('a, b', [
-    [HttpRequest(HttpMethod.GET), HttpRequest(HttpMethod.GET)],
-    [HttpRequest(HttpMethod.GET, headers={"test": "1"}), HttpRequest(HttpMethod.GET, headers={"test": "1"})],
-    [HttpRequest(HttpMethod.GET, path="/test/1"), HttpRequest(HttpMethod.GET, path="/test/1")],
-])
+@pytest.mark.parametrize(
+    "a, b",
+    [
+        [HttpRequest(HttpMethod.GET), HttpRequest(HttpMethod.GET)],
+        [
+            HttpRequest(HttpMethod.GET, headers={"test": "1"}),
+            HttpRequest(HttpMethod.GET, headers={"test": "1"}),
+        ],
+        [
+            HttpRequest(HttpMethod.GET, path="/test/1"),
+            HttpRequest(HttpMethod.GET, path="/test/1"),
+        ],
+    ],
+)
 def test_compare_equal_http_request(a: HttpRequest, b: HttpRequest) -> None:
     assert a == b
 
 
-@pytest.mark.parametrize('a, b', [
-    [HttpRequest(HttpMethod.GET), HttpRequest(HttpMethod.POST)],
-    [HttpRequest(HttpMethod.GET, headers={"test": "1"}), HttpRequest(HttpMethod.GET, headers={"test": "2"})],
-    [HttpRequest(HttpMethod.GET, path="/test/2"), HttpRequest(HttpMethod.GET, path="/test/1")],
-])
+@pytest.mark.parametrize(
+    "a, b",
+    [
+        [HttpRequest(HttpMethod.GET), HttpRequest(HttpMethod.POST)],
+        [
+            HttpRequest(HttpMethod.GET, headers={"test": "1"}),
+            HttpRequest(HttpMethod.GET, headers={"test": "2"}),
+        ],
+        [
+            HttpRequest(HttpMethod.GET, path="/test/2"),
+            HttpRequest(HttpMethod.GET, path="/test/1"),
+        ],
+    ],
+)
 def test_compare_not_equal_http_request(a: HttpRequest, b: HttpRequest) -> None:
     assert not a == b
