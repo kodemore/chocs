@@ -135,14 +135,7 @@ components:
               format: int64
 
     NewPet:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        tag:
-          type: string
+      $ref: "new_pet.yml#/NewPet"
 
     Error:
       type: object
