@@ -1,7 +1,7 @@
 from functools import cached_property, partial
 from json import load as json_load
 from os import path
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict
 
 from yaml import FullLoader as YamlFullLoader, load as yaml_load
 
@@ -9,15 +9,30 @@ yaml_load = partial(yaml_load, Loader=YamlFullLoader)
 
 
 class URILoader:
+    LOADERS = {
+        "yaml": yaml_load,
+        "yml": yaml_load,
+        "json": json_load,
+    }
+
     def __init__(self):
         self.store = {}
 
-    def load(self, uri):
+    def load(self, uri: str) -> dict:
         if uri not in self.store:
-            file_reader = FileReader(uri)
-            self.store[uri] = file_reader.contents
+            contents = JsonReferenceResolver.resolve(self._load_file_contents(uri), uri)
+            self.store[uri] = contents
 
         return self.store[uri]
+
+    def _load_file_contents(self, file_name: str) -> dict:
+        file_name = path.abspath(file_name)
+        file = open(file_name)
+        extension = file_name.split(".")[-1]
+        if extension not in URILoader.LOADERS:
+            raise TypeError(f"Could not resolve uri `{file_name}`")
+
+        return self.LOADERS[extension](file)
 
 
 _default_uri_loader = URILoader()
@@ -25,7 +40,7 @@ _default_uri_loader = URILoader()
 
 class JsonReference:
     def __init__(self, uri: str, loader: URILoader = _default_uri_loader):
-        self.file_name, self.reference = uri.split("#")
+        self.uri, self.reference = uri.split("#")
         self.id = uri
         self._loader = loader
 
@@ -34,7 +49,7 @@ class JsonReference:
 
     @cached_property
     def data(self) -> dict:
-        schema = self._loader.load(self.file_name)
+        schema = self._loader.load(self.uri)
         reference_path = self.reference.lstrip("#").strip("/").split("/")
         for item in reference_path:
             if item not in schema:
@@ -44,67 +59,45 @@ class JsonReference:
             return schema.data
         return schema
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"JsonReference({self.id})"
 
 
-_default_store = {}
+class JsonReferenceResolver:
+    reference_store: Dict[str, JsonReference] = {}
 
-
-class FileReader:
-    LOADERS = {
-        "yaml": yaml_load,
-        "yml": yaml_load,
-        "json": json_load,
-    }
-
-    def __init__(self, file_name: str):
-        self.extension = file_name.split(".")[-1]
-        self.file_name = path.abspath(file_name)
-        self._loader = FileReader.LOADERS[self.extension]
-        self.store = _default_store
-
-    def read(self) -> dict:
-        file_handler = open(self.file_name)
-        contents = self._loader(file_handler)
-        file_handler.close()
-
-        return self._replace_references(contents)
-
-    def _replace_references(self, obj):
+    @classmethod
+    def resolve(cls, obj: Any, base_uri: str = ""):
         try:
             if not isinstance(obj["$ref"], str):
                 raise TypeError
-            return self._create_reference(obj)
+            return cls._create_reference(obj, base_uri)
         except (TypeError, LookupError):
             pass
 
         if isinstance(obj, list):
-            return [self._replace_references(item) for item in obj]
+            return [cls.resolve(item, base_uri) for item in obj]
 
         elif isinstance(obj, dict):
-            return {key: self._replace_references(value) for key, value in obj.items()}
+            return {key: cls.resolve(value, base_uri) for key, value in obj.items()}
 
         return obj
 
-    def _create_reference(self, ref_obj: dict) -> JsonReference:
+    @classmethod
+    def _create_reference(cls, ref_obj: dict, base_uri: str) -> JsonReference:
         ref_str = ref_obj["$ref"]
-        file_part, ref_part = ref_str.split("#")
-        if not file_part:
-            file_part = self.file_name
+        uri_part, ref_part = ref_str.split("#")
+        if not uri_part:
+            uri = base_uri
         else:
-            file_part = path.join(path.dirname(self.file_name), file_part)
+            uri = path.join(path.dirname(base_uri), uri_part)
 
-        full_ref = file_part + "#" + ref_part
+        full_ref = uri + "#" + ref_part
 
-        if full_ref not in self.store:
-            self.store[full_ref] = JsonReference(full_ref)
+        if full_ref not in cls.reference_store:
+            cls.reference_store[full_ref] = JsonReference(full_ref)
 
-        return self.store[full_ref]
-
-    @cached_property
-    def contents(self) -> dict:
-        return self.read()
+        return cls.reference_store[full_ref]
 
 
 class OpenApiSchema:
