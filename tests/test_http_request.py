@@ -68,3 +68,19 @@ def test_compare_equal_http_request(a: HttpRequest, b: HttpRequest) -> None:
 )
 def test_compare_not_equal_http_request(a: HttpRequest, b: HttpRequest) -> None:
     assert not a == b
+
+
+def test_http_request_as_str() -> None:
+    body = '{"a": 1}'
+    request = HttpRequest(HttpMethod.POST, body=body)
+
+    assert request.as_str() == body
+    assert request.as_str() == body
+
+
+def test_http_request_as_dict() -> None:
+    body = '{"a": 1}'
+    request = HttpRequest(HttpMethod.POST, body=body)
+
+    assert request.as_str() == body
+    assert request.as_dict() == {"a": 1}
