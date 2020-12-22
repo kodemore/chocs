@@ -75,7 +75,7 @@ class HttpParsedBodyTrait:
         return self._as_str
 
     def as_dict(self) -> dict:
-        if not self._as_dict:
+        if self._as_dict is None:
             body_str = self.as_str()
             try:
                 self._as_dict = json.loads(body_str)  # type: ignore
