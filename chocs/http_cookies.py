@@ -39,7 +39,9 @@ class HttpCookie:
         same_site: Union[bool, HttpCookieSameSitePolicy] = False,
     ):
         if not COOKIE_NAME_VALIDATOR.match(name):
-            raise InvalidHttpCookieNameError(f"Invalid cookie name {name}, cookie name must be valid RFC 2616 token.")
+            raise InvalidHttpCookieNameError(
+                f"Invalid cookie name {name}, cookie name must be valid RFC 2616 token."
+            )
         self._name: str = name
         self.value = value
         self.path = path
@@ -159,7 +161,10 @@ def parse_cookie_header(header: str) -> HttpCookieJar:
             continue
         try:
             result.append(
-                HttpCookie(cookie[0:separator_position].strip(), unquote(cookie[separator_position + 1 :].strip()),)
+                HttpCookie(
+                    cookie[0:separator_position].strip(),
+                    unquote(cookie[separator_position + 1 :].strip()),
+                )
             )
         except HttpCookieError:  # Invalid cookie name
             continue

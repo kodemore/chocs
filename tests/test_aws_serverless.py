@@ -63,7 +63,9 @@ def test_middleware_for_serverless() -> None:
 
     middleware_pipeline = MiddlewarePipeline()
     middleware_pipeline.append(cors_middleware)
-    serverless_callback = AwsServerlessFunction(ok_handler, Route("/"), middleware_pipeline)
+    serverless_callback = AwsServerlessFunction(
+        ok_handler, Route("/"), middleware_pipeline
+    )
     dir_path = os.path.dirname(os.path.realpath(__file__))
     event_json = json.load(
         open(os.path.join(dir_path, "fixtures/lambda_http_api_event.json"))

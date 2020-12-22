@@ -71,7 +71,9 @@ class JsonHttpMessage(CompositeHttpMessage):
 
 class MultipartHttpMessage(CompositeHttpMessage):
     @staticmethod
-    def from_bytes(body: BytesIO, boundary: str, encoding: str = "utf8") -> "MultipartHttpMessage":
+    def from_bytes(
+        body: BytesIO, boundary: str, encoding: str = "utf8"
+    ) -> "MultipartHttpMessage":
         body.seek(0)
         fields = parse_multipart_message(body.read(), boundary, encoding)
 

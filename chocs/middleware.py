@@ -65,4 +65,10 @@ class MiddlewarePipeline(MiddlewareHandler, Middleware):
         return self.queue.qsize() <= 0
 
 
-__all__ = ["MiddlewareHandler", "Middleware", "MiddlewareFunction", "MiddlewareCursor", "MiddlewarePipeline"]
+__all__ = [
+    "MiddlewareHandler",
+    "Middleware",
+    "MiddlewareFunction",
+    "MiddlewareCursor",
+    "MiddlewarePipeline",
+]

@@ -19,7 +19,12 @@ class Application:
         self.namespace = ["/"]
         self.routes: Dict[HttpMethod, Router] = {key: Router() for key in HttpMethod}
 
-    def _append_route(self, method: HttpMethod, route: Route, handler: Callable[[HttpRequest], HttpResponse]):
+    def _append_route(
+        self,
+        method: HttpMethod,
+        route: Route,
+        handler: Callable[[HttpRequest], HttpResponse],
+    ):
         if self.parent:
             self.parent._append_route(method, route, handler)
 
