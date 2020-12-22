@@ -1,8 +1,5 @@
-from chocs import Application
-from chocs import HttpRequest
-from chocs import HttpResponse
-from chocs.middleware import Middleware
-from chocs.middleware import MiddlewareHandler
+from chocs import Application, HttpRequest, HttpResponse
+from chocs.middleware import Middleware, MiddlewareHandler
 
 
 def cors_middleware(request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:

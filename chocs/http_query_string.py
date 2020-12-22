@@ -1,8 +1,4 @@
-from typing import Any
-from typing import Dict
-from typing import ItemsView
-from typing import KeysView
-from typing import ValuesView
+from typing import Any, Dict, ItemsView, KeysView, ValuesView
 from urllib.parse import unquote_plus
 
 

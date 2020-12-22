@@ -1,10 +1,7 @@
 from io import BytesIO
 from typing import Callable
 
-from chocs import Application
-from chocs import HttpMethod
-from chocs import HttpRequest
-from chocs import HttpResponse
+from chocs import Application, HttpMethod, HttpRequest, HttpResponse
 from chocs.wsgi import create_wsgi_handler
 
 

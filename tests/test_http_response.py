@@ -1,9 +1,6 @@
 import pytest
 
-from chocs import HttpCookie
-from chocs import HttpHeaders
-from chocs import HttpResponse
-from chocs import HttpStatus
+from chocs import HttpCookie, HttpHeaders, HttpResponse, HttpStatus
 
 
 def test_can_instantiate() -> None:

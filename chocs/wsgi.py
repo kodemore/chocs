@@ -1,7 +1,5 @@
 from io import BytesIO
-from typing import Any
-from typing import Callable
-from typing import Dict
+from typing import Any, Callable, Dict
 
 from .application import Application
 from .http_error import HttpError

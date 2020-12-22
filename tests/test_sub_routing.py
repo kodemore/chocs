@@ -1,6 +1,4 @@
-from chocs import HttpMethod
-from chocs import HttpResponse, HttpRequest, Application
-from chocs import HttpStatus
+from chocs import Application, HttpMethod, HttpRequest, HttpResponse, HttpStatus
 
 
 def test_can_define_sub_groups() -> None:

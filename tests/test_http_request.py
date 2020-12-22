@@ -1,6 +1,6 @@
 import json
-from io import BytesIO
 import pytest
+from io import BytesIO
 
 from chocs import HttpHeaders, HttpMethod, HttpRequest
 

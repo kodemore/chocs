@@ -1,7 +1,6 @@
 import base64
 from io import BytesIO
-from typing import Any
-from typing import Dict
+from typing import Any, Dict
 from urllib.parse import quote_plus
 
 from chocs.http_headers import HttpHeaders
@@ -9,6 +8,7 @@ from chocs.http_query_string import HttpQueryString
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
 from chocs.http_status import HttpStatus
+
 from .serverless import ServerlessFunction
 
 TEXT_MIME_TYPES = [

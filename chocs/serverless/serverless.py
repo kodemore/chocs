@@ -4,8 +4,7 @@ from typing import Any
 
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
-from chocs.middleware import MiddlewareHandler
-from chocs.middleware import MiddlewarePipeline
+from chocs.middleware import MiddlewareHandler, MiddlewarePipeline
 from chocs.routing import Route
 from chocs.types import HttpHandlerFunction
 

@@ -1,7 +1,4 @@
-from chocs import Application
-from chocs import HttpRequest
-from chocs import HttpResponse
-from chocs import HttpStatus, HttpMethod
+from chocs import Application, HttpMethod, HttpRequest, HttpResponse, HttpStatus
 
 
 def authorise_user(req: HttpRequest, next) -> HttpResponse:

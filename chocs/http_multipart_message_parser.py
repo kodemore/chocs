@@ -1,10 +1,7 @@
 from cgi import parse_header
 from enum import Enum
 from tempfile import TemporaryFile
-from typing import Any
-from typing import Dict
-from typing import IO
-from typing import Tuple
+from typing import IO, Any, Dict, Tuple
 
 
 class UploadedFile:

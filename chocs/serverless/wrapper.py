@@ -4,9 +4,9 @@ from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
 from chocs.middleware import MiddlewarePipeline
 from chocs.routing import Route
+
 from .aws import AwsServerlessFunction
-from .serverless import IS_AWS_ENVIRONMENT
-from .serverless import ServerlessFunction
+from .serverless import IS_AWS_ENVIRONMENT, ServerlessFunction
 
 
 def create_serverless_function(

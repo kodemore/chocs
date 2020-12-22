@@ -1,10 +1,6 @@
 from io import BytesIO
 
-from chocs import HttpRequest
-from chocs import MultipartHttpMessage
-from chocs import UploadedFile
-from chocs import FormHttpMessage
-from chocs import JsonHttpMessage
+from chocs import FormHttpMessage, HttpRequest, JsonHttpMessage, MultipartHttpMessage, UploadedFile
 
 multipart_body = {
     "CONTENT_TYPE": "multipart/form-data; charset=utf-8; boundary=__TEST_BOUNDARY__",

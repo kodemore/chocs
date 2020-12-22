@@ -1,15 +1,8 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Dict
-from typing import ItemsView
-from typing import KeysView
-from typing import Optional
-from typing import Union
-from typing import Any
-from typing import ValuesView
-from urllib.parse import quote
-from urllib.parse import unquote
+from typing import Any, Dict, ItemsView, KeysView, Optional, Union, ValuesView
+from urllib.parse import quote, unquote
 
 COOKIE_NAME_VALIDATOR = re.compile(r"[a-z0-9!#$%&'*+.^_`|~\-]+", re.I)
 

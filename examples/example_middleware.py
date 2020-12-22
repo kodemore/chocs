@@ -1,9 +1,6 @@
 import time
 
-from chocs import Application
-from chocs import HttpRequest
-from chocs import HttpResponse
-from chocs import serve
+from chocs import Application, HttpRequest, HttpResponse, serve
 from chocs.middleware import MiddlewareHandler
 
 

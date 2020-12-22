@@ -1,16 +1,14 @@
 import copy
 from io import BytesIO
-from typing import Dict
-from typing import Optional
-from typing import Sequence
-from typing import Union
+from typing import Dict, Optional, Sequence, Union
 
 from .http_cookies import HttpCookieJar
 from .http_headers import HttpHeaders
+from .http_parsed_body import HttpParsedBodyTrait
 from .http_status import HttpStatus
 
 
-class HttpResponse:
+class HttpResponse(HttpParsedBodyTrait):
     def __init__(
         self,
         body: Union[bytes, bytearray, str, None] = None,
@@ -25,6 +23,9 @@ class HttpResponse:
         self.body: BytesIO = BytesIO()
         self.encoding = encoding
         self.cookies = HttpCookieJar()
+        self._parsed_body = None
+        self._as_dict = None
+        self._as_str = None
 
         if body:
             self.write(body)

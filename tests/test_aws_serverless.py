@@ -1,17 +1,11 @@
 import json
 import os
+import pytest
 from typing import Callable
 
-import pytest
-
-from chocs import HttpCookie
-from chocs import HttpQueryString
-from chocs import HttpRequest
-from chocs import HttpResponse
-from chocs import Route
+from chocs import HttpCookie, HttpQueryString, HttpRequest, HttpResponse, Route
 from chocs.middleware import MiddlewarePipeline
-from chocs.serverless import AwsServerlessFunction
-from chocs.serverless import create_http_request_from_aws_event
+from chocs.serverless import AwsServerlessFunction, create_http_request_from_aws_event
 
 
 @pytest.mark.parametrize(
