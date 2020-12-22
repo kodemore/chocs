@@ -11,8 +11,10 @@ def test_can_instantiate() -> None:
 
 
 def test_get_cookies() -> None:
-    instance = HttpRequest(HttpMethod.GET)
-    instance.headers = HttpHeaders({"cookie": "key=value; anotherkey=anothervalue"})
+    instance = HttpRequest(
+        HttpMethod.GET,
+        headers=HttpHeaders({"cookie": "key=value; anotherkey=anothervalue"}),
+    )
     cookies = instance.cookies
 
     assert len(cookies) == 2

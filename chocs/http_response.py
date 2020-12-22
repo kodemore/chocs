@@ -24,7 +24,7 @@ class HttpResponse(HttpParsedBodyTrait):
         if isinstance(status, int):
             status = HttpStatus.from_int(status)
         self.status_code = status
-        self.body: BytesIO = BytesIO()
+        self._body: BytesIO = BytesIO()
         self.encoding = encoding
         self.cookies = HttpCookieJar()
         self._parsed_body = None
@@ -43,20 +43,33 @@ class HttpResponse(HttpParsedBodyTrait):
 
     def write(self, body: Union[str, bytes, bytearray]) -> None:
         if isinstance(body, str):
-            self.body.write(body.encode(self.encoding))
+            self._body.write(body.encode(self.encoding))
         else:
-            self.body.write(body)
+            self._body.write(body)
+
+    @property
+    def body(self) -> BytesIO:
+        return self._body
+
+    @body.setter
+    def body(self, value: Union[str, bytes, bytearray, BytesIO]) -> None:
+        if isinstance(value, BytesIO):
+            self._body = value
+            return
+
+        self._body = BytesIO()
+        self.write(value)
 
     @property
     def writable(self) -> bool:
-        return not self.body.closed
+        return not self._body.closed
 
     def close(self) -> None:
-        self.body.close()
+        self._body.close()
 
     def __str__(self) -> str:
-        self.body.seek(0)
-        return self.body.read().decode(self.encoding)
+        self._body.seek(0)
+        return self._body.read().decode(self.encoding)
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, HttpResponse):

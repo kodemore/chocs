@@ -29,7 +29,7 @@ class YamlHttpMessage(CompositeHttpMessage):
 
         parsed_body: Dict[str, Any] = {}
         try:
-            parsed_body = yaml.safe_load_all(decoded_input)
+            parsed_body = yaml.safe_load_all(decoded_input)  # type: ignore
         except JSONDecodeError:
             ...  # ignore
 

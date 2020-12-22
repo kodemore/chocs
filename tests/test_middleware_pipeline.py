@@ -12,7 +12,7 @@ class ErrorCatchingMiddleware(Middleware):
             response = next(request)
         except Exception as e:
             response = HttpResponse(status=500)
-            response.body = e
+            response.write("Error")
 
         return response
 
@@ -49,7 +49,7 @@ def test_erroring_middleware_pipeline():
     response = pipeline(HttpRequest("get"))
 
     assert 500 == int(response.status_code)
-    assert isinstance(response.body, RuntimeError)
+    assert response.as_str(), "Error"
 
 
 def test_empty_pipeline():
