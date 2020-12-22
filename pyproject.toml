@@ -32,6 +32,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.7"
 typing_extensions = "^3.7.4"
+pyyaml = "^5.3.1"
 
 
 [tool.poetry.dev-dependencies]
