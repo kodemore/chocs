@@ -1,9 +1,7 @@
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from copy import deepcopy
 from queue import Queue
-from typing import Callable
-from typing import Union
+from typing import Callable, Union
 
 from .http_request import HttpRequest
 from .http_response import HttpResponse
@@ -67,4 +65,10 @@ class MiddlewarePipeline(MiddlewareHandler, Middleware):
         return self.queue.qsize() <= 0
 
 
-__all__ = ["MiddlewareHandler", "Middleware", "MiddlewareFunction", "MiddlewareCursor", "MiddlewarePipeline"]
+__all__ = [
+    "MiddlewareHandler",
+    "Middleware",
+    "MiddlewareFunction",
+    "MiddlewareCursor",
+    "MiddlewarePipeline",
+]

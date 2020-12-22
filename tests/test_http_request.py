@@ -1,6 +1,6 @@
 import json
-from io import BytesIO
 import pytest
+from io import BytesIO
 
 from chocs import HttpHeaders, HttpMethod, HttpRequest
 
@@ -11,8 +11,10 @@ def test_can_instantiate() -> None:
 
 
 def test_get_cookies() -> None:
-    instance = HttpRequest(HttpMethod.GET)
-    instance.headers = HttpHeaders({"cookie": "key=value; anotherkey=anothervalue"})
+    instance = HttpRequest(
+        HttpMethod.GET,
+        headers=HttpHeaders({"cookie": "key=value; anotherkey=anothervalue"}),
+    )
     cookies = instance.cookies
 
     assert len(cookies) == 2
@@ -32,19 +34,53 @@ def test_create_json_request() -> None:
     assert instance.parsed_body == {"test": "OK"}
 
 
-@pytest.mark.parametrize('a, b', [
-    [HttpRequest(HttpMethod.GET), HttpRequest(HttpMethod.GET)],
-    [HttpRequest(HttpMethod.GET, headers={"test": "1"}), HttpRequest(HttpMethod.GET, headers={"test": "1"})],
-    [HttpRequest(HttpMethod.GET, path="/test/1"), HttpRequest(HttpMethod.GET, path="/test/1")],
-])
+@pytest.mark.parametrize(
+    "a, b",
+    [
+        [HttpRequest(HttpMethod.GET), HttpRequest(HttpMethod.GET)],
+        [
+            HttpRequest(HttpMethod.GET, headers={"test": "1"}),
+            HttpRequest(HttpMethod.GET, headers={"test": "1"}),
+        ],
+        [
+            HttpRequest(HttpMethod.GET, path="/test/1"),
+            HttpRequest(HttpMethod.GET, path="/test/1"),
+        ],
+    ],
+)
 def test_compare_equal_http_request(a: HttpRequest, b: HttpRequest) -> None:
     assert a == b
 
 
-@pytest.mark.parametrize('a, b', [
-    [HttpRequest(HttpMethod.GET), HttpRequest(HttpMethod.POST)],
-    [HttpRequest(HttpMethod.GET, headers={"test": "1"}), HttpRequest(HttpMethod.GET, headers={"test": "2"})],
-    [HttpRequest(HttpMethod.GET, path="/test/2"), HttpRequest(HttpMethod.GET, path="/test/1")],
-])
+@pytest.mark.parametrize(
+    "a, b",
+    [
+        [HttpRequest(HttpMethod.GET), HttpRequest(HttpMethod.POST)],
+        [
+            HttpRequest(HttpMethod.GET, headers={"test": "1"}),
+            HttpRequest(HttpMethod.GET, headers={"test": "2"}),
+        ],
+        [
+            HttpRequest(HttpMethod.GET, path="/test/2"),
+            HttpRequest(HttpMethod.GET, path="/test/1"),
+        ],
+    ],
+)
 def test_compare_not_equal_http_request(a: HttpRequest, b: HttpRequest) -> None:
     assert not a == b
+
+
+def test_http_request_as_str() -> None:
+    body = '{"a": 1}'
+    request = HttpRequest(HttpMethod.POST, body=body)
+
+    assert request.as_str() == body
+    assert request.as_str() == body
+
+
+def test_http_request_as_dict() -> None:
+    body = '{"a": 1}'
+    request = HttpRequest(HttpMethod.POST, body=body)
+
+    assert request.as_str() == body
+    assert request.as_dict() == {"a": 1}

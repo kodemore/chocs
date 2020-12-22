@@ -55,11 +55,11 @@ def test_eq_headers() -> None:
 
     assert headers == headers_copy
 
-    headers['test'] = 'value'
-    headers_copy['test'] = 'value'
+    headers["test"] = "value"
+    headers_copy["test"] = "value"
 
     assert headers == headers_copy
 
-    headers_copy['test_2'] = 'value'
+    headers_copy["test_2"] = "value"
 
     assert not headers == headers_copy

@@ -1,13 +1,6 @@
 import re
 from copy import copy
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Pattern
-from typing import Tuple
-from typing import Union
+from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Union
 
 from .http_error import NotFoundError
 

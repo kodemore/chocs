@@ -1,9 +1,7 @@
-from chocs import HttpRequest
-from chocs import HttpResponse
-from chocs.middleware import Middleware
-from chocs.middleware import MiddlewareHandler
-from chocs.middleware import MiddlewarePipeline
 import pytest
+
+from chocs import HttpRequest, HttpResponse
+from chocs.middleware import Middleware, MiddlewareHandler, MiddlewarePipeline
 
 
 class ErrorCatchingMiddleware(Middleware):
@@ -14,7 +12,7 @@ class ErrorCatchingMiddleware(Middleware):
             response = next(request)
         except Exception as e:
             response = HttpResponse(status=500)
-            response.body = e
+            response.write("Error")
 
         return response
 
@@ -51,7 +49,7 @@ def test_erroring_middleware_pipeline():
     response = pipeline(HttpRequest("get"))
 
     assert 500 == int(response.status_code)
-    assert isinstance(response.body, RuntimeError)
+    assert response.as_str(), "Error"
 
 
 def test_empty_pipeline():

@@ -1,8 +1,4 @@
-from chocs import HttpRequest
-from chocs import HttpResponse
-from chocs import HttpStatus
-from chocs import Application
-from chocs import serve
+from chocs import Application, HttpRequest, HttpResponse, HttpStatus, serve
 
 app = Application()
 
