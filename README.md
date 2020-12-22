@@ -37,7 +37,7 @@ http = Application()
 def hello(request: HttpRequest) -> HttpResponse:
     return HttpResponse(f"Hello {request.path_parameters.get('name')}!")
 
-serve()
+serve(http)
 ```
 
  > Keep in mind that the `serve()` function is using the `bjoern` package, so make sure you included it in your project 
@@ -281,11 +281,20 @@ Keeps parsed headers in dict-like object.
 #### `chocs.Request.body:io.BytesIO` 
 Raw body data
 
-#### `Request.parsed_body:chocs.HttpMessage`
+#### `chocs.Request.parsed_body:chocs.HttpMessage`
 Depending on the content type it could be one of the following:
  - `chocs.FormHttpMessage`
  - `chocs.JsonHttpMessage`
  - `chocs.MultipartHttpMessage`
+ - `chocs.YamlHttpMessage`
+
+#### `chocs.Request.as_dict(): dict`
+Tries to convert request body to a dict and returns it.
+
+> Note this will only work with json and yaml content types.
+
+#### `chocs.Request.as_str(): str`
+Returns request content as a string.
  
 #### `chocs.Request.cookies:typing.List[chocs.HttpCookie]` 
 Request's cookies
@@ -329,6 +338,21 @@ Makes body non-writable.
 
 #### `chocs.Response.writable: bool`
 Indicates whether response's body is writable.
+
+#### `chocs.Response.parsed_body:chocs.HttpMessage`
+Depending on the content type it could be one of the following:
+- `chocs.FormHttpMessage`
+- `chocs.JsonHttpMessage`
+- `chocs.MultipartHttpMessage`
+- `chocs.YamlHttpMessage`
+
+#### `chocs.Response.as_dict(): dict`
+Tries to convert response body to a dict and returns it.
+
+> Note this will only work with json and yaml content types.
+
+#### `chocs.Response.as_str(): str`
+Returns response content as a string.
 
 ## Working with cookies
 
