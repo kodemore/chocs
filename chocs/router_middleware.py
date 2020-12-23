@@ -15,8 +15,7 @@ class RouterMiddleware(Middleware):
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         try:
             route, controller = self.router.match(
-                request.path,
-                request.method
+                request.path, request.method
             )  # type: Route, Union[Callable, ServerlessFunction]
 
             request.path_parameters = route.parameters

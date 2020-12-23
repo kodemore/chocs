@@ -1,5 +1,5 @@
-from functools import cached_property
-from typing import Callable, Optional, Union
+import importlib
+from typing import Callable, List, Optional, Union
 
 from .http_method import HttpMethod
 from .http_request import HttpRequest
@@ -19,12 +19,11 @@ class Application:
 
         self.namespace = ["/"]
         self.router = Router()
+        self._loaded_modules: List[str] = []
+        self._cached_middleware: Optional[MiddlewarePipeline] = None
 
     def _append_route(
-        self,
-        method: HttpMethod,
-        route: Route,
-        handler: Callable[[HttpRequest], HttpResponse],
+        self, method: HttpMethod, route: Route, handler: Callable[[HttpRequest], HttpResponse],
     ):
         if self.parent:
             self.parent._append_route(method, route, handler)
@@ -115,6 +114,7 @@ class Application:
         child_app._middleware = self._middleware
         child_app.namespace = self.namespace
         child_app.parent = self
+        child_app._loaded_modules = self._loaded_modules
 
         return child_app
 
@@ -125,12 +125,21 @@ class Application:
     def __call__(self, request: HttpRequest) -> HttpResponse:
         return self._application_middleware(request)
 
-    @cached_property
-    def _application_middleware(self) -> MiddlewarePipeline:
-        middleware = MiddlewarePipeline(self._middleware.queue)
-        middleware.append(RouterMiddleware(self.router))
+    def use(self, module: str) -> None:
+        if module in self._loaded_modules:
+            return
 
-        return middleware
+        importlib.import_module(module)
+        self._loaded_modules.append(module)
+
+    @property
+    def _application_middleware(self) -> MiddlewarePipeline:
+        if self._cached_middleware is None:
+            middleware = MiddlewarePipeline(self._middleware.queue)
+            middleware.append(RouterMiddleware(self.router))
+            self._cached_middleware = middleware
+
+        return self._cached_middleware
 
 
 __all__ = ["Application"]

@@ -21,9 +21,7 @@ class ServerlessFunction:
         self._middleware_pipeline = MiddlewarePipeline(middleware_pipeline.queue)
         self._middleware_enabled = False
 
-        def _function_middleware(
-            _request: HttpRequest, _next: MiddlewareHandler
-        ) -> HttpResponse:
+        def _function_middleware(_request: HttpRequest, _next: MiddlewareHandler) -> HttpResponse:
             _route = copy(route)
             route._parameters = _request.path_parameters
             _request.route = _route
