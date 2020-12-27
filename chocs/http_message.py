@@ -1,4 +1,5 @@
 import json
+import yaml
 from collections import UserDict
 from io import BytesIO
 from json.decoder import JSONDecodeError
@@ -18,6 +19,23 @@ class CompositeHttpMessage(UserDict, HttpMessage):
             return self[name]
 
         return default
+
+
+class YamlHttpMessage(CompositeHttpMessage):
+    @staticmethod
+    def from_bytes(body: BytesIO, encoding: str = "utf8") -> "YamlHttpMessage":
+        body.seek(0)
+        decoded_input = body.read().decode(encoding)
+
+        parsed_body: Dict[str, Any] = {}
+        try:
+            parsed_body = yaml.safe_load_all(decoded_input)  # type: ignore
+        except JSONDecodeError:
+            ...  # ignore
+
+        instance = YamlHttpMessage(parsed_body)
+
+        return instance
 
 
 class FormHttpMessage(CompositeHttpMessage):
@@ -73,4 +91,5 @@ __all__ = [
     "FormHttpMessage",
     "JsonHttpMessage",
     "MultipartHttpMessage",
+    "YamlHttpMessage",
 ]

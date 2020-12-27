@@ -1,6 +1,13 @@
 import pytest
 
-from chocs import HttpCookie, HttpHeaders, HttpResponse, HttpStatus
+from chocs import (
+    HttpCookie,
+    HttpHeaders,
+    HttpMessage,
+    HttpResponse,
+    HttpStatus,
+    JsonHttpMessage,
+)
 
 
 def test_can_instantiate() -> None:
@@ -83,3 +90,26 @@ def test_two_response_instances_are_different(
 ) -> None:
 
     assert not instance == instance_copy
+
+
+def test_http_response_as_str() -> None:
+    body = '{"a": 1}'
+    response = HttpResponse(body)
+
+    assert response.as_str() == body
+    assert response.as_str() == body
+
+
+def test_http_response_as_dict() -> None:
+    body = '{"a": 1}'
+    response = HttpResponse(body)
+
+    assert response.as_str() == body
+    assert response.as_dict() == {"a": 1}
+
+
+def test_http_response_parsed_body_as_json_message() -> None:
+    body = '{"a": 1}'
+    response = HttpResponse(body=body, headers={"content-type": "application/json"})
+
+    assert isinstance(response.parsed_body, JsonHttpMessage)

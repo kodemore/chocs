@@ -106,8 +106,7 @@ http = Application()
 def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
     ok_response = HttpResponse("OK", HttpStatus.OK)
     request = HttpRequest(method, "/pet")
-    router = RouterMiddleware()
-    router.routes = http.routes
+    router = RouterMiddleware(http.router)
 
     def noop():
         pass

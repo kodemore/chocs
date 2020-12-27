@@ -3,6 +3,7 @@ from copy import copy
 from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Union
 
 from .http_error import NotFoundError
+from .http_method import HttpMethod
 
 _ROUTE_REGEX = r"\\\{\s*(?P<var>[a-z_][a-z0-9_-]*)\s*\\\}"
 _VAR_REGEX = "[^/]+"
@@ -77,20 +78,47 @@ class Route:
 
 class Router:
     def __init__(self):
-        self._routes: List[Tuple[Route, Callable]] = []
+        self._routes: Dict[HttpMethod, List[Tuple[Route, Callable]]] = {}
 
-    def append(self, route: Route, handler: Callable) -> None:
+    def append(
+        self,
+        route: Route,
+        handler: Callable,
+        methods: Union[str, HttpMethod, List[Union[str, HttpMethod]]] = HttpMethod.GET,
+    ) -> None:
         assert isinstance(route, Route), "Passed route must be instance of Route"
+        normalised_methods = self._normalise_methods(methods)
 
-        self._routes.append((route, handler))
-        self._routes.sort(key=lambda r: r[0].is_wildcard)
+        for method in normalised_methods:
+            if method not in self._routes:
+                self._routes[method] = []
 
-    def match(self, uri: str) -> Tuple[Route, Callable]:
-        for route in self._routes:
+            self._routes[method].append((route, handler))
+            self._routes[method].sort(key=lambda r: r[0].is_wildcard)
+
+    @staticmethod
+    def _normalise_methods(methods: Union[str, HttpMethod, List[Union[str, HttpMethod]]]) -> List[HttpMethod]:
+        if methods == "*":
+            methods = [method for method in HttpMethod]
+        elif isinstance(methods, HttpMethod):
+            methods = [methods]
+        else:
+            methods = [method if isinstance(method, HttpMethod) else HttpMethod(method.upper()) for method in methods]
+
+        return methods  # type: ignore
+
+    def match(self, uri: str, method: Union[HttpMethod, str] = HttpMethod.GET) -> Tuple[Route, Callable]:
+        if isinstance(method, str):
+            method = HttpMethod(method)
+
+        if method not in self._routes:
+            raise NotFoundError(f"Could not match any resource matching {method} {uri} uri")
+
+        for route in self._routes[method]:
             if route[0].match(uri):
                 return route
 
-        raise NotFoundError(f"Could not match any resource matching {uri} uri")
+        raise NotFoundError(f"Could not match any resource matching {method} {uri} uri")
 
 
 __all__ = ["Route", "Router"]

@@ -1,28 +1,14 @@
-from chocs import Application, HttpMethod, HttpRequest, HttpResponse, HttpStatus
+from chocs import Application, HttpRequest, HttpResponse, serve
 
 
 def authorise_user(req: HttpRequest, next) -> HttpResponse:
-
     ...
     req.authorised = True
 
     return next(req)
 
 
-def validate_input(req: HttpRequest, next) -> HttpResponse:
-    validator = req.route.config.validator
-
-    valid = False
-    ...
-    if req.method is HttpMethod.POST:
-        ...
-    if not valid:
-        return HttpResponse(status=HttpStatus.UNPROCESSABLE_ENTITY)
-
-    return next(req)
-
-
-app = Application(authorise_user, validate_input)
+app = Application(authorise_user)
 
 
 with app.group("/users") as users_module:
@@ -38,3 +24,6 @@ with app.group("/users") as users_module:
 
 with app.group("/companies") as companies_module:
     ...
+
+
+serve(app)
