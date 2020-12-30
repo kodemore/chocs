@@ -1,10 +1,5 @@
 from .application import Application
-from .http_cookies import (
-    HttpCookie,
-    HttpCookieError,
-    HttpCookieJar,
-    HttpCookieSameSitePolicy,
-)
+from .http_cookies import HttpCookie, HttpCookieError, HttpCookieJar, HttpCookieSameSitePolicy
 from .http_error import HttpError, NotFoundError
 from .http_headers import HttpHeaders
 from .http_message import (

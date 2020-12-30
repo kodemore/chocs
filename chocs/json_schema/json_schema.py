@@ -1,18 +1,17 @@
-from functools import cached_property, partial
-from json import load as json_load
+from functools import partial
+from json import load as load_json
 from os import path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+from yaml import FullLoader as YamlFullLoader, load as load_yaml
 
-from yaml import FullLoader as YamlFullLoader, load as yaml_load
-
-yaml_load = partial(yaml_load, Loader=YamlFullLoader)
+load_yaml = partial(load_yaml, Loader=YamlFullLoader)
 
 
 class URILoader:
     LOADERS = {
-        "yaml": yaml_load,
-        "yml": yaml_load,
-        "json": json_load,
+        "yaml": load_yaml,
+        "yml": load_yaml,
+        "json": load_json,
     }
 
     def __init__(self):
@@ -43,27 +42,46 @@ class JsonReference:
         self.uri, self.reference = uri.split("#")
         self.id = uri
         self._loader = loader
+        self._data = None
 
     def __getitem__(self, key: str):
         return self.data[key]
 
-    @cached_property
+    @property
     def data(self) -> dict:
+        if self._data:
+            return self._data
+
         schema = self._loader.load(self.uri)
         reference_path = self.reference.lstrip("#").strip("/").split("/")
         for item in reference_path:
             if item not in schema:
                 raise KeyError(f"Could not resolve reference {self.reference}")
             schema = schema[item]
+
         if isinstance(schema, JsonReference):
-            return schema.data
-        return schema
+            self._data = schema.data
+        self._data = schema
+
+        return self._data
 
     def __repr__(self) -> str:
         return f"JsonReference({self.id})"
 
+    def __iter__(self):
+        return iter(self.data)
+
 
 class JsonReferenceResolver:
+    """
+    Replaces $ref objects inside schema with instances of JsonReference class.
+    Given the following json dict passed as `obj` parameter:
+    ```
+    {"a": 1, "b": {"$ref": "#/a"}}
+    ```
+    the `{"$ref": "#/a"}` part will be replaced by JsonReference instance, containing `{"a": 1}` value.
+    """
+
     reference_store: Dict[str, JsonReference] = {}
 
     @classmethod
@@ -103,15 +121,22 @@ class JsonReferenceResolver:
 class OpenApiSchema:
     def __init__(self, file_name: str, loader: URILoader = _default_uri_loader):
         self.file_name = file_name
-        self.schema: dict = {}
+        self._contents: Optional[dict] = None
         self.loader = loader
 
-    @cached_property
+    @property
     def contents(self) -> dict:
-        return self.loader.load(self.file_name)
+        if self._contents is None:
+            self._contents = self.loader.load(self.file_name)
 
-    def __getitem__(self, reference: str):
-        reference_path = reference.lstrip("#").strip("/").split("/")
+        return self._contents
+
+    def query(self, reference: str) -> Any:
+        reference = reference.replace("\\/", "&slash;")
+        reference_path = [
+            part.replace("&slash;", "/")
+            for part in reference.lstrip("#").strip("/").split("/")
+        ]
         schema = self.contents
 
         for item in reference_path:
@@ -120,3 +145,15 @@ class OpenApiSchema:
             schema = schema[item]
 
         return schema
+
+    def __getitem__(self, item: str) -> Any:
+        return self.contents[item]
+
+    def __contains__(self, item: str) -> bool:
+        return item in self.contents
+
+    def __iter__(self):
+        return iter(self.contents)
+
+
+__all__ = ["JsonReference", "JsonReferenceResolver", "OpenApiSchema", "URILoader"]

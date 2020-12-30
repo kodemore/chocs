@@ -37,9 +37,14 @@ class FormatValidationError(ValidationError):
     message = "Passed value must be valid string format: {expected_format}."
 
 
-class UniqueValidationError(TypeValidationError):
-    code = "unique_error"
+class UniqueItemsValidationError(TypeValidationError):
+    code = "unique_items_error"
     message = "Passed value must contain only unique items."
+
+
+class AdditionalItemsError(ValidationError):
+    code = "additional_items_error"
+    message = "Additional items in the array are not accepted."
 
 
 class ArithmeticValidationError(ValidationError, ArithmeticError):
@@ -92,6 +97,30 @@ class MaximumLengthError(LengthValidationError):
     message = "Passed value's length must be lower or equal to set maximum `{expected_maximum}`."
 
 
-class RequiredFieldError(ValidationError):
-    code = "required_field"
-    message = "Field `{required_field}` is required."
+class RequiredPropertyError(ValidationError):
+    code = "required_property_error"
+    message = "Property `{required_property}` is required."
+
+
+class PropertyValueError(ValidationError):
+    code = "property_value_error"
+    message = "Property `{property_name}` failed to pass validation: {validation_error}"
+
+
+class AdditionalPropertyError(ValidationError):
+    code = "additional_property_error"
+    message = "Property `{property_name}` is not allowed."
+
+
+class MinimumPropertyError(ValidationError):
+    code = "minimum_property_error"
+    message = (
+        "The number of properties is lower than expected minimum: {expected_minimum}"
+    )
+
+
+class MaximumPropertyError(ValidationError):
+    code = "maximum_property_error"
+    message = (
+        "The number of properties is greater than expected maximum: {expected_maximum}"
+    )

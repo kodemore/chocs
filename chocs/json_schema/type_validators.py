@@ -1,4 +1,3 @@
-from decimal import Decimal
 from numbers import Number
 from typing import Any, Callable, List, Union
 
@@ -55,8 +54,26 @@ def validate_array(value: list) -> list:
     return value
 
 
+def validate_object(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise TypeValidationError(expected_type="object")
+    return value
+
+
 def validate_nullable(value: Any, validator: Callable) -> Any:
     if value is None:
         return None
 
     return validator(value)
+
+
+__all__ = [
+    "validate_array",
+    "validate_boolean",
+    "validate_enum",
+    "validate_integer",
+    "validate_number",
+    "validate_nullable",
+    "validate_object",
+    "validate_string",
+]

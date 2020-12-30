@@ -22,7 +22,9 @@ class TestClient:
         headers: Optional[Union[HttpHeaders, Dict[str, str]]] = None,
     ) -> HttpResponse:
 
-        return self.application(self._create_request(HttpMethod.GET, path, body, json, headers))
+        return self.application(
+            self._create_request(HttpMethod.GET, path, body, json, headers)
+        )
 
     def post(
         self,
@@ -32,7 +34,9 @@ class TestClient:
         headers: Optional[Union[HttpHeaders, Dict[str, str]]] = None,
     ) -> HttpResponse:
 
-        return self.application(self._create_request(HttpMethod.POST, path, body, json, headers))
+        return self.application(
+            self._create_request(HttpMethod.POST, path, body, json, headers)
+        )
 
     def patch(
         self,
@@ -42,7 +46,9 @@ class TestClient:
         headers: Optional[Union[HttpHeaders, Dict[str, str]]] = None,
     ) -> HttpResponse:
 
-        return self.application(self._create_request(HttpMethod.PATCH, path, body, json, headers))
+        return self.application(
+            self._create_request(HttpMethod.PATCH, path, body, json, headers)
+        )
 
     def delete(
         self,
@@ -52,7 +58,9 @@ class TestClient:
         headers: Optional[Union[HttpHeaders, Dict[str, str]]] = None,
     ) -> HttpResponse:
 
-        return self.application(self._create_request(HttpMethod.DELETE, path, body, json, headers))
+        return self.application(
+            self._create_request(HttpMethod.DELETE, path, body, json, headers)
+        )
 
     def put(
         self,
@@ -62,7 +70,9 @@ class TestClient:
         headers: Optional[Union[HttpHeaders, Dict[str, str]]] = None,
     ) -> HttpResponse:
 
-        return self.application(self._create_request(HttpMethod.PUT, path, body, json, headers))
+        return self.application(
+            self._create_request(HttpMethod.PUT, path, body, json, headers)
+        )
 
     def options(
         self,
@@ -72,7 +82,9 @@ class TestClient:
         headers: Optional[Union[HttpHeaders, Dict[str, str]]] = None,
     ) -> HttpResponse:
 
-        return self.application(self._create_request(HttpMethod.OPTIONS, path, body, json, headers))
+        return self.application(
+            self._create_request(HttpMethod.OPTIONS, path, body, json, headers)
+        )
 
     def head(
         self,
@@ -82,7 +94,9 @@ class TestClient:
         headers: Optional[Union[HttpHeaders, Dict[str, str]]] = None,
     ) -> HttpResponse:
 
-        return self.application(self._create_request(HttpMethod.HEAD, path, body, json, headers))
+        return self.application(
+            self._create_request(HttpMethod.HEAD, path, body, json, headers)
+        )
 
     @staticmethod
     def _create_request(
@@ -103,4 +117,10 @@ class TestClient:
         uri = path_parts[0]
         query_string = HttpQueryString(path_parts[1] if len(path_parts) > 1 else "")
 
-        return HttpRequest(method=method, path=uri, body=body, headers=headers, query_string=query_string,)
+        return HttpRequest(
+            method=method,
+            path=uri,
+            body=body,
+            headers=headers,
+            query_string=query_string,
+        )
