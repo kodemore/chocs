@@ -16,6 +16,13 @@ from .number_validators import (
     validate_minimum,
     validate_multiple_of,
 )
+from .object_validators import (
+    validate_object_maximum_properties,
+    validate_object_minimum_properties,
+    validate_object_properties,
+    validate_object_property_names,
+    validate_object_required_properties,
+)
 from .string_validators import (
     validate_maximum_length,
     validate_minimum_length,
@@ -171,7 +178,68 @@ def _build_tuple_validator(
 
 
 def _build_object_validator(definition: Dict[str, Any]) -> Callable:
-    return validate_object
+    validators = [validate_object]
+
+    if "propertyNames" in definition:
+        definition["propertyNames"]["type"] = "string"
+        validators.append(
+            partial(
+                validate_object_property_names,
+                property_names=build_validator_from_schema(definition["propertyNames"]),
+            )
+        )
+
+    if "minProperties" in definition:
+        validators.append(
+            partial(
+                validate_object_minimum_properties,
+                expected_minimum=definition["minProperties"],
+            )
+        )
+
+    if "maxProperties" in definition:
+        validators.append(
+            partial(
+                validate_object_maximum_properties,
+                expected_maximum=definition["maxProperties"],
+            )
+        )
+
+    if "required" in definition:
+        validators.append(
+            partial(
+                validate_object_required_properties,
+                required_properties=definition["required"],
+            )
+        )
+
+    if "properties" in definition:
+        properties_validators = {
+            property_name: build_validator_from_schema(property_schema)
+            for property_name, property_schema in definition["properties"].items()
+        }
+
+        object_validator = partial(
+            validate_object_properties, properties=properties_validators
+        )
+
+        if "additionalProperties" in definition:
+            if isinstance(definition["additionalProperties"], bool):
+                object_validator = partial(
+                    object_validator,
+                    additional_properties=definition["additionalProperties"],
+                )
+            else:
+                object_validator = partial(
+                    object_validator,
+                    additional_properties=build_validator_from_schema(
+                        definition["additionalProperties"]
+                    ),
+                )
+
+        validators.append(object_validator)
+
+    return partial(validate_all_of, validators=validators)
 
 
 def _add_range_validators(

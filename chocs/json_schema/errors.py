@@ -18,6 +18,10 @@ class ValidationError(ValueError):
     def __bool__(self) -> bool:
         return False
 
+    @property
+    def code(self) -> str:
+        return self.code.format(**self.context)
+
     def __str__(self) -> str:
         return self.message.format(**self.context)
 
@@ -103,7 +107,7 @@ class RequiredPropertyError(ValidationError):
 
 
 class PropertyValueError(ValidationError):
-    code = "property_value_error"
+    code = "property_value_error:{sub_code}"
     message = "Property `{property_name}` failed to pass validation: {validation_error}"
 
 

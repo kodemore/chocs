@@ -7,6 +7,7 @@ from chocs.json_schema.errors import (
     FormatValidationError,
     LengthValidationError,
     MultipleOfValidationError,
+    PropertyValueError,
     RangeValidationError,
     TypeValidationError,
     UniqueItemsValidationError,
@@ -224,4 +225,42 @@ def test_can_build_validator_for_array() -> None:
 
 
 def test_can_build_validator_for_object() -> None:
-    pass
+
+    # validate type
+    validate = build_validator_from_schema({"type": "object"})
+    assert validate({"a": 1})
+    with pytest.raises(TypeValidationError):
+        validate("a")
+
+    # validate properties
+    validate = build_validator_from_schema(
+        {
+            "type": "object",
+            "properties": {
+                "email": {"type": "string", "format": "email"},
+                "name": {"type": "string"},
+                "address": {
+                    "type": "object",
+                    "properties": {
+                        "city": {"type": "string"},
+                        "street_no": {"type": "number"},
+                        "street_name": {"type": "string"},
+                    },
+                },
+            },
+        }
+    )
+    assert validate(
+        {
+            "email": "bob@email.com",
+            "name": "Bob Bobber",
+            "address": {
+                "city": "Bob Land",
+                "street_no": 10,
+                "street_name": "Bob Street",
+            },
+        }
+    )
+    assert validate({"email": "bob@email.com", "name": "Bob Bobber"})
+    with pytest.raises(PropertyValueError):
+        assert validate({"email": "email", "name": "Bob"})
