@@ -101,29 +101,46 @@ class MaximumLengthError(LengthValidationError):
     message = "Passed value's length must be lower or equal to set maximum `{expected_maximum}`."
 
 
-class RequiredPropertyError(ValidationError):
+class PropertyError(ValidationError):
+    code = "property_error"
+    message = "Problem with property {property_name}"
+    property_name = "unknown"
+
+    def __init__(self, *args, **kwargs: Any):
+        if "property_name" in kwargs:
+            self.property_name = kwargs["property_name"]
+
+        super().__init__(*args, **kwargs)
+
+
+class RequiredPropertyError(PropertyError):
     code = "required_property_error"
-    message = "Property `{required_property}` is required."
+    message = "Property `{property_name}` is required."
 
 
-class PropertyValueError(ValidationError):
+class PropertyValueError(PropertyError):
     code = "property_value_error:{sub_code}"
     message = "Property `{property_name}` failed to pass validation: {validation_error}"
 
 
-class AdditionalPropertyError(ValidationError):
+class PropertyNameError(PropertyError):
+    code = "property_name_error:{sub_code}"
+    message = "Property name `{property_name}` is invalid: {validation_error}"
+
+
+class AdditionalPropertyError(PropertyError):
     code = "additional_property_error"
     message = "Property `{property_name}` is not allowed."
 
 
-class MinimumPropertyError(ValidationError):
+class MinimumPropertyError(PropertyError):
     code = "minimum_property_error"
     message = (
         "The number of properties is lower than expected minimum: {expected_minimum}"
     )
 
 
-class MaximumPropertyError(ValidationError):
+class MaximumPropertyError(PropertyError):
     code = "maximum_property_error"
     message = (
         "The number of properties is greater than expected maximum: {expected_maximum}"

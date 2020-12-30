@@ -3,12 +3,15 @@ import pytest
 from chocs.json_schema import build_validator_from_schema
 from chocs.json_schema.errors import (
     AdditionalItemsError,
+    AdditionalPropertyError,
     EnumValidationError,
     FormatValidationError,
     LengthValidationError,
     MultipleOfValidationError,
+    PropertyError,
     PropertyValueError,
     RangeValidationError,
+    RequiredPropertyError,
     TypeValidationError,
     UniqueItemsValidationError,
 )
@@ -264,3 +267,88 @@ def test_can_build_validator_for_object() -> None:
     assert validate({"email": "bob@email.com", "name": "Bob Bobber"})
     with pytest.raises(PropertyValueError):
         assert validate({"email": "email", "name": "Bob"})
+    with pytest.raises(PropertyValueError) as error:
+        assert validate(
+            {"email": "bob@email.com", "name": "Bob", "address": {"city": 123}}
+        )
+
+    # turn off additional properties
+    validate = build_validator_from_schema(
+        {
+            "type": "object",
+            "properties": {
+                "email": {"type": "string", "format": "email"},
+                "name": {"type": "string"},
+            },
+            "additionalProperties": False,
+        }
+    )
+    assert validate({"email": "bob@email.com", "name": "Bob Bobber"})
+    with pytest.raises(AdditionalPropertyError):
+        validate({"email": "bob@email.com", "name": "Bob Bobber", "address": "aa"})
+
+    # validate additional properties
+    validate = build_validator_from_schema(
+        {
+            "type": "object",
+            "properties": {
+                "email": {"type": "string", "format": "email"},
+                "name": {"type": "string"},
+            },
+            "additionalProperties": {"type": "string"},
+        }
+    )
+    assert validate({"email": "bob@email.com", "name": "Bob Bobber"})
+    assert validate(
+        {"email": "bob@email.com", "name": "Bob Bobber", "address": "Bob Land"}
+    )
+    with pytest.raises(PropertyValueError):
+        validate({"email": "bob@email.com", "name": "Bob Bobber", "address": 123})
+
+    # validate required properties
+    validate = build_validator_from_schema(
+        {
+            "type": "object",
+            "properties": {
+                "email": {"type": "string", "format": "email"},
+                "name": {"type": "string"},
+            },
+            "required": ["email", "name"],
+        }
+    )
+    assert validate({"email": "bob@email.com", "name": "Bob Bobber"})
+    with pytest.raises(RequiredPropertyError):
+        validate({"email": "bob@email.com"})
+
+    # validate property names
+    validate = build_validator_from_schema(
+        {
+            "type": "object",
+            "propertyNames": {"type": "string", "pattern": "[a-z]+_[0-9]"},
+        }
+    )
+    assert validate({"test_1": "a", "test_2": "b"})
+    with pytest.raises(PropertyError):
+        validate({"email": "bob@email.com"})
+
+    # validate minimum properties
+    validate = build_validator_from_schema(
+        {
+            "type": "object",
+            "minProperties": 2,
+        }
+    )
+    validate({"a": 1, "b": 2})
+    with pytest.raises(PropertyError):
+        validate({"a": 1})
+
+    # validate maximum properties
+    validate = build_validator_from_schema(
+        {
+            "type": "object",
+            "maxProperties": 2,
+        }
+    )
+    validate({"a": 1, "b": 2})
+    with pytest.raises(PropertyError):
+        validate({"a": 1, "b": 2, "c": 3})

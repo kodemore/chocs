@@ -1,7 +1,7 @@
 import pytest
 from os import path
 
-from chocs.json_schema import JsonReference, OpenApiSchema, URILoader
+from chocs.json_schema import JsonReference, OpenApiSchema, URILoader, build_validator_from_schema
 
 
 def test_can_read_open_api_schema() -> None:
@@ -47,3 +47,21 @@ def test_can_resolve_reference() -> None:
     assert len(reference["allOf"]) == 2
 
     assert repr(reference) == f"JsonReference({reference_id})"
+
+
+def test_can_build_validator() -> None:
+    openapi_file = path.realpath(path.dirname(__file__) + "/../fixtures/openapi.yml")
+    schema = OpenApiSchema(openapi_file)
+
+    pet = schema.query("#/components/schemas/Pet")
+    validator = build_validator_from_schema(pet)
+
+    assert validator({"name": "Bob", "id": 1})
+    with pytest.raises(ValueError):
+        validator({})
+    with pytest.raises(ValueError):
+        validator({"name": "Bob"})
+    with pytest.raises(ValueError):
+        validator({"id": 11})
+    with pytest.raises(ValueError):
+        validator({"name": 1, "id": 1})

@@ -9,7 +9,7 @@ def validate_all_of(value: Any, validators: Iterable[Callable]) -> Any:
     return value
 
 
-def validate_any(value: Any, validators: Iterable[Callable]) -> Any:
+def validate_any_of(value: Any, validators: Iterable[Callable]) -> Any:
     for validate in validators:
         try:
             validate(value)
@@ -47,4 +47,4 @@ def validate_not(value: Any, validator: Callable) -> Any:
         return value
 
 
-__all__ = ["validate_any", "validate_all_of", "validate_not", "validate_one_of"]
+__all__ = ["validate_any_of", "validate_all_of", "validate_not", "validate_one_of"]

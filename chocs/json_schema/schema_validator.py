@@ -8,7 +8,7 @@ from .array_validators import (
     validate_tuple,
     validate_unique_items,
 )
-from .combining_validators import validate_all_of
+from .combining_validators import validate_all_of, validate_any_of, validate_one_of, validate_not
 from .number_validators import (
     validate_exclusive_maximum,
     validate_exclusive_minimum,
@@ -41,7 +41,28 @@ from .type_validators import (
 
 
 def build_validator_from_schema(schema: Dict[str, Any]) -> Callable:
-    return _build_validator_for_type(schema["type"], schema)
+    if "anyOf" in schema:
+        validators = [build_validator_from_schema(item) for item in schema["anyOf"]]
+        return partial(validate_any_of, validators=validators)
+
+    if "oneOf" in schema:
+        validators = [build_validator_from_schema(item) for item in schema["oneOf"]]
+        return partial(validate_one_of, validators=validators)
+
+    if "allOf" in schema:
+        validators = [build_validator_from_schema(item) for item in schema["allOf"]]
+        return partial(validate_all_of, validators=validators)
+
+    if "not" in schema:
+        return partial(validate_not, validator=build_validator_from_schema(schema["not"]))
+
+    if "type" in schema:
+        return _build_validator_for_type(schema["type"], schema)
+
+    if "enum" in schema:
+        return _build_enum_validator(schema)
+
+    raise ValueError("Could not build validator for passed schema")
 
 
 def _build_validator_for_type(schema_type: str, definition: Dict[str, Any]) -> Callable:

@@ -4,6 +4,7 @@ from .errors import (
     AdditionalPropertyError,
     MaximumPropertyError,
     MinimumPropertyError,
+    PropertyNameError,
     PropertyValueError,
     RequiredPropertyError,
     ValidationError,
@@ -23,7 +24,23 @@ def validate_object_properties(
             if not additional_properties:
                 raise AdditionalPropertyError(property_name=key)
             if callable(additional_properties):
-                obj[key] = additional_properties(value)
+                try:
+                    obj[key] = additional_properties(value)
+                except PropertyValueError as error:
+                    raise PropertyValueError(
+                        property_name=key + "." + error.context["property_name"],
+                        validation_error=error.context["validation_error"],
+                    )
+                except ValidationError as error:
+                    raise PropertyValueError(
+                        property_name=key,
+                        validation_error=str(error),
+                        sub_code=error.code,
+                    )
+                except ValueError as error:
+                    raise PropertyValueError(
+                        property_name=key, validation_error=str(error)
+                    )
             continue
         try:
             obj[key] = properties[key](value)
@@ -43,7 +60,17 @@ def validate_object_properties(
 
 
 def validate_object_property_names(obj: dict, property_names: Callable) -> dict:
-    [property_names(name) for name in obj.keys()]
+    for name in obj.keys():
+        try:
+            property_names(name)
+        except ValidationError as error:
+            raise PropertyNameError(
+                sub_code=error.code, property_name=name, validation_error=str(error)
+            )
+        except ValueError as error:
+            raise PropertyNameError(
+                sub_code="error", property_name=name, validation_error=str(error)
+            )
 
     return obj
 
