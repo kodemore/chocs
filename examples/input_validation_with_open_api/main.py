@@ -31,6 +31,7 @@ class Pet:
 
 @app.post("/pets", parsed_body=Pet)
 def create_pet(request: HttpRequest) -> HttpResponse:
+    assert isinstance(request.parsed_body, Pet)
     pet = request.parsed_body  # type: Pet
 
     return HttpResponse(pet.name)

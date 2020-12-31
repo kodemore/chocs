@@ -6,6 +6,7 @@ It provides an elegant API for writing fault-proof, extensible microservices.
 ## Features
 
  - AWS Serverless integration
+ - Open api integration  
  - Elegant and easy API
  - No additional bloat like built-in template engines, session handlers, etc.
  - Compatible with all WSGI servers
@@ -241,35 +242,105 @@ if __name__ == '__main__':
 The above example shows how to run two different modules, which support their own routes
 on two different ports in the one process.
 
-## Defining and using a custom middleware
+## Middleware
 
-Middleware are functions or classes that inherit `chocs.Middleware`. Middlewares have access to the request 
-object and the next function is used to control middleware stack flow. Successful middleware execution should call
-the `next` function *(which accepts a `chocs.HttpRequest` instance and returns `chocs.HttpReponse`)* and return a
-valid `chocs.HttpResponse` instance.
+Middleware are functions or classes that inherit `chocs.Middleware`. Middlewares have access to the request object
+and the `next` function which can be used to control middleware stack flow. Successful middleware execution should call
+the `next` function which accepts a `chocs.HttpRequest` instance and returns `chocs.HttpReponse`.
 
 Middlewares can perform various tasks:
- - Making changes in request/response objects ending
- - Validating input data
- - Authenticating users
- - End request-response cycle
- - Connecting to external data sources
- 
-Middlewares are different to functions decorated by `router.*` decorators as they are executed every time a request 
-happens and they are not bound to the URI.
- 
+- Making changes in request/response objects ending
+- Validating input data
+- Authenticating users
+- End request-response cycle
+- Connecting to external data sources
+
+## Integration with openapi
+
+Chocs provides middleware which can be used to validate input data and simplify working with 
+inputs by mapping them to dataclasses. To provide automatic validation for your request based
+on open api specification, instance of `chocs.middleware.OpenApiMiddleware` has to be created:
+
 ```python
-from chocs import HttpRequest, HttpResponse, Application, serve
-from chocs.middleware import MiddlewareHandler
+from chocs.middleware import OpenApiMiddleware
+from chocs import Application, HttpRequest, HttpResponse
+from os import path
+from dataclasses import dataclass
 
-def my_custom_middleware(request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
-    name = request.query_string.get("name", "John")
-    return HttpResponse(body=f"Hello {name}")
+# absolute path to file containing open api documentation; yaml and json files are supported
+openapi_filename = path.join(path.dirname(__file__), "/openapi.yml")
 
-app = Application(my_custom_middleware)
+# instantiating application and passing open api middleware
+app = Application(OpenApiMiddleware(openapi_filename))
 
-serve(app)
+# defining our dataclass for better type support
+@dataclass()
+class Pet:
+    id: str
+    name: str
+
+# the registered route must correspond to open api route within `path` section.
+# if request body is invalid the registered function will not be executed
+@app.post("/pets", parsed_body=Pet) # `parsed_body` parameter can be used to map request to certain type
+def create_pet(request: HttpRequest) -> HttpResponse:
+    # if request body is valid `request.parsed_body` will be instance of a Pet
+    assert isinstance(request.parsed_body, Pet)
+    
+    pet = request.parsed_body
+    return HttpResponse(pet.name)
 ```
+
+Open api file used in the example above can be [found here](./examples/input_validation_with_open_api/openapi.yml)
+
+### Handling validation errors with custom middleware
+
+By default, if validation fails users will see `500 response`. This behavior can be changed if custom middleware that
+catches validation errors is defined and used in application.
+
+### Defining and using a custom middleware
+ 
+The following code defines simple function middleware to catch validation errors when they appear and notifies users:
+
+```python
+from chocs.middleware import OpenApiMiddleware
+from chocs.json_schema.errors import ValidationError
+from chocs import Application, HttpRequest, HttpResponse
+from dataclasses import dataclass
+import json
+from typing import Callable
+from os import path
+
+openapi_filename = path.join(path.dirname(__file__), "/openapi.yml")
+
+
+# middleware must always accept two parameters; HttpRequest and Callable and return HttpResponse
+def handle_errors(request: HttpRequest, next: Callable) -> HttpResponse:
+    try:
+        return next(request) # we pass request further to middleware pipeline
+    except ValidationError as error: # if exception is thrown it is caught here and new response is generated instead
+        json_response = {
+            "code": error.code,
+            "message": str(error),
+        }
+        return HttpResponse(json.dumps(json_response), status=422)
+    
+# error handling middleware must go before open api one to catch errors thrown inside open api middleware
+app = Application(handle_errors, OpenApiMiddleware(openapi_filename))
+
+@dataclass()
+class Pet:
+  id: str
+  name: str
+
+@app.post("/pets", parsed_body=Pet)
+def create_pet(request: HttpRequest) -> HttpResponse:
+  assert isinstance(request.parsed_body, Pet)
+
+  pet = request.parsed_body
+  return HttpResponse(pet.name)
+```
+
+Full working example can be found inside [examples directory](./examples/input_validation_with_open_api)
 
 ## Request
 `chocs.Request` object is an abstraction around WSGI's environment and `wsgi.input` data with handy interface 
@@ -423,3 +494,17 @@ serve(http)
 ## Installation
 
 `poetry install`
+
+## Running tests
+
+`poetry run pytest`
+
+## Linting
+
+```shell
+poetry run black .
+poetry run isort .
+poetry run mypy .
+```
+
+## PR 
