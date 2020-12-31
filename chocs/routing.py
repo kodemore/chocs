@@ -10,8 +10,9 @@ _VAR_REGEX = "[^/]+"
 
 
 class Route:
-    def __init__(self, route: str):
+    def __init__(self, route: str, attributes: Optional[Dict] = None):
         self.route = route
+        self.attributes = attributes if attributes is not None else {}
         self._parameters_names: List[str] = []
         self._pattern: Pattern[str] = None  # type: ignore
         self._parameters: Dict[str, str] = {}

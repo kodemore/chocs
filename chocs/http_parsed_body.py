@@ -3,7 +3,7 @@ import yaml
 from cgi import parse_header
 from copy import copy
 from io import BytesIO
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 from .http_headers import HttpHeaders
 from .http_message import FormHttpMessage, HttpMessage, JsonHttpMessage, MultipartHttpMessage, YamlHttpMessage
@@ -12,14 +12,14 @@ from .http_message import FormHttpMessage, HttpMessage, JsonHttpMessage, Multipa
 class HttpParsedBodyTrait:
     _body: BytesIO
     _headers: HttpHeaders
-    _parsed_body: Optional[HttpMessage]
+    _parsed_body: Optional[Union[HttpMessage, Any]]
     _as_str: Optional[str]
     _as_dict: Optional[dict]
 
     @property
-    def parsed_body(self) -> HttpMessage:
+    def parsed_body(self) -> Union[HttpMessage, Any]:
         if self._parsed_body:
-            return copy(self._parsed_body)
+            return self._parsed_body
 
         content_type: Tuple[str, Dict[str, str]] = parse_header(
             self._headers["Content-Type"]  # type: ignore
