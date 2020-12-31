@@ -10,6 +10,7 @@ class ValidationError(ValueError):
             self.code = kwargs["code"]
 
         self.context = kwargs
+        self.code = self.code.format(**self.context)
         if args:
             super().__init__(*args)
         else:
@@ -17,10 +18,6 @@ class ValidationError(ValueError):
 
     def __bool__(self) -> bool:
         return False
-
-    @property
-    def code(self) -> str:
-        return self.code.format(**self.context)
 
     def __str__(self) -> str:
         return self.message.format(**self.context)
@@ -71,9 +68,7 @@ class RangeValidationError(ArithmeticValidationError):
 
 class MinimumRangeError(RangeValidationError):
     code = "minimum_error"
-    message = (
-        "Passed value must be greater or equal to set minimum `{expected_minimum}`."
-    )
+    message = "Passed value must be greater or equal to set minimum `{expected_minimum}`."
 
 
 class MinimumExclusiveRangeError(MinimumRangeError):
@@ -135,13 +130,9 @@ class AdditionalPropertyError(PropertyError):
 
 class MinimumPropertyError(PropertyError):
     code = "minimum_property_error"
-    message = (
-        "The number of properties is lower than expected minimum: {expected_minimum}"
-    )
+    message = "The number of properties is lower than expected minimum: {expected_minimum}"
 
 
 class MaximumPropertyError(PropertyError):
     code = "maximum_property_error"
-    message = (
-        "The number of properties is greater than expected maximum: {expected_maximum}"
-    )
+    message = "The number of properties is greater than expected maximum: {expected_maximum}"

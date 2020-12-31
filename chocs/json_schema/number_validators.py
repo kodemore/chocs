@@ -13,7 +13,7 @@ Number = Union[int, float, Decimal]
 
 
 def validate_multiple_of(value: Number, multiple_of: Number) -> Number:
-    if not value % multiple_of == 0:
+    if not value % multiple_of == 0:  # type: ignore
         raise MultipleOfValidationError(multiple_of=multiple_of)
 
     return value

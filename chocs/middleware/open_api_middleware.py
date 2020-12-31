@@ -1,4 +1,5 @@
 import inspect
+from typing import Callable, Dict
 
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
@@ -10,7 +11,7 @@ from chocs.middleware import Middleware, MiddlewareHandler
 class OpenApiMiddleware(Middleware):
     def __init__(self, openapi_filename: str):
         self.openapi = OpenApiSchema(openapi_filename)
-        self.validators = {}
+        self.validators: Dict[str, Callable] = {}
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         route = request.route
@@ -21,13 +22,18 @@ class OpenApiMiddleware(Middleware):
             path = route.route.replace("/", "\\/")
             method = str(request.method).lower()
             try:
-                body_schema = self.openapi.query(f"/paths/{path}/{method}/requestBody/content/application\/json/schema")
+                body_schema = self.openapi.query(
+                    f"/paths/{path}/{method}/requestBody/content/application\\/json/schema"
+                )
                 self.validators[route.route] = build_validator_from_schema(body_schema)
             except KeyError:
                 self.validators[route.route] = lambda obj: obj
 
         body_validator = self.validators[route.route]
-        parsed_body = dict(request.parsed_body)
+        try:
+            parsed_body = dict(request.parsed_body)  # type: ignore
+        except Exception:
+            parsed_body = {}
         valid_body = body_validator(parsed_body)
 
         if "parsed_body" in route.attributes and inspect.isclass(route.attributes["parsed_body"]):

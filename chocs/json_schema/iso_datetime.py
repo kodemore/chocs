@@ -32,9 +32,7 @@ def parse_iso_datetime_string(value: str) -> datetime:
     if date_parts[5] and date_parts[5].lower() != "z":
         sign = 1 if date_parts[5][0] == "+" else -1
         hours, minutes = date_parts[5][1:].split(":")
-        offset = timezone(
-            timedelta(hours=int(hours) * sign, minutes=int(minutes) * sign)
-        )
+        offset = timezone(timedelta(hours=int(hours) * sign, minutes=int(minutes) * sign))
     elif date_parts[5] and date_parts[5].lower() == "z":
         offset = timezone.utc
     else:
@@ -56,9 +54,7 @@ def parse_iso_date_string(value: str) -> date:
         raise ValueError("Passed value is not valid ISO-8601 date.")
 
     date_parts = ISO_8601_DATE_REGEX.findall(value)[0]
-    return date(
-        year=int(date_parts[0]), month=int(date_parts[1]), day=int(date_parts[2])
-    )
+    return date(year=int(date_parts[0]), month=int(date_parts[1]), day=int(date_parts[2]))
 
 
 def parse_iso_duration_string(value: str) -> timedelta:
@@ -110,9 +106,7 @@ def parse_iso_time_string(value: str) -> time:
     if tz_part and tz_part.lower() != "z":
         sign = 1 if tz_part[0] == "+" else -1
         hours, minutes = tz_part[1:].split(":")
-        offset = timezone(
-            timedelta(hours=int(hours) * sign, minutes=int(minutes) * sign)
-        )
+        offset = timezone(timedelta(hours=int(hours) * sign, minutes=int(minutes) * sign))
     elif tz_part and tz_part.lower() == "z":
         offset = timezone.utc
     else:

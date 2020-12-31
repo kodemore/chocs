@@ -14,13 +14,9 @@ class HttpResponse(HttpParsedBodyTrait):
         body: Union[bytes, bytearray, str, None] = None,
         status: Union[int, HttpStatus] = HttpStatus.OK,
         encoding: str = "utf-8",
-        headers: Optional[
-            Union[Dict[str, Union[str, Sequence[str]]], HttpHeaders]
-        ] = None,
+        headers: Optional[Union[Dict[str, Union[str, Sequence[str]]], HttpHeaders]] = None,
     ):
-        self._headers = (
-            headers if isinstance(headers, HttpHeaders) else HttpHeaders(headers)
-        )
+        self._headers = headers if isinstance(headers, HttpHeaders) else HttpHeaders(headers)
         if isinstance(status, int):
             status = HttpStatus.from_int(status)
         self.status_code = status

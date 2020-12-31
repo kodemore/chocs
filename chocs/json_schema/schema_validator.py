@@ -8,7 +8,7 @@ from .array_validators import (
     validate_tuple,
     validate_unique_items,
 )
-from .combining_validators import validate_all_of, validate_any_of, validate_one_of, validate_not
+from .combining_validators import validate_all_of, validate_any_of, validate_not, validate_one_of
 from .number_validators import (
     validate_exclusive_maximum,
     validate_exclusive_minimum,
@@ -84,6 +84,8 @@ def _build_validator_for_type(schema_type: str, definition: Dict[str, Any]) -> C
     if schema_type == "object":
         return _build_object_validator(definition)
 
+    raise ValueError(f"Unsupported schema type: {schema_type}")
+
 
 def _build_string_validator(definition: Dict[str, Any]) -> Callable:
     validators = [validate_string]
@@ -91,24 +93,16 @@ def _build_string_validator(definition: Dict[str, Any]) -> Callable:
         validators.append(_build_enum_validator(definition))
 
     if "format" in definition:
-        validators.append(
-            partial(validate_string_format, format_name=definition["format"])
-        )
+        validators.append(partial(validate_string_format, format_name=definition["format"]))
 
     if "pattern" in definition:
-        validators.append(
-            partial(validate_string_pattern, pattern=definition["pattern"])
-        )
+        validators.append(partial(validate_string_pattern, pattern=definition["pattern"]))
 
     if "minLength" in definition:
-        validators.append(
-            partial(validate_minimum_length, expected_minimum=definition["minLength"])
-        )
+        validators.append(partial(validate_minimum_length, expected_minimum=definition["minLength"]))
 
     if "maxLength" in definition:
-        validators.append(
-            partial(validate_maximum_length, expected_maximum=definition["maxLength"])
-        )
+        validators.append(partial(validate_maximum_length, expected_maximum=definition["maxLength"]))
 
     return partial(validate_all_of, validators=validators)
 
@@ -121,15 +115,11 @@ def _build_boolean_validator() -> Callable:
     return validate_boolean
 
 
-def _build_number_validator(
-    base_validator: Callable, definition: Dict[str, Any]
-) -> Callable:
+def _build_number_validator(base_validator: Callable, definition: Dict[str, Any]) -> Callable:
     validators = [base_validator]
     _add_range_validators(validators, definition)
     if "multipleOf" in definition:
-        validators.append(
-            partial(validate_multiple_of, multiple_of=definition["multipleOf"])
-        )
+        validators.append(partial(validate_multiple_of, multiple_of=definition["multipleOf"]))
 
     if "enum" in definition:
         validators.append(_build_enum_validator(definition))
@@ -140,13 +130,9 @@ def _build_number_validator(
 def _build_array_validator(definition: Dict[str, Any]) -> Callable:
     validators = [validate_array]
     if "minItems" in definition:
-        validators.append(
-            partial(validate_minimum_items, expected_minimum=definition["minItems"])
-        )
+        validators.append(partial(validate_minimum_items, expected_minimum=definition["minItems"]))
     if "maxItems" in definition:
-        validators.append(
-            partial(validate_maximum_items, expected_maximum=definition["maxItems"])
-        )
+        validators.append(partial(validate_maximum_items, expected_maximum=definition["maxItems"]))
 
     if "uniqueItems" in definition and definition["uniqueItems"]:
         validators.append(validate_unique_items)
@@ -155,29 +141,18 @@ def _build_array_validator(definition: Dict[str, Any]) -> Callable:
         if isinstance(definition["items"], list):
             _build_tuple_validator(definition, validators)
         elif isinstance(definition["items"], dict):
-            validators.append(
-                partial(
-                    validate_items,
-                    item_validator=build_validator_from_schema(definition["items"]),
-                )
-            )
+            validators.append(partial(validate_items, item_validator=build_validator_from_schema(definition["items"]),))
 
     return partial(validate_all_of, validators=validators)
 
 
-def _build_tuple_validator(
-    definition: Dict[str, Any], validators: List[Callable]
-) -> None:
-    items_validators = [
-        build_validator_from_schema(item_schema) for item_schema in definition["items"]
-    ]
+def _build_tuple_validator(definition: Dict[str, Any], validators: List[Callable]) -> None:
+    items_validators = [build_validator_from_schema(item_schema) for item_schema in definition["items"]]
     if "additionalItems" in definition:
         if isinstance(definition["additionalItems"], bool):
             validators.append(
                 partial(
-                    validate_tuple,
-                    item_validator=items_validators,
-                    additional_items=definition["additionalItems"],
+                    validate_tuple, item_validator=items_validators, additional_items=definition["additionalItems"],
                 )
             )
         else:
@@ -185,17 +160,11 @@ def _build_tuple_validator(
                 partial(
                     validate_tuple,
                     item_validator=items_validators,
-                    additional_items=build_validator_from_schema(
-                        definition["additionalItems"]
-                    ),
+                    additional_items=build_validator_from_schema(definition["additionalItems"]),
                 )
             )
     else:
-        validators.append(
-            partial(
-                validate_tuple, item_validator=items_validators, additional_items=True
-            )
-        )
+        validators.append(partial(validate_tuple, item_validator=items_validators, additional_items=True))
 
 
 def _build_object_validator(definition: Dict[str, Any]) -> Callable:
@@ -205,34 +174,18 @@ def _build_object_validator(definition: Dict[str, Any]) -> Callable:
         definition["propertyNames"]["type"] = "string"
         validators.append(
             partial(
-                validate_object_property_names,
-                property_names=build_validator_from_schema(definition["propertyNames"]),
+                validate_object_property_names, property_names=build_validator_from_schema(definition["propertyNames"]),
             )
         )
 
     if "minProperties" in definition:
-        validators.append(
-            partial(
-                validate_object_minimum_properties,
-                expected_minimum=definition["minProperties"],
-            )
-        )
+        validators.append(partial(validate_object_minimum_properties, expected_minimum=definition["minProperties"],))
 
     if "maxProperties" in definition:
-        validators.append(
-            partial(
-                validate_object_maximum_properties,
-                expected_maximum=definition["maxProperties"],
-            )
-        )
+        validators.append(partial(validate_object_maximum_properties, expected_maximum=definition["maxProperties"],))
 
     if "required" in definition:
-        validators.append(
-            partial(
-                validate_object_required_properties,
-                required_properties=definition["required"],
-            )
-        )
+        validators.append(partial(validate_object_required_properties, required_properties=definition["required"],))
 
     if "properties" in definition:
         properties_validators = {
@@ -240,22 +193,15 @@ def _build_object_validator(definition: Dict[str, Any]) -> Callable:
             for property_name, property_schema in definition["properties"].items()
         }
 
-        object_validator = partial(
-            validate_object_properties, properties=properties_validators
-        )
+        object_validator = partial(validate_object_properties, properties=properties_validators)
 
         if "additionalProperties" in definition:
             if isinstance(definition["additionalProperties"], bool):
-                object_validator = partial(
-                    object_validator,
-                    additional_properties=definition["additionalProperties"],
-                )
+                object_validator = partial(object_validator, additional_properties=definition["additionalProperties"],)
             else:
                 object_validator = partial(
                     object_validator,
-                    additional_properties=build_validator_from_schema(
-                        definition["additionalProperties"]
-                    ),
+                    additional_properties=build_validator_from_schema(definition["additionalProperties"]),
                 )
 
         validators.append(object_validator)
@@ -263,38 +209,18 @@ def _build_object_validator(definition: Dict[str, Any]) -> Callable:
     return partial(validate_all_of, validators=validators)
 
 
-def _add_range_validators(
-    validators: List[Callable], definition: Dict[str, Any]
-) -> None:
+def _add_range_validators(validators: List[Callable], definition: Dict[str, Any]) -> None:
     if "minimum" in definition:
-        validators.append(
-            partial(validate_minimum, expected_minimum=definition["minimum"])
-        )
+        validators.append(partial(validate_minimum, expected_minimum=definition["minimum"]))
     if "inclusiveMinimum" in definition:
-        validators.append(
-            partial(validate_minimum, expected_minimum=definition["inclusiveMinimum"])
-        )
+        validators.append(partial(validate_minimum, expected_minimum=definition["inclusiveMinimum"]))
 
     if "maximum" in definition:
-        validators.append(
-            partial(validate_maximum, expected_maximum=definition["maximum"])
-        )
+        validators.append(partial(validate_maximum, expected_maximum=definition["maximum"]))
     if "inclusiveMaximum" in definition:
-        validators.append(
-            partial(validate_maximum, expected_maximum=definition["inclusiveMaximum"])
-        )
+        validators.append(partial(validate_maximum, expected_maximum=definition["inclusiveMaximum"]))
 
     if "exclusiveMinimum" in definition:
-        validators.append(
-            partial(
-                validate_exclusive_minimum,
-                expected_minimum=definition["exclusiveMinimum"],
-            )
-        )
+        validators.append(partial(validate_exclusive_minimum, expected_minimum=definition["exclusiveMinimum"],))
     if "exclusiveMaximum" in definition:
-        validators.append(
-            partial(
-                validate_exclusive_maximum,
-                expected_maximum=definition["exclusiveMaximum"],
-            )
-        )
+        validators.append(partial(validate_exclusive_maximum, expected_maximum=definition["exclusiveMaximum"],))

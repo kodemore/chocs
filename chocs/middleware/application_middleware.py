@@ -1,9 +1,10 @@
 from chocs.http_error import HttpError
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
-from chocs.middleware import Middleware, MiddlewareHandler
 from chocs.routing import Router
 from chocs.serverless.serverless import ServerlessFunction
+
+from .middleware import Middleware, MiddlewareHandler
 
 
 class ApplicationMiddleware(Middleware):

@@ -1,5 +1,6 @@
-import json
 from dataclasses import dataclass
+
+import json
 from os import path
 
 from chocs import Application, HttpRequest, HttpResponse, HttpStatus, serve
@@ -13,11 +14,10 @@ def error_handler(request, next) -> HttpResponse:
     try:
         return next(request)
     except ValidationError as error:
-        json_error = {
-            "error_code": error.code,
-            "error_message": str(error)
-        }
-        return HttpResponse(json.dumps(json_error), status=HttpStatus.UNPROCESSABLE_ENTITY)
+        json_error = {"error_code": error.code, "error_message": str(error)}
+        return HttpResponse(
+            json.dumps(json_error), status=HttpStatus.UNPROCESSABLE_ENTITY
+        )
 
 
 app = Application(error_handler, OpenApiMiddleware(open_api_filename))

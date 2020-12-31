@@ -98,31 +98,22 @@ class Router:
             self._routes[method].sort(key=lambda r: r[0].is_wildcard)
 
     @staticmethod
-    def _normalise_methods(
-        methods: Union[str, HttpMethod, List[Union[str, HttpMethod]]]
-    ) -> List[HttpMethod]:
+    def _normalise_methods(methods: Union[str, HttpMethod, List[Union[str, HttpMethod]]]) -> List[HttpMethod]:
         if methods == "*":
             methods = [method for method in HttpMethod]
         elif isinstance(methods, HttpMethod):
             methods = [methods]
         else:
-            methods = [
-                method if isinstance(method, HttpMethod) else HttpMethod(method.upper())
-                for method in methods
-            ]
+            methods = [method if isinstance(method, HttpMethod) else HttpMethod(method.upper()) for method in methods]
 
         return methods  # type: ignore
 
-    def match(
-        self, uri: str, method: Union[HttpMethod, str] = HttpMethod.GET
-    ) -> Tuple[Route, Callable]:
+    def match(self, uri: str, method: Union[HttpMethod, str] = HttpMethod.GET) -> Tuple[Route, Callable]:
         if isinstance(method, str):
             method = HttpMethod(method)
 
         if method not in self._routes:
-            raise NotFoundError(
-                f"Could not match any resource matching {method} {uri} uri"
-            )
+            raise NotFoundError(f"Could not match any resource matching {method} {uri} uri")
 
         for route in self._routes[method]:
             if route[0].match(uri):

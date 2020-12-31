@@ -109,10 +109,7 @@ def validate_format_email(value: str) -> str:
     return value
 
 
-HOSTNAME_REGEX = re.compile(
-    r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*$",
-    re.I,
-)
+HOSTNAME_REGEX = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[-0-9a-z]{0,61}[0-9a-z])?)*$", re.I,)
 
 
 def validate_format_hostname(value: str) -> str:
@@ -162,8 +159,7 @@ def validate_format_ip_address(value: Any) -> Union[IPv4Address, IPv6Address]:
 
 
 SEMVER_REGEX = re.compile(
-    r"^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)(?:\+([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)$",
-    re.I,
+    r"^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)(?:\+([0-9a-z-]+(?:\.[0-9a-z-]+)*))?)$", re.I,
 )
 
 

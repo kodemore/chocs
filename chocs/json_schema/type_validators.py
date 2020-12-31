@@ -18,12 +18,8 @@ def validate_boolean(value: Any) -> bool:
     raise TypeValidationError(expected_type=bool)
 
 
-def validate_enum(
-    value: Any, values: List[Union[str, int, float, bool]]
-) -> Union[str, int, float, bool]:
-    for (
-        item
-    ) in values:  # `if value in values` expression does casting and we dont want it
+def validate_enum(value: Any, values: List[Union[str, int, float, bool]]) -> Union[str, int, float, bool]:
+    for item in values:  # `if value in values` expression does casting and we dont want it
         if item is value:
             return value
 

@@ -4,6 +4,7 @@ from typing import Callable
 
 from chocs import (
     Application,
+    ApplicationMiddleware,
     HttpMethod,
     HttpRequest,
     HttpResponse,
@@ -11,7 +12,6 @@ from chocs import (
     NotFoundError,
     Route,
     Router,
-    ApplicationMiddleware,
 )
 
 

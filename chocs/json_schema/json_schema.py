@@ -31,7 +31,7 @@ class URILoader:
         if extension not in URILoader.LOADERS:
             raise TypeError(f"Could not resolve uri `{file_name}`")
 
-        return self.LOADERS[extension](file)
+        return self.LOADERS[extension](file)  # type: ignore
 
 
 _default_uri_loader = URILoader()
@@ -42,7 +42,7 @@ class JsonReference:
         self.uri, self.reference = uri.split("#")
         self.id = uri
         self._loader = loader
-        self._data = None
+        self._data: Optional[Dict] = None
 
     def __getitem__(self, key: str):
         return self.data[key]
@@ -61,7 +61,8 @@ class JsonReference:
 
         if isinstance(schema, JsonReference):
             self._data = schema.data
-        self._data = schema
+
+        self._data = schema  # type: ignore
 
         return self._data
 
@@ -133,10 +134,7 @@ class OpenApiSchema:
 
     def query(self, reference: str) -> Any:
         reference = reference.replace("\\/", "&slash;")
-        reference_path = [
-            part.replace("&slash;", "/")
-            for part in reference.lstrip("#").strip("/").split("/")
-        ]
+        reference_path = [part.replace("&slash;", "/") for part in reference.lstrip("#").strip("/").split("/")]
         schema = self.contents
 
         for item in reference_path:

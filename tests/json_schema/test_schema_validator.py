@@ -332,23 +332,13 @@ def test_can_build_validator_for_object() -> None:
         validate({"email": "bob@email.com"})
 
     # validate minimum properties
-    validate = build_validator_from_schema(
-        {
-            "type": "object",
-            "minProperties": 2,
-        }
-    )
+    validate = build_validator_from_schema({"type": "object", "minProperties": 2,})
     validate({"a": 1, "b": 2})
     with pytest.raises(PropertyError):
         validate({"a": 1})
 
     # validate maximum properties
-    validate = build_validator_from_schema(
-        {
-            "type": "object",
-            "maxProperties": 2,
-        }
-    )
+    validate = build_validator_from_schema({"type": "object", "maxProperties": 2,})
     validate({"a": 1, "b": 2})
     with pytest.raises(PropertyError):
         validate({"a": 1, "b": 2, "c": 3})

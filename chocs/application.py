@@ -24,10 +24,7 @@ class Application:
         self._cached_middleware: Optional[MiddlewarePipeline] = None
 
     def _append_route(
-        self,
-        method: HttpMethod,
-        route: Route,
-        handler: Callable[[HttpRequest], HttpResponse],
+        self, method: HttpMethod, route: Route, handler: Callable[[HttpRequest], HttpResponse],
     ):
         if self.parent:
             self.parent._append_route(method, route, handler)
@@ -128,15 +125,15 @@ class Application:
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
         try:
-            route, handler = self.router.match(
-                request.path, request.method
-            )
+            route, handler = self.router.match(request.path, request.method)
             request.path_parameters = route.parameters
             request.route = route
             request.attributes["__handler__"] = handler
         except NotFoundError:
+
             def _handler(req: HttpRequest) -> HttpResponse:
                 raise NotFoundError()
+
             request.attributes["__handler__"] = _handler
 
         return self._application_middleware(request)
