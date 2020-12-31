@@ -16,6 +16,6 @@ from .http_query_string import HttpQueryString
 from .http_request import HttpRequest
 from .http_response import HttpResponse
 from .http_status import HttpStatus
-from .router_middleware import RouterMiddleware
+from chocs.middleware.router_middleware import RouterMiddleware
 from .routing import Route, Router
 from .wsgi import create_wsgi_handler, serve

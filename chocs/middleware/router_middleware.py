@@ -1,11 +1,11 @@
 from typing import Callable, Union
 
-from .http_error import HttpError
-from .http_request import HttpRequest
-from .http_response import HttpResponse
-from .middleware import Middleware, MiddlewareHandler
-from .routing import Route, Router
-from .serverless.serverless import ServerlessFunction
+from chocs.http_error import HttpError
+from chocs.http_request import HttpRequest
+from chocs.http_response import HttpResponse
+from chocs.middleware import Middleware, MiddlewareHandler
+from chocs.routing import Route, Router
+from chocs.serverless.serverless import ServerlessFunction
 
 
 class RouterMiddleware(Middleware):

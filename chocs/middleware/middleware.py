@@ -3,8 +3,8 @@ from copy import deepcopy
 from queue import Queue
 from typing import Callable, Union
 
-from .http_request import HttpRequest
-from .http_response import HttpResponse
+from chocs.http_request import HttpRequest
+from chocs.http_response import HttpResponse
 
 
 class MiddlewareHandler(ABC):

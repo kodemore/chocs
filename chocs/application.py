@@ -4,8 +4,8 @@ from typing import Callable, List, Optional, Union
 from .http_method import HttpMethod
 from .http_request import HttpRequest
 from .http_response import HttpResponse
-from .middleware import Middleware, MiddlewarePipeline
-from .router_middleware import RouterMiddleware
+from .middleware.middleware import Middleware, MiddlewarePipeline
+from .middleware.router_middleware import RouterMiddleware
 from .routing import Route, Router
 from .serverless.wrapper import create_serverless_function
 
