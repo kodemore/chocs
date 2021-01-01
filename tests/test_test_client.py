@@ -3,6 +3,7 @@ from chocs.testing import TestClient
 from tests.fixtures.app_fixture import app
 
 app.use("tests.fixtures.routes_fixture")
+TestClient.__test__ = False
 
 
 class TestTestClient:

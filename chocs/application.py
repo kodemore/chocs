@@ -1,17 +1,18 @@
 import importlib
 from typing import Callable, List, Optional, Union
 
+from .http_error import NotFoundError
 from .http_method import HttpMethod
 from .http_request import HttpRequest
 from .http_response import HttpResponse
-from .middleware import Middleware, MiddlewarePipeline
-from .router_middleware import RouterMiddleware
+from .middleware.application_middleware import ApplicationMiddleware
+from .middleware.middleware import Middleware, MiddlewarePipeline
 from .routing import Route, Router
 from .serverless.wrapper import create_serverless_function
 
 
 class Application:
-    def __init__(self, *middleware: Union[Middleware, Callable]):
+    def __init__(self, *middleware: Union[Middleware, Callable], open_api_path: str = ""):
         self.parent: Optional[Application] = None
         self._middleware = MiddlewarePipeline()
         for item in middleware:
@@ -30,69 +31,69 @@ class Application:
 
         self.router.append(route, handler, method)
 
-    def _create_route(self, route: str) -> Route:
+    def _create_route(self, route: str, attributes: dict) -> Route:
         base_uri = "".join(self.namespace[1:])
-        return Route(base_uri + route)
+        return Route(base_uri + route, attributes)
 
-    def get(self, route: str) -> Callable:
+    def get(self, route: str, **attributes) -> Callable:
         def _get(handler: Callable) -> Callable:
-            r = self._create_route(route)
+            r = self._create_route(route, attributes)
             self._append_route(HttpMethod.GET, r, handler)
             return create_serverless_function(handler, r, self._middleware)
 
         return _get
 
-    def post(self, route: str) -> Callable:
+    def post(self, route: str, **attributes) -> Callable:
         def _post(handler: Callable) -> Callable:
-            r = self._create_route(route)
+            r = self._create_route(route, attributes)
             self._append_route(HttpMethod.POST, r, handler)
             return create_serverless_function(handler, r, self._middleware)
 
         return _post
 
-    def put(self, route: str) -> Callable:
+    def put(self, route: str, **attributes) -> Callable:
         def _put(handler: Callable) -> Callable:
-            r = self._create_route(route)
+            r = self._create_route(route, attributes)
             self._append_route(HttpMethod.PUT, r, handler)
             return create_serverless_function(handler, r, self._middleware)
 
         return _put
 
-    def patch(self, route: str) -> Callable:
+    def patch(self, route: str, **attributes) -> Callable:
         def _patch(handler: Callable) -> Callable:
-            r = self._create_route(route)
+            r = self._create_route(route, attributes)
             self._append_route(HttpMethod.PATCH, r, handler)
             return create_serverless_function(handler, r, self._middleware)
 
         return _patch
 
-    def delete(self, route: str) -> Callable:
+    def delete(self, route: str, **attributes) -> Callable:
         def _delete(handler: Callable) -> Callable:
-            r = self._create_route(route)
+            r = self._create_route(route, attributes)
             self._append_route(HttpMethod.DELETE, r, handler)
             return create_serverless_function(handler, r, self._middleware)
 
         return _delete
 
-    def head(self, route: str) -> Callable:
+    def head(self, route: str, **attributes) -> Callable:
         def _head(handler: Callable) -> Callable:
-            r = self._create_route(route)
+            r = self._create_route(route, attributes)
             self._append_route(HttpMethod.HEAD, r, handler)
             return create_serverless_function(handler, r, self._middleware)
 
         return _head
 
-    def options(self, route: str) -> Callable:
+    def options(self, route: str, **attributes) -> Callable:
         def _options(handler: Callable) -> Callable:
-            r = self._create_route(route)
+            r = self._create_route(route, attributes)
             self._append_route(HttpMethod.OPTIONS, r, handler)
             return create_serverless_function(handler, r, self._middleware)
 
         return _options
 
-    def any(self, route: str) -> Callable:
+    def any(self, route: str, **attributes) -> Callable:
         def _any(handler: Callable) -> Callable:
-            r = self._create_route(route)
+            r = self._create_route(route, attributes)
             self._append_route(HttpMethod.GET, r, handler)
             self._append_route(HttpMethod.POST, r, handler)
             self._append_route(HttpMethod.PUT, r, handler)
@@ -123,6 +124,18 @@ class Application:
         return self
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
+        try:
+            route, handler = self.router.match(request.path, request.method)
+            request.path_parameters = route.parameters
+            request.route = route
+            request.attributes["__handler__"] = handler
+        except NotFoundError:
+
+            def _handler(req: HttpRequest) -> HttpResponse:
+                raise NotFoundError()
+
+            request.attributes["__handler__"] = _handler
+
         return self._application_middleware(request)
 
     def use(self, module: str) -> None:
@@ -136,7 +149,7 @@ class Application:
     def _application_middleware(self) -> MiddlewarePipeline:
         if self._cached_middleware is None:
             middleware = MiddlewarePipeline(self._middleware.queue)
-            middleware.append(RouterMiddleware(self.router))
+            middleware.append(ApplicationMiddleware(self.router))
             self._cached_middleware = middleware
 
         return self._cached_middleware

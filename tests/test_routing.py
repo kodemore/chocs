@@ -4,6 +4,7 @@ from typing import Callable
 
 from chocs import (
     Application,
+    ApplicationMiddleware,
     HttpMethod,
     HttpRequest,
     HttpResponse,
@@ -11,7 +12,6 @@ from chocs import (
     NotFoundError,
     Route,
     Router,
-    RouterMiddleware,
 )
 
 
@@ -106,7 +106,6 @@ http = Application()
 def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
     ok_response = HttpResponse("OK", HttpStatus.OK)
     request = HttpRequest(method, "/pet")
-    router = RouterMiddleware(http.router)
 
     def noop():
         pass
@@ -116,13 +115,13 @@ def test_router_method(router_decorator: Callable, method: HttpMethod) -> None:
         return ok_response
 
     assert get_pet(HttpRequest(HttpMethod.GET)) == ok_response
-    assert router.handle(request, noop) == ok_response
+    assert http(request) == ok_response
 
 
 def test_router_not_found() -> None:
     app = Application()
 
-    request = HttpRequest(HttpMethod.GET, "/pet")
+    request = HttpRequest(HttpMethod.GET, "/petxxx")
     response = app(request)
 
     assert response.status_code == HttpStatus.NOT_FOUND

@@ -2,7 +2,7 @@ from typing import Callable
 
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
-from chocs.middleware import MiddlewarePipeline
+from chocs.middleware.middleware import MiddlewarePipeline
 from chocs.routing import Route
 
 from .aws import AwsServerlessFunction
