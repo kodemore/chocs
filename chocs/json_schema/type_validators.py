@@ -20,8 +20,12 @@ def validate_boolean(value: Any) -> bool:
 
 def validate_enum(value: Any, values: List[Union[str, int, float, bool]]) -> Union[str, int, float, bool]:
     for item in values:  # `if value in values` expression does casting and we dont want it
-        if item is value:
-            return value
+        if isinstance(value, bool):
+            if item is value:
+                return value
+        else:
+            if item == value:
+                return value
 
     raise EnumValidationError(expected_values=values)
 
