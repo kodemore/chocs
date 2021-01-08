@@ -18,10 +18,15 @@ def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
         headers.set(key, value)
     headers.set("Content-Type", environ.get("CONTENT_TYPE", "text/plain"))
 
+    if "wsgi.input" in environ:  # unify all the different types of wsgi server implementations
+        body = BytesIO(environ["wsgi.input"].read())
+    else:
+        body = BytesIO(b"")
+
     return HttpRequest(
         method=HttpMethod(environ.get("REQUEST_METHOD", "GET").upper()),
         path=environ.get("PATH_INFO", "/"),
-        body=environ.get("wsgi.input", BytesIO(b"")),
+        body=body,
         query_string=HttpQueryString(environ.get("QUERY_STRING", "")),
         headers=headers,
     )
@@ -32,7 +37,6 @@ def create_wsgi_handler(
 ) -> Callable[[Dict[str, Any], Callable[..., Any]], BytesIO]:
     def _handler(environ: Dict[str, Any], start: Callable) -> BytesIO:
         request = create_http_request_from_wsgi(environ)
-
         if debug:
             try:
                 response = application(request)

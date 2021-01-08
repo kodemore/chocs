@@ -25,7 +25,7 @@ paths:
         - name: tags
           in: query
           description: tags to filter by
-          required: false
+          required: true
           style: form
           schema:
             type: array

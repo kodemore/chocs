@@ -1,9 +1,10 @@
 import json
-import yaml
-from collections import UserDict
+from copy import copy
 from io import BytesIO
 from json.decoder import JSONDecodeError
 from typing import Any, Dict, Optional
+
+import yaml
 
 from .http_multipart_message_parser import parse_multipart_message
 from .http_query_string import parse_qs
@@ -13,12 +14,24 @@ class HttpMessage(str):
     pass
 
 
-class CompositeHttpMessage(UserDict, HttpMessage):
+class CompositeHttpMessage(HttpMessage):
+    def __init__(self, data: dict) -> None:
+        self.data = data
+
     def get(self, name: str, default: Optional[Any] = None) -> Any:
         if name in self:
             return self[name]
 
         return default
+
+    def __getitem__(self, key: str):
+        return self.data[key]
+
+    def __contains__(self, key: str):
+        return key in self.data
+
+    def __copy__(self):
+        return type(self)(copy(self.data))
 
 
 class YamlHttpMessage(CompositeHttpMessage):
@@ -33,9 +46,7 @@ class YamlHttpMessage(CompositeHttpMessage):
         except JSONDecodeError:
             ...  # ignore
 
-        instance = YamlHttpMessage(parsed_body)
-
-        return instance
+        return YamlHttpMessage(parsed_body)
 
 
 class FormHttpMessage(CompositeHttpMessage):
@@ -44,12 +55,7 @@ class FormHttpMessage(CompositeHttpMessage):
         body.seek(0)
         decoded_input = body.read().decode(encoding)
         fields = parse_qs(decoded_input)
-        instance = FormHttpMessage()
-
-        for name, value in fields.items():
-            instance[name] = value
-
-        return instance
+        return FormHttpMessage(fields)
 
 
 class JsonHttpMessage(CompositeHttpMessage):
@@ -64,9 +70,7 @@ class JsonHttpMessage(CompositeHttpMessage):
         except JSONDecodeError:
             ...  # ignore
 
-        instance = JsonHttpMessage(parsed_body)
-
-        return instance
+        return JsonHttpMessage(parsed_body)
 
 
 class MultipartHttpMessage(CompositeHttpMessage):
@@ -75,12 +79,7 @@ class MultipartHttpMessage(CompositeHttpMessage):
         body.seek(0)
         fields = parse_multipart_message(body.read(), boundary, encoding)
 
-        instance = MultipartHttpMessage()
-
-        for name, value in fields.items():
-            instance[name] = value
-
-        return instance
+        return MultipartHttpMessage(fields)
 
 
 __all__ = [

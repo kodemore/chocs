@@ -342,3 +342,4 @@ def test_can_build_validator_for_object() -> None:
     validate({"a": 1, "b": 2})
     with pytest.raises(PropertyError):
         validate({"a": 1, "b": 2, "c": 3})
+
