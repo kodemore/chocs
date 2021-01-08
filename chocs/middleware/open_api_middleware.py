@@ -49,18 +49,23 @@ class OpenApiMiddleware(Middleware):
     def _get_query_validator(self, route: str, method: HttpMethod) -> Callable:
         if route not in self.query_validators:
             path = route.replace("/", "\\/")
-            method = str(method).lower()
+            method_name = str(method).lower()
             try:
-                query_parameters = [item for item in self.openapi.query(f"/paths/{path}/{method}/parameters") if item["in"] == "query"]
+                query_parameters = [
+                    item
+                    for item in self.openapi.query(f"/paths/{path}/{method_name}/parameters")
+                    if item["in"] == "query"
+                ]
                 query_schema = {
                     "type": "object",
                     "properties": {},
                     "required": [],
                 }
                 for param in query_parameters:
-                    query_schema["properties"][param["name"]] = param["schema"]
+                    param_name = param.get("name", "_")
+                    query_schema["properties"][param_name] = param["schema"]  # type:ignore
                     if param["required"]:
-                        query_schema["required"].append(param["name"])
+                        query_schema["required"].append(param_name)  # type:ignore
 
                 self.query_validators[route] = build_validator_from_schema(query_schema)
             except KeyError:
@@ -71,10 +76,10 @@ class OpenApiMiddleware(Middleware):
     def _get_body_validator(self, route: str, method: HttpMethod) -> Callable:
         if route not in self.body_validators:
             path = route.replace("/", "\\/")
-            method = str(method).lower()
+            method_name = str(method).lower()
             try:
                 body_schema = self.openapi.query(
-                    f"/paths/{path}/{method}/requestBody/content/application\\/json/schema"
+                    f"/paths/{path}/{method_name}/requestBody/content/application\\/json/schema"
                 )
                 self.body_validators[route] = build_validator_from_schema(body_schema)
             except KeyError:

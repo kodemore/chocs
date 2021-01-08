@@ -2,7 +2,7 @@ import json
 from copy import copy
 from io import BytesIO
 from json.decoder import JSONDecodeError
-from typing import Any, Dict, Optional
+from typing import Any, Dict, ItemsView, KeysView, Optional, ValuesView
 
 import yaml
 
@@ -24,14 +24,26 @@ class CompositeHttpMessage(HttpMessage):
 
         return default
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key) -> Any:
         return self.data[key]
 
-    def __contains__(self, key: str):
+    def __contains__(self, key):
         return key in self.data
 
     def __copy__(self):
         return type(self)(copy(self.data))
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def items(self) -> ItemsView:
+        return self.data.items()
+
+    def values(self) -> ValuesView:
+        return self.data.values()
+
+    def keys(self) -> KeysView:
+        return self.data.keys()
 
 
 class YamlHttpMessage(CompositeHttpMessage):

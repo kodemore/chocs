@@ -135,5 +135,8 @@ class HttpQueryString:
 
         return other._str == self._str
 
+    def __iter__(self):
+        return iter(self._params)
+
 
 __all__ = ["HttpQueryString", "build_dict_from_path", "parse_qs"]
