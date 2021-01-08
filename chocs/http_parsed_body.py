@@ -1,9 +1,9 @@
 import json
-import yaml
 from cgi import parse_header
-from copy import copy
 from io import BytesIO
 from typing import Any, Dict, Optional, Tuple, Union
+
+import yaml
 
 from .http_headers import HttpHeaders
 from .http_message import FormHttpMessage, HttpMessage, JsonHttpMessage, MultipartHttpMessage, YamlHttpMessage
@@ -43,8 +43,7 @@ class HttpParsedBodyTrait:
             parsed_body = HttpMessage(self._body.read().decode(content_type[1].get("charset", "utf8")))
 
         self._parsed_body = parsed_body
-
-        return copy(self._parsed_body)
+        return self._parsed_body
 
     def as_str(self) -> str:
         if not self._as_str:

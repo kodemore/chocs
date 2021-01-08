@@ -40,7 +40,6 @@ class AwsServerlessFunction(ServerlessFunction):
                 "statusCode": int(HttpStatus.CONTINUE),
             }
         request = create_http_request_from_aws_event(event, context)
-
         return format_response_to_aws(event, super().__call__(request))
 
 

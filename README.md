@@ -259,7 +259,7 @@ Middlewares can perform various tasks:
 
 Chocs provides middleware which can be used to validate input data and simplify working with 
 inputs by mapping them to dataclasses. To provide automatic validation for your request based
-on open api specification, instance of `chocs.middleware.OpenApiMiddleware` has to be created:
+on open api specification, use `chocs.middleware.OpenApiMiddleware`:
 
 ```python
 from chocs.middleware import OpenApiMiddleware
@@ -271,7 +271,7 @@ from dataclasses import dataclass
 openapi_filename = path.join(path.dirname(__file__), "/openapi.yml")
 
 # instantiating application and passing open api middleware
-app = Application(OpenApiMiddleware(openapi_filename))
+app = Application(OpenApiMiddleware(openapi_filename, validate_body=True, validate_query=True))
 
 # defining our dataclass for better type support
 @dataclass()
@@ -290,7 +290,14 @@ def create_pet(request: HttpRequest) -> HttpResponse:
     return HttpResponse(pet.name)
 ```
 
-Open api file used in the example above can be [found here](./examples/input_validation_with_open_api/openapi.yml)
+> Open api file used in the example above can be [found here](./examples/input_validation_with_open_api/openapi.yml)
+
+By default chocs validates:
+ - request body, `application/json` header must be present for successful validation
+ - query string parameters
+
+In order to turn off 
+
 
 ### Handling validation errors with custom middleware
 

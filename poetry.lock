@@ -88,6 +88,23 @@ version = "5.3"
 toml = ["toml"]
 
 [[package]]
+category = "main"
+description = "WSGI HTTP Server for UNIX"
+name = "gunicorn"
+optional = false
+python-versions = ">=3.4"
+version = "20.0.4"
+
+[package.dependencies]
+setuptools = ">=3.0"
+
+[package.extras]
+eventlet = ["eventlet (>=0.9.7)"]
+gevent = ["gevent (>=0.13)"]
+setproctitle = ["setproctitle"]
+tornado = ["tornado (>=0.2)"]
+
+[[package]]
 category = "dev"
 description = "Read metadata from Python packages"
 marker = "python_version < \"3.8\""
@@ -314,6 +331,14 @@ python-versions = "*"
 version = "3.7.4.3"
 
 [[package]]
+category = "main"
+description = "Unicorn CPU emulator engine"
+name = "unicorn"
+optional = false
+python-versions = "*"
+version = "1.0.2"
+
+[[package]]
 category = "dev"
 description = "Measures the displayed width of unicode strings in a terminal"
 name = "wcwidth"
@@ -335,7 +360,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [metadata]
-content-hash = "866cd7768dc98955ab038af777a9ec2c35f49ef83bafcb5e306f7bdc50cb2e25"
+content-hash = "6f3a96374cbab8961c18c1a3f6eabd26954f51ff3a24878876068b750dbf8825"
 lock-version = "1.0"
 python-versions = "^3.7"
 
@@ -402,6 +427,10 @@ coverage = [
     {file = "coverage-5.3-cp39-cp39-win32.whl", hash = "sha256:cb7df71de0af56000115eafd000b867d1261f786b5eebd88a0ca6360cccfaca7"},
     {file = "coverage-5.3-cp39-cp39-win_amd64.whl", hash = "sha256:47a11bdbd8ada9b7ee628596f9d97fbd3851bd9999d398e9436bd67376dbece7"},
     {file = "coverage-5.3.tar.gz", hash = "sha256:280baa8ec489c4f542f8940f9c4c2181f0306a8ee1a54eceba071a449fb870a0"},
+]
+gunicorn = [
+    {file = "gunicorn-20.0.4-py2.py3-none-any.whl", hash = "sha256:cd4a810dd51bf497552cf3f863b575dabd73d6ad6a91075b65936b151cbf4f9c"},
+    {file = "gunicorn-20.0.4.tar.gz", hash = "sha256:1904bb2b8a43658807108d59c3f3d56c2b6121a701161de0ddf9ad140073c626"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-2.0.0-py2.py3-none-any.whl", hash = "sha256:cefa1a2f919b866c5beb7c9f7b0ebb4061f30a8a9bf16d609b000e2dfaceb9c3"},
@@ -566,6 +595,14 @@ typing-extensions = [
     {file = "typing_extensions-3.7.4.3-py2-none-any.whl", hash = "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"},
     {file = "typing_extensions-3.7.4.3-py3-none-any.whl", hash = "sha256:7cb407020f00f7bfc3cb3e7881628838e69d8f3fcab2f64742a5e76b2f841918"},
     {file = "typing_extensions-3.7.4.3.tar.gz", hash = "sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c"},
+]
+unicorn = [
+    {file = "unicorn-1.0.2-py2.py3-none-macosx_10_14_x86_64.whl", hash = "sha256:25d65de6662c74cfed371b0bbf4fc8cc9246ab7e293314a29a6c570da46b6050"},
+    {file = "unicorn-1.0.2-py2.py3-none-manylinux1_i686.whl", hash = "sha256:f8ac03d7fa5d5b71871064db89e3c69f4acc773d617fda21cf43c00b95e06229"},
+    {file = "unicorn-1.0.2-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:a87d6065cb44854d40d25259d0c0f3bfc849c3cf0f6b48056f861b2b20bbaee0"},
+    {file = "unicorn-1.0.2-py2.py3-none-win32.whl", hash = "sha256:62df2e022563b42ab12f43f003449b11e7d110ff9268ed20917aaf0a90fdfe4e"},
+    {file = "unicorn-1.0.2-py2.py3-none-win_amd64.whl", hash = "sha256:16f43e836b088f2b5b537e7ac6ae0f364946b0b7d608f637a5ab919e32f3b919"},
+    {file = "unicorn-1.0.2.tar.gz", hash = "sha256:fd2d5225d394c54af889b550b86b33ae8311945d2225744509434cd86663a94a"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},
