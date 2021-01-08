@@ -31,7 +31,7 @@ def test_create_json_request() -> None:
         headers=HttpHeaders({"Content-Type": "application/json"}),
     )
 
-    assert instance.parsed_body == {"test": "OK"}
+    assert dict(instance.parsed_body) == {"test": "OK"}
 
 
 @pytest.mark.parametrize(
