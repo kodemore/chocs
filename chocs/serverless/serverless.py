@@ -51,6 +51,11 @@ class ServerlessFunction:
         self._middleware_enabled = value
 
     def __call__(self, *args) -> Any:
+        request = args[0]
+        route = copy(self.route)
+        route._parameters = request.path_parameters
+        request.route = route
+        request.attributes["__handler__"] = self._function
         if self._middleware_enabled and not self._middleware_pipeline.empty:
             return self._middleware_pipeline(*args)
 
