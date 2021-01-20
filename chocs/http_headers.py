@@ -83,6 +83,7 @@ class HttpHeaders:
         for key, values in self._headers.items():
             if len(values) == 1:
                 yield key, values[0]
+                continue
             for value in values:
                 yield key, value
 

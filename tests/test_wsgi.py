@@ -7,11 +7,17 @@ from chocs.wsgi import create_wsgi_handler
 
 def test_create_wsgi_handler() -> None:
     def _http_start(status_code, headers):
+        assert headers == [
+            ("content-type", "text/plain"),
+        ]
         assert status_code == "200"
 
     def _serve_response(request: HttpRequest, next: Callable) -> HttpResponse:
         assert request.method == HttpMethod.POST
-        return HttpResponse("OK")
+        return HttpResponse(
+            "OK",
+            headers=request.headers
+        )
 
     app = Application(_serve_response)
     handler = create_wsgi_handler(app)
