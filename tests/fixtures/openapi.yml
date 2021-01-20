@@ -38,6 +38,7 @@ paths:
           schema:
             type: integer
             format: int32
+        - $ref: '#/components/parameters/offset'
       responses:
         '200':
           description: pet response
@@ -122,6 +123,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
+  parameters:
+    offset:
+      required: false
+      in: query
+      name: offset
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
   schemas:
     Pet:
       allOf:

@@ -4,7 +4,7 @@ from typing import Callable, Dict
 from chocs.http_method import HttpMethod
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
-from chocs.json_schema.json_schema import OpenApiSchema
+from chocs.json_schema.json_schema import JsonReference, OpenApiSchema
 from chocs.json_schema.schema_validator import build_validator_from_schema
 from chocs.middleware import Middleware, MiddlewareHandler
 from chocs.routing import Route
@@ -62,6 +62,8 @@ class OpenApiMiddleware(Middleware):
                     "required": [],
                 }
                 for param in query_parameters:
+                    if isinstance(param, JsonReference):
+                        param = param.data
                     param_name = param.get("name", "_")
                     query_schema["properties"][param_name] = param["schema"]  # type:ignore
                     if param["required"]:
