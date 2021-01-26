@@ -1,4 +1,5 @@
 import base64
+from cgi import parse_header
 from io import BytesIO
 from typing import Any, Dict
 from urllib.parse import quote_plus
@@ -63,10 +64,10 @@ def format_response_to_aws(event: AwsEvent, response: HttpResponse) -> Dict[str,
     if is_elb:
         serverless_response["statusDescription"] = str(response.status_code)
 
-    mimetype = response.headers.get("content-type", "text/plain")
-    if not isinstance(mimetype, str):
-        mimetype = mimetype[0]
-
+    content_type_header = response.headers.get("content-type", "text/plain")
+    if not isinstance(content_type_header, str):
+        content_type_header = content_type_header[0]
+    mimetype, content_type_options = parse_header(content_type_header)
     body = str(response)
 
     if (mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES) and not response.headers.get(

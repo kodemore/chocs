@@ -75,3 +75,21 @@ def test_middleware_for_serverless() -> None:
 
     assert "headers" in response
     assert "access-control-allow-origin" in response["headers"]
+
+
+def test_json_content_with_charset_is_not_base64_encoded() -> None:
+    def test_callback(request: HttpRequest) -> HttpResponse:
+        return HttpResponse(
+            request.path, headers={"Content-Type": "application/json; charset=utf-8",},
+        )
+
+    serverless_callback = AwsServerlessFunction(test_callback)
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    event_json = json.load(
+        open(os.path.join(dir_path, "fixtures/lambda_http_api_event.json"))
+    )
+
+    response = serverless_callback(event_json, {})
+
+    assert response["isBase64Encoded"] is False
+    assert response["body"] == "/test/123"
