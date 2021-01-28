@@ -281,22 +281,52 @@ class Pet:
 
 # the registered route must correspond to open api route within `path` section.
 # if request body is invalid the registered function will not be executed
-@app.post("/pets", parsed_body=Pet) # `parsed_body` parameter can be used to map request to certain type
+@app.post("/pets", parsed_body=Pet, strict=True) # `parsed_body` parameter can be used to map request to certain type
 def create_pet(request: HttpRequest) -> HttpResponse:
-    # if request body is valid `request.parsed_body` will be instance of a Pet
-    assert isinstance(request.parsed_body, Pet)
+    try: # mapping request to your dataclass may fail
+        pet: Pet = request.parsed_body
+    except TypeError:
+        return HttpResponse(status=400)
     
-    pet = request.parsed_body
+    # if request body is valid `request.parsed_body` will be instance of a Pet
+    assert isinstance(pet, Pet)
     return HttpResponse(pet.name)
 ```
 
 > Open api file used in the example above can be [found here](./examples/input_validation_with_open_api/openapi.yml)
 
-By default chocs validates:
+Chocs automatically validates:
  - request body, `application/json` header must be present for successful validation
  - query string parameters
+ - request headers
 
-In order to turn off 
+### Turning strict mode to off
+
+> Note: By default chocs works in a strict mode, which means when you map request
+> data to your object `__init__` method is called. To override this behaviour set
+> `strict` property to false: `@app.post("/pets", parsed_body=Pet, strict=False)`
+
+```python
+from chocs.middleware import OpenApiMiddleware
+from chocs import Application, HttpRequest, HttpResponse
+from os import path
+from dataclasses import dataclass
+
+openapi_filename = path.join(path.dirname(__file__), "/openapi.yml")
+app = Application(OpenApiMiddleware(openapi_filename, validate_body=True, validate_query=True))
+
+@dataclass()
+class Pet:
+    id: str
+    name: str
+
+@app.post("/pets", parsed_body=Pet, strict=False) # with strict mode off, __init__ method of Pet's class is ignored.
+def create_pet(request: HttpRequest) -> HttpResponse:
+    pet: Pet = request.parsed_body # this will always work
+
+    assert isinstance(pet, Pet)
+    return HttpResponse(pet.name)
+```
 
 
 ### Handling validation errors with custom middleware

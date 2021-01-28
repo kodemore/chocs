@@ -1,5 +1,5 @@
 import inspect
-from typing import Callable, Dict
+from typing import Callable, Dict, Any
 
 from chocs.http_method import HttpMethod
 from chocs.http_request import HttpRequest
@@ -42,9 +42,38 @@ class OpenApiMiddleware(Middleware):
         except Exception:
             parsed_body = {}
         valid_body = body_validator(parsed_body)
-        if "parsed_body" in route.attributes and inspect.isclass(route.attributes["parsed_body"]):
-            constructor = route.attributes["parsed_body"]
-            request._parsed_body = constructor(**valid_body)
+
+        if "parsed_body" not in route.attributes:
+            return
+
+        if not inspect.isclass(route.attributes["parsed_body"]):
+            return
+
+        strict = route.attributes["strict"] if "strict" in route.attributes else True
+        constructor = route.attributes["parsed_body"]
+        request._parsed_body = None
+
+        if not strict:
+
+            def _get_non_strict_parsed_body() -> Any:
+
+                instance = constructor.__new__(constructor)
+                for prop_name, prop_value in valid_body.items():
+                    setattr(instance, prop_name, prop_value)
+
+                if hasattr(instance, "__post_init__"):
+                    instance.__post_init__()
+
+                return instance
+
+            request._parsed_body_getter = _get_non_strict_parsed_body
+
+            return
+
+        def _get_strict_parsed_body() -> Any:
+            return constructor(**valid_body)
+
+        request._parsed_body_getter = _get_strict_parsed_body
 
     def _get_query_validator(self, route: str, method: HttpMethod) -> Callable:
         if route not in self.query_validators:

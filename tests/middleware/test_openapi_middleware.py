@@ -6,6 +6,7 @@ import pytest
 from chocs import Application, HttpMethod, HttpRequest, HttpResponse
 from chocs.json_schema.errors import RequiredPropertyError, PropertyValueError
 from chocs.middleware import OpenApiMiddleware
+from dataclasses import dataclass
 
 
 def test_pass_valid_request_with_body() -> None:
@@ -75,11 +76,80 @@ def test_fail_request_with_query_missing_field() -> None:
 def test_turn_off_query_validation() -> None:
     openapi_file = path.realpath(path.dirname(__file__) + "/../fixtures/openapi.yml")
     app = Application(OpenApiMiddleware(openapi_file, validate_query=False))
+
     @app.get("/pets")
     def get_pets(request: HttpRequest) -> HttpResponse:
         return HttpResponse("OK")
 
     assert app(HttpRequest(HttpMethod.GET, "/pets"))
+
+
+def test_hydrate_parsed_body_with_strict_mode() -> None:
+    app = _mockup_app()
+
+    @dataclass
+    class Pet:
+        name: str
+        tag: str
+        id: str
+
+    @app.post("/pets", parsed_body=Pet)
+    def create_pet(request: HttpRequest) -> HttpResponse:
+        pet = request.parsed_body  # type: Pet
+        assert isinstance(pet, Pet)
+        return HttpResponse(pet.name)
+
+    invalid_body = json.dumps({
+        "name": "Bobek",
+        "tag": "test",
+        "id": 1,
+        "unknown_property": "unknown_value"
+    })
+
+    with pytest.raises(TypeError):
+        app(HttpRequest(HttpMethod.POST, "/pets", body=invalid_body, headers={"content-type": "application/json"}))
+
+    valid_body = json.dumps({
+        "name": "Bobek",
+        "tag": "test",
+        "id": 1,
+    })
+    response = app(HttpRequest(HttpMethod.POST, "/pets", body=valid_body, headers={"content-type": "application/json"}))
+    assert str(response) == "Bobek"
+
+
+def test_hydrate_parsed_body_without_strict_mode() -> None:
+    app = _mockup_app()
+
+    @dataclass
+    class Pet:
+        name: str
+        tag: str
+        id: str
+
+    @app.post("/pets", parsed_body=Pet, strict=False)
+    def create_pet(request: HttpRequest) -> HttpResponse:
+        pet = request.parsed_body  # type: Pet
+        assert isinstance(pet, Pet)
+        return HttpResponse(pet.name)
+
+    invalid_body = json.dumps({
+        "name": "Bobek",
+        "tag": "test",
+        "id": 1,
+        "unknown_property": "unknown_value"
+    })
+
+    respone = app(HttpRequest(HttpMethod.POST, "/pets", body=invalid_body, headers={"content-type": "application/json"}))
+    assert str(respone) == "Bobek"
+
+    valid_body = json.dumps({
+        "name": "Bobek",
+        "tag": "test",
+        "id": 1,
+    })
+    response = app(HttpRequest(HttpMethod.POST, "/pets", body=valid_body, headers={"content-type": "application/json"}))
+    assert str(response) == "Bobek"
 
 
 def _mockup_app() -> Application:
