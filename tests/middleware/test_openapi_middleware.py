@@ -84,7 +84,7 @@ def test_turn_off_query_validation() -> None:
     assert app(HttpRequest(HttpMethod.GET, "/pets"))
 
 
-def test_hydrate_parsed_body() -> None:
+def test_hydrate_parsed_body_with_strict_mode() -> None:
     app = _mockup_app()
 
     @dataclass
@@ -93,25 +93,61 @@ def test_hydrate_parsed_body() -> None:
         tag: str
         id: str
 
-        def __post_init__(self):
-            self.tag += " tag"
-
     @app.post("/pets", parsed_body=Pet)
     def create_pet(request: HttpRequest) -> HttpResponse:
-        pet = request.parsed_body
-        assert isinstance(pet, Pet)
-        assert pet.tag == "test tag"
+        pet = request.parsed_body  # type: Pet
+        return HttpResponse(pet.name)
 
-        return HttpResponse("OK")
-
-    body = json.dumps({
+    invalid_body = json.dumps({
         "name": "Bobek",
         "tag": "test",
         "id": 1,
         "unknown_property": "unknown_value"
     })
 
-    app(HttpRequest(HttpMethod.POST, "/pets", body=body, headers={"content-type": "application/json"}))
+    with pytest.raises(TypeError):
+        app(HttpRequest(HttpMethod.POST, "/pets", body=invalid_body, headers={"content-type": "application/json"}))
+
+    valid_body = json.dumps({
+        "name": "Bobek",
+        "tag": "test",
+        "id": 1,
+    })
+    response = app(HttpRequest(HttpMethod.POST, "/pets", body=valid_body, headers={"content-type": "application/json"}))
+    assert str(response) == "Bobek"
+
+
+def test_hydrate_parsed_body_without_strict_mode() -> None:
+    app = _mockup_app()
+
+    @dataclass
+    class Pet:
+        name: str
+        tag: str
+        id: str
+
+    @app.post("/pets", parsed_body=Pet, strict=False)
+    def create_pet(request: HttpRequest) -> HttpResponse:
+        pet = request.parsed_body  # type: Pet
+        return HttpResponse(pet.name)
+
+    invalid_body = json.dumps({
+        "name": "Bobek",
+        "tag": "test",
+        "id": 1,
+        "unknown_property": "unknown_value"
+    })
+
+    respone = app(HttpRequest(HttpMethod.POST, "/pets", body=invalid_body, headers={"content-type": "application/json"}))
+    assert str(respone) == "Bobek"
+
+    valid_body = json.dumps({
+        "name": "Bobek",
+        "tag": "test",
+        "id": 1,
+    })
+    response = app(HttpRequest(HttpMethod.POST, "/pets", body=valid_body, headers={"content-type": "application/json"}))
+    assert str(response) == "Bobek"
 
 
 def _mockup_app() -> Application:

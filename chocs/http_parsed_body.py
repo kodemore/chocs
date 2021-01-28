@@ -1,7 +1,7 @@
 import json
 from cgi import parse_header
 from io import BytesIO
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union, Callable
 
 import yaml
 
@@ -13,12 +13,17 @@ class HttpParsedBodyTrait:
     _body: BytesIO
     _headers: HttpHeaders
     _parsed_body: Optional[Union[HttpMessage, Any]]
+    _parsed_body_getter: Optional[Callable]
     _as_str: Optional[str]
     _as_dict: Optional[dict]
 
     @property
     def parsed_body(self) -> Union[HttpMessage, Any]:
         if self._parsed_body:
+            return self._parsed_body
+
+        if hasattr(self, "_parsed_body_getter"):
+            self._parsed_body = self._parsed_body_getter()  # type: ignore
             return self._parsed_body
 
         content_type: Tuple[str, Dict[str, str]] = parse_header(
