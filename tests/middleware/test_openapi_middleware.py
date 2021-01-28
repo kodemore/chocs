@@ -96,6 +96,7 @@ def test_hydrate_parsed_body_with_strict_mode() -> None:
     @app.post("/pets", parsed_body=Pet)
     def create_pet(request: HttpRequest) -> HttpResponse:
         pet = request.parsed_body  # type: Pet
+        assert isinstance(pet, Pet)
         return HttpResponse(pet.name)
 
     invalid_body = json.dumps({
@@ -129,6 +130,7 @@ def test_hydrate_parsed_body_without_strict_mode() -> None:
     @app.post("/pets", parsed_body=Pet, strict=False)
     def create_pet(request: HttpRequest) -> HttpResponse:
         pet = request.parsed_body  # type: Pet
+        assert isinstance(pet, Pet)
         return HttpResponse(pet.name)
 
     invalid_body = json.dumps({
