@@ -300,11 +300,14 @@ Chocs automatically validates:
  - query string parameters
  - request headers
 
-### Turning strict mode to off
+### Turning strict mode off
 
 > Note: By default chocs works in a strict mode, which means when you map request
 > data to your object `__init__` method is called. To override this behaviour set
 > `strict` property to false: `@app.post("/pets", parsed_body=Pet, strict=False)`
+
+In non strict mode your request body will be still mapped to the provided class, and data will be hydrated but `__init__` method will not be called.
+Please consider the following example:
 
 ```python
 from chocs.middleware import OpenApiMiddleware
