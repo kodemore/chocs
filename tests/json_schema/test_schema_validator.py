@@ -23,22 +23,34 @@ def test_can_build_validator_for_boolean_type() -> None:
     assert validate(True)
     assert not validate(False)
 
-    with pytest.raises(TypeValidationError):
+    with pytest.raises(TypeValidationError) as e:
         validate(1)
+    assert e.value.args[0] == (
+        "Passed value must be valid <class 'bool'> type. "
+        "Actual type passed was <class 'int'>"
+    )
 
 
 def test_can_build_validator_for_number_type() -> None:
     # validate integer
     validate = build_validator_from_schema({"type": "integer"})
     assert validate(1)
-    with pytest.raises(TypeValidationError):
+    with pytest.raises(TypeValidationError) as e:
         validate(5.0)
+    assert e.value.args[0] == (
+        "Passed value must be valid <class 'int'> type. "
+        "Actual type passed was <class 'float'>"
+    )
 
     # validate number
     validate = build_validator_from_schema({"type": "number"})
     assert validate(1.0)
-    with pytest.raises(TypeValidationError):
+    with pytest.raises(TypeValidationError) as e:
         validate("4")
+    assert e.value.args[0] == (
+        "Passed value must be valid <class 'numbers.Number'> type. "
+        "Actual type passed was <class 'str'>"
+    )
 
     # validate minimum
     validate = build_validator_from_schema({"type": "integer", "minimum": 5})
@@ -80,6 +92,10 @@ def test_can_build_validator_for_number_type() -> None:
         validate(2)
     with pytest.raises(TypeValidationError):
         validate("a")
+    assert e.value.args[0] == (
+        "Passed value must be valid <class 'numbers.Number'> type. "
+        "Actual type passed was <class 'str'>"
+    )
 
 
 def test_can_build_validator_for_string_type() -> None:
@@ -87,8 +103,12 @@ def test_can_build_validator_for_string_type() -> None:
     # validate type
     validate = build_validator_from_schema({"type": "string"})
     assert validate("a")
-    with pytest.raises(TypeValidationError):
+    with pytest.raises(TypeValidationError) as e:
         validate(5.0)
+    assert e.value.args[0] == (
+        "Passed value must be valid <class 'str'> type. "
+        "Actual type passed was <class 'float'>"
+    )
 
     # validate format
     validate = build_validator_from_schema({"type": "string", "format": "email"})
@@ -135,8 +155,12 @@ def test_can_build_validator_for_array() -> None:
     # validate type
     validate = build_validator_from_schema({"type": "array"})
     assert validate([1, 2, 3])
-    with pytest.raises(TypeValidationError):
+    with pytest.raises(TypeValidationError) as e:
         validate("a")
+    assert e.value.args[0] == (
+        "Passed value must be valid array type. "
+        "Actual type passed was <class 'str'>"
+    )
 
     # validate min items
     validate = build_validator_from_schema({"type": "array", "minItems": 2})
@@ -168,6 +192,10 @@ def test_can_build_validator_for_array() -> None:
     assert validate([1, 2, 3])
     with pytest.raises(TypeValidationError):
         assert validate([1, 2, "a"])
+    assert e.value.args[0] == (
+        "Passed value must be valid array type. "
+        "Actual type passed was <class 'str'>"
+    )
     validate = build_validator_from_schema(
         {"type": "array", "items": {"type": "string", "format": "email"}}
     )
@@ -220,9 +248,12 @@ def test_can_build_validator_for_array() -> None:
     assert validate(["bob@email.com", "Bob", 12])
     assert validate(["bob@email.com", "Bob", 12, "a"])
     assert validate(["bob@email.com", "Bob", 12, "a", "b"])
-    with pytest.raises(TypeValidationError):
+    with pytest.raises(TypeValidationError) as e:
         assert validate(["bob@email.com", "Bob", 12, 10])
-
+    assert e.value.args[0] == (
+        "Passed value must be valid <class 'str'> type. "
+        "Actual type passed was <class 'int'>"
+    )
     with pytest.raises(RangeValidationError):
         assert validate(["bob@email.com", "Bob", 151])
 
@@ -232,8 +263,12 @@ def test_can_build_validator_for_object() -> None:
     # validate type
     validate = build_validator_from_schema({"type": "object"})
     assert validate({"a": 1})
-    with pytest.raises(TypeValidationError):
+    with pytest.raises(TypeValidationError) as e:
         validate("a")
+    assert e.value.args[0] == (
+        "Passed value must be valid object type. "
+        "Actual type passed was <class 'str'>"
+    )
 
     # validate properties
     validate = build_validator_from_schema(
