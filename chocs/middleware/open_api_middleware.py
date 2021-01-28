@@ -44,7 +44,13 @@ class OpenApiMiddleware(Middleware):
         valid_body = body_validator(parsed_body)
         if "parsed_body" in route.attributes and inspect.isclass(route.attributes["parsed_body"]):
             constructor = route.attributes["parsed_body"]
-            request._parsed_body = constructor(**valid_body)
+            instance = constructor.__new__(constructor)
+            for prop_name, prop_value in valid_body.items():
+                setattr(instance, prop_name, prop_value)
+
+            request._parsed_body = instance
+            if hasattr(instance, "__post_init__"):
+                instance.__post_init__()
 
     def _get_query_validator(self, route: str, method: HttpMethod) -> Callable:
         if route not in self.query_validators:

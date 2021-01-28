@@ -6,6 +6,7 @@ import pytest
 from chocs import Application, HttpMethod, HttpRequest, HttpResponse
 from chocs.json_schema.errors import RequiredPropertyError, PropertyValueError
 from chocs.middleware import OpenApiMiddleware
+from dataclasses import dataclass
 
 
 def test_pass_valid_request_with_body() -> None:
@@ -75,11 +76,42 @@ def test_fail_request_with_query_missing_field() -> None:
 def test_turn_off_query_validation() -> None:
     openapi_file = path.realpath(path.dirname(__file__) + "/../fixtures/openapi.yml")
     app = Application(OpenApiMiddleware(openapi_file, validate_query=False))
+
     @app.get("/pets")
     def get_pets(request: HttpRequest) -> HttpResponse:
         return HttpResponse("OK")
 
     assert app(HttpRequest(HttpMethod.GET, "/pets"))
+
+
+def test_hydrate_parsed_body() -> None:
+    app = _mockup_app()
+
+    @dataclass
+    class Pet:
+        name: str
+        tag: str
+        id: str
+
+        def __post_init__(self):
+            self.tag += " tag"
+
+    @app.post("/pets", parsed_body=Pet)
+    def create_pet(request: HttpRequest) -> HttpResponse:
+        pet = request.parsed_body
+        assert isinstance(pet, Pet)
+        assert pet.tag == "test tag"
+
+        return HttpResponse("OK")
+
+    body = json.dumps({
+        "name": "Bobek",
+        "tag": "test",
+        "id": 1,
+        "unknown_property": "unknown_value"
+    })
+
+    app(HttpRequest(HttpMethod.POST, "/pets", body=body, headers={"content-type": "application/json"}))
 
 
 def _mockup_app() -> Application:
