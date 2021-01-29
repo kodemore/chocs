@@ -30,6 +30,20 @@ def test_create_http_request_from_serverless_event(event_file: str) -> None:
     assert request.query_string.get("param_2") == "value2"
 
 
+def test_create_http_request_from_serverless_event_multipart_image() -> None:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    event_json = json.load(
+        open(
+            os.path.join(
+                dir_path, "fixtures/lambda_rest_api_multipart_form_image_upload.json"
+            )
+        )
+    )
+    request = create_http_request_from_aws_event(event_json, {})
+    assert isinstance(request, HttpRequest)
+    assert request.parsed_body == ""
+
+
 def test_make_serverless_callback() -> None:
     def test_callaback(request: HttpRequest) -> HttpResponse:
         return HttpResponse(request.path)
