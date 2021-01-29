@@ -49,13 +49,12 @@ class OpenApiMiddleware(Middleware):
             raise InvalidInputValidationError(message="Request body is not valid application/json request.")
 
         parsed_body: Union[Dict, List]
-        try:
-            if hasattr(request.parsed_body.data, "items"):  # dict?
-                parsed_body = dict(request.parsed_body.data)
-            else:  # otherwise, assume it's a sequence/array
-                parsed_body = list(request.parsed_body.data)
-        except Exception as e:
-            raise InvalidInputValidationError(message="Request body could not be validated.") from e
+
+        # we expect here only types provided by json parser, we should ignore everything what is not dict or list.
+        if isinstance(request.parsed_body.data, dict) or isinstance(request.parsed_body.data, list):
+            parsed_body = request.parsed_body.data
+        else:
+            raise InvalidInputValidationError(message="Request body could not be validated.")
 
         valid_body = body_validator(parsed_body)
 
