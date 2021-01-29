@@ -25,10 +25,7 @@ class ValidationError(ValueError):
 
 class TypeValidationError(ValidationError):
     code = "type_error"
-    message = (
-        "Passed value must be valid {expected_type} type. "
-        "Actual type passed was {actual_type}"
-    )
+    message = "Passed value must be valid {expected_type} type. " "Actual type passed was {actual_type}"
 
 
 class EnumValidationError(ValidationError):
