@@ -37,10 +37,14 @@ class OpenApiMiddleware(Middleware):
 
     def _validate_request_body(self, request: HttpRequest, route: Route) -> None:
         body_validator = self._get_body_validator(route.route, request.method)
+        parsed_body: Any = {}
         try:
-            parsed_body = dict(request.parsed_body)  # type: ignore
+            if not hasattr(request.parsed_body.data, 'items'):  # sequence/array
+                parsed_body = list(request.parsed_body)
+            else:  # otherwise, assume it's a map/object
+                parsed_body = dict(request.parsed_body)
         except Exception:
-            parsed_body = {}
+            pass
         valid_body = body_validator(parsed_body)
 
         if "parsed_body" not in route.attributes:
