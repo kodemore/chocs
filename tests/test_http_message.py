@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from chocs import FormHttpMessage, HttpRequest, JsonHttpMessage, MultipartHttpMessage, UploadedFile
+from chocs import FormHttpMessage, HttpRequest, JsonHttpMessage, MultipartHttpMessage, UploadedFile, SimpleHttpMessage
 import os
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -113,3 +113,12 @@ def test_parse_json_body() -> None:
     assert "test_1" in body
     assert body["test_1"] == "1"
     assert body.get("test2", "default") == "default"
+
+
+def test_simple_http_message() -> None:
+    http_message = SimpleHttpMessage("Hello World!")
+
+    assert http_message[0:5] == "Hello"
+    assert http_message == "Hello World!"
+    assert http_message.upper() == "HELLO WORLD!"
+    assert isinstance(http_message, SimpleHttpMessage)

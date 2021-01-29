@@ -152,6 +152,32 @@ def test_hydrate_parsed_body_without_strict_mode() -> None:
     assert str(response) == "Bobek"
 
 
+def test_body_validation_handles_arrays() -> None:
+    openapi_file = path.realpath(path.dirname(__file__) + "/../fixtures/openapi_request_body_array.yml")
+    app = Application(OpenApiMiddleware(openapi_file, validate_body=True, validate_query=True))
+
+    @app.post("/pets")
+    def get_pets(request: HttpRequest) -> HttpResponse:
+        return HttpResponse("OK")
+
+    request = HttpRequest(
+        HttpMethod.POST,
+        "/pets",
+        body=json.dumps([
+            {
+                "name": "Name1",
+                "tag": "Tag1",
+            },
+            {
+                "name": "Name2",
+                "tag": "Tag2",
+            },
+        ]),
+        headers={"content-type": "application/json"}
+    )
+    assert app(request=request)
+
+
 def _mockup_app() -> Application:
     openapi_file = path.realpath(path.dirname(__file__) + "/../fixtures/openapi.yml")
     app = Application(OpenApiMiddleware(openapi_file))

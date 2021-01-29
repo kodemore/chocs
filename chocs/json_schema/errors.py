@@ -23,6 +23,11 @@ class ValidationError(ValueError):
         return self.message.format(**self.context)
 
 
+class InvalidInputValidationError(ValidationError):
+    code = "input_error"
+    message = "Request body is invalid or malformed: {message}"
+
+
 class TypeValidationError(ValidationError):
     code = "type_error"
     message = "Passed value must be valid {expected_type} type. " "Actual type passed was {actual_type}"

@@ -10,6 +10,7 @@ from .http_message import (
     HttpMessage,
     JsonHttpMessage,
     MultipartHttpMessage,
+    SimpleHttpMessage,
     YamlHttpMessage,
 )
 from .http_method import HttpMethod
