@@ -1,4 +1,6 @@
 import json
+from abc import ABC
+from collections.abc import Iterable
 from copy import copy
 from io import BytesIO
 from json.decoder import JSONDecodeError
@@ -10,15 +12,29 @@ from .http_multipart_message_parser import parse_multipart_message
 from .http_query_string import parse_qs
 
 
-class HttpMessage(str):
+class HttpMessage(ABC):
     pass
 
 
+class SimpleHttpMessage(HttpMessage, str):
+    def __new__(cls, value, *args, **kwargs):
+        return super(SimpleHttpMessage, cls).__new__(cls, value)
+
+    def __init__(self, value: str):
+        # ignore value, as strings are immutable and this should be passed to __new__ constructor
+        ...
+
+
 class CompositeHttpMessage(HttpMessage):
-    def __init__(self, data: dict) -> None:
+    def __init__(self, data: Any) -> None:
+        self.is_iterable = isinstance(data, Iterable)
+        self.is_dict = isinstance(data, dict)
         self.data = data
 
     def get(self, name: str, default: Optional[Any] = None) -> Any:
+        if not self.is_dict:
+            raise AttributeError("Object has no attribute 'get'")
+
         if name in self:
             return self[name]
 
@@ -44,6 +60,15 @@ class CompositeHttpMessage(HttpMessage):
 
     def keys(self) -> KeysView:
         return self.data.keys()
+
+    def __int__(self):
+        return int(self.data)
+
+    def __str__(self):
+        return str(self.data)
+
+    def __float__(self):
+        return float(self.data)
 
 
 class YamlHttpMessage(CompositeHttpMessage):
@@ -100,5 +125,6 @@ __all__ = [
     "FormHttpMessage",
     "JsonHttpMessage",
     "MultipartHttpMessage",
+    "SimpleHttpMessage",
     "YamlHttpMessage",
 ]

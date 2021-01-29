@@ -6,7 +6,14 @@ from typing import Any, Dict, Optional, Tuple, Union, Callable
 import yaml
 
 from .http_headers import HttpHeaders
-from .http_message import FormHttpMessage, HttpMessage, JsonHttpMessage, MultipartHttpMessage, YamlHttpMessage
+from .http_message import (
+    FormHttpMessage,
+    HttpMessage,
+    JsonHttpMessage,
+    MultipartHttpMessage,
+    YamlHttpMessage,
+    SimpleHttpMessage,
+)
 
 
 class HttpParsedBodyTrait:
@@ -45,7 +52,7 @@ class HttpParsedBodyTrait:
             parsed_body = YamlHttpMessage.from_bytes(self._body, content_type[1].get("charset", "utf8"))
         else:
             self._body.seek(0)
-            parsed_body = HttpMessage(self._body.read().decode(content_type[1].get("charset", "utf8")))
+            parsed_body = SimpleHttpMessage(self._body.read().decode(content_type[1].get("charset", "utf8")))
 
         self._parsed_body = parsed_body
         return self._parsed_body
