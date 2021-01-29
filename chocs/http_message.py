@@ -27,14 +27,9 @@ class SimpleHttpMessage(HttpMessage, str):
 
 class CompositeHttpMessage(HttpMessage):
     def __init__(self, data: Any) -> None:
-        self.is_iterable = isinstance(data, Iterable)
-        self.is_dict = isinstance(data, dict)
         self.data = data
 
     def get(self, name: str, default: Optional[Any] = None) -> Any:
-        if not self.is_dict:
-            raise AttributeError("Object has no attribute 'get'")
-
         if name in self:
             return self[name]
 
@@ -69,6 +64,9 @@ class CompositeHttpMessage(HttpMessage):
 
     def __float__(self):
         return float(self.data)
+
+    def __bool__(self):
+        return bool(self.data)
 
 
 class YamlHttpMessage(CompositeHttpMessage):
