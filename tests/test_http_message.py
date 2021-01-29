@@ -1,6 +1,9 @@
 from io import BytesIO
 
 from chocs import FormHttpMessage, HttpRequest, JsonHttpMessage, MultipartHttpMessage, UploadedFile, SimpleHttpMessage
+import os
+
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 multipart_body = {
     "CONTENT_TYPE": "multipart/form-data; charset=utf-8; boundary=__TEST_BOUNDARY__",
@@ -41,6 +44,19 @@ json_body = {
     "wsgi.input": BytesIO(b'{"test_1":"1","test_2":"Test 2","test_3":"{test 3}"}'),
 }
 
+cat_file = open(DIR_PATH + "/fixtures/grumpy_cat_test.jpg", "rb")
+
+cat_file_body = {
+    "CONTENT_TYPE": "multipart/form-data; boundary=__CAT_BOUNDARY__",
+    "REQUEST_METHOD": "POST",
+    "wsgi.input": BytesIO(
+        b"--__CAT_BOUNDARY__\r\n"
+        b'Content-Disposition: Content-Disposition: form-data; name="image"; filename="generic-cat.jpg"\r\nContent-Type: image/jpeg"\r\n\r\n'
+        + cat_file.read() +
+        b"\r\n--__CAT_BOUNDARY__--\r\n"
+    )
+}
+
 
 def test_parse_multipart_body() -> None:
     request = HttpRequest(
@@ -59,6 +75,18 @@ def test_parse_multipart_body() -> None:
     assert body["file_b"].filename == "yellow.gif"
     assert body.get("test2", "default") == "default"
     assert len(body["file_a"]) == 49
+
+
+def test_parse_files() -> None:
+    request = HttpRequest(
+        cat_file_body["REQUEST_METHOD"],
+        body=cat_file_body["wsgi.input"],
+        headers={"content-type": cat_file_body["CONTENT_TYPE"]},
+    )
+    body = request.parsed_body
+    body["image"].seek(0)
+    cat_file.seek(0)
+    assert body["image"].read() == cat_file.read()
 
 
 def test_parse_form_body() -> None:
