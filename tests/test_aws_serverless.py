@@ -32,6 +32,7 @@ def test_create_http_request_from_serverless_event(event_file: str) -> None:
 
 def test_create_http_request_from_serverless_event_multipart_image() -> None:
     dir_path = os.path.dirname(os.path.realpath(__file__))
+
     event_json = json.load(
         open(
             os.path.join(
@@ -41,7 +42,7 @@ def test_create_http_request_from_serverless_event_multipart_image() -> None:
     )
     request = create_http_request_from_aws_event(event_json, {})
     assert isinstance(request, HttpRequest)
-    assert request.parsed_body == ""
+    assert "image" in request.parsed_body
 
 
 def test_make_serverless_callback() -> None:
