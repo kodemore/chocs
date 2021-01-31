@@ -257,9 +257,8 @@ Middlewares can perform various tasks:
 
 ## Integration with openapi
 
-Chocs provides middleware which can be used to validate input data and simplify working with 
-inputs by mapping them to dataclasses. To provide automatic validation for your request based
-on open api specification, use `chocs.middleware.OpenApiMiddleware`:
+To provide automatic validation for your request based on open api specification, 
+use `chocs.middleware.OpenApiMiddleware` middleware bundled with chocs:
 
 ```python
 from chocs.middleware import OpenApiMiddleware
@@ -281,55 +280,49 @@ class Pet:
 
 # the registered route must correspond to open api route within `path` section.
 # if request body is invalid the registered function will not be executed
-@app.post("/pets", parsed_body=Pet, strict=True) # `parsed_body` parameter can be used to map request to certain type
+@app.post("/pets") # `parsed_body` parameter can be used to map request to certain type
 def create_pet(request: HttpRequest) -> HttpResponse:
-    try: # mapping request to your dataclass may fail
-        pet: Pet = request.parsed_body
+    try: 
+        pet = Pet(**request.parsed_body)
     except TypeError:
         return HttpResponse(status=400)
     
-    # if request body is valid `request.parsed_body` will be instance of a Pet
-    assert isinstance(pet, Pet)
     return HttpResponse(pet.name)
 ```
 
-> Open api file used in the example above can be [found here](./examples/input_validation_with_open_api/openapi.yml)
+> Complete integration example can be [found here](./examples/input_validation_with_open_api/openapi.yml)
 
 Chocs automatically validates:
  - request body, `application/json` header must be present for successful validation
  - query string parameters
  - request headers
 
-### Turning strict mode off
-
-> Note: By default chocs works in a strict mode, which means when you map request
-> data to your object `__init__` method is called. To override this behaviour set
-> `strict` property to false: `@app.post("/pets", parsed_body=Pet, strict=False)`
-
-In non strict mode your request body will be still mapped to the provided class, and data will be hydrated but `__init__` method will not be called.
-Please consider the following example:
+## Mapping request payload to custom dataclasses
 
 ```python
-from chocs.middleware import OpenApiMiddleware
+from chocs.middleware import ParsedBodyMiddleware
 from chocs import Application, HttpRequest, HttpResponse
-from os import path
 from dataclasses import dataclass
 
-openapi_filename = path.join(path.dirname(__file__), "/openapi.yml")
-app = Application(OpenApiMiddleware(openapi_filename, validate_body=True, validate_query=True))
+# You can define whether to use strict mode or not for all defined routes.
+app = Application(ParsedBodyMiddleware(strict=False))
 
 @dataclass()
 class Pet:
     id: str
     name: str
 
-@app.post("/pets", parsed_body=Pet, strict=False) # with strict mode off, __init__ method of Pet's class is ignored.
+@app.post("/pets", parsed_body=Pet, strict=False) # you can also override default strict mode
 def create_pet(request: HttpRequest) -> HttpResponse:
-    pet: Pet = request.parsed_body # this will always work
-
+    pet: Pet = request.parsed_body
     assert isinstance(pet, Pet)
     return HttpResponse(pet.name)
 ```
+
+> Note: By default chocs works in a strict mode, which means when you map request
+> data to your object `__init__` method is called. To override this behaviour set
+> `strict` property to false: `@app.post("/pets", parsed_body=Pet, strict=False)`
+> or use `strict=False` when initialising middleware: `ParsedBodyMiddleware(strict=False)`
 
 
 ### Handling validation errors with custom middleware

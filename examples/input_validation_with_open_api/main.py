@@ -5,7 +5,7 @@ from os import path
 
 from chocs import Application, HttpRequest, HttpResponse, HttpStatus, serve
 from chocs.json_schema.errors import ValidationError
-from chocs.middleware import OpenApiMiddleware
+from chocs.middleware import OpenApiMiddleware, ParsedBodyMiddleware
 
 open_api_filename = path.dirname(__file__) + "/openapi.yml"
 
@@ -20,7 +20,7 @@ def error_handler(request, next) -> HttpResponse:
         )
 
 
-app = Application(error_handler, OpenApiMiddleware(open_api_filename))
+app = Application(error_handler, OpenApiMiddleware(open_api_filename), ParsedBodyMiddleware())
 
 
 @dataclass()
@@ -31,8 +31,11 @@ class Pet:
 
 @app.post("/pets", parsed_body=Pet)
 def create_pet(request: HttpRequest) -> HttpResponse:
-    assert isinstance(request.parsed_body, Pet)
-    pet = request.parsed_body  # type: Pet
+    try:
+        # in strict mode mapping may fail so it is better to keep it in try/except block
+        pet = request.parsed_body  # type: Pet
+    except TypeError:
+        return HttpResponse(status=HttpStatus.UNPROCESSABLE_ENTITY)
 
     return HttpResponse(pet.name)
 
