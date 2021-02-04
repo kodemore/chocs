@@ -1,6 +1,7 @@
 import inspect
 from typing import Any
 
+from chocs.http_message import CompositeHttpMessage
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
 from chocs.middleware import Middleware, MiddlewareHandler
@@ -13,6 +14,7 @@ class ParsedBodyMiddleware(Middleware):
 
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         route = request.route
+        assert isinstance(route, Route)
         if "parsed_body" in route.attributes:
             self._map_parsed_body(request, route)
 
@@ -20,6 +22,9 @@ class ParsedBodyMiddleware(Middleware):
 
     def _map_parsed_body(self, request: HttpRequest, route: Route) -> None:
         if not inspect.isclass(route.attributes["parsed_body"]):
+            return
+
+        if not isinstance(request.parsed_body, CompositeHttpMessage):
             return
 
         body = request.parsed_body
