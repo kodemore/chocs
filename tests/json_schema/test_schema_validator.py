@@ -378,3 +378,57 @@ def test_can_build_validator_for_object() -> None:
     with pytest.raises(PropertyError):
         validate({"a": 1, "b": 2, "c": 3})
 
+
+def test_validate_object_pattern_properties() -> None:
+    schema = {
+        "type": "object",
+        "patternProperties": {
+            "^x-": {"type": "string"},
+            "^y-": {"type": "integer"},
+        }
+    }
+
+    validate = build_validator_from_schema(schema)
+    assert validate({
+        "x-a": "a",
+        "x-b": "b",
+        "y-1": 1,
+        "y-2": 2,
+        "a": True
+    })
+
+    assert validate({"a": "valid"})
+
+    with pytest.raises(ValueError):
+        validate({
+            "x-a": 1,
+        })
+
+
+def test_validate_object_pattern_properties_without_additional_parameters() -> None:
+    schema = {
+        "type": "object",
+        "patternProperties": {
+            "^x-": {"type": "string"},
+            "^y-": {"type": "integer"},
+        },
+        "additionalProperties": False,
+    }
+
+    validate = build_validator_from_schema(schema)
+    validate({
+        "x-a": "a",
+        "x-b": "b",
+        "y-1": 1,
+        "y-2": 2,
+    })
+
+    with pytest.raises(ValueError):
+        validate({
+            "a": 1,
+        })
+
+    with pytest.raises(ValueError):
+        validate({
+            "x-a": 1,
+        })
