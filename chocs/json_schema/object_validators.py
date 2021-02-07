@@ -52,14 +52,14 @@ def validate_object_properties(
             if additional_properties is False:
                 raise AdditionalPropertyError(property_name=key)
 
-        if not additional_properties:
+        if additional_properties is False:
             raise AdditionalPropertyError(property_name=key)
 
         if additional_properties is True:
             continue
 
         try:
-            obj[key] = additional_properties(value)
+            obj[key] = additional_properties(value)  # type: ignore
         except PropertyValueError as error:
             raise PropertyValueError(
                 property_name=key + "." + error.context["property_name"],

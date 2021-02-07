@@ -188,7 +188,7 @@ def _build_object_validator(definition: Dict[str, Any]) -> Callable:
     if "required" in definition:
         validators.append(partial(validate_object_required_properties, required_properties=definition["required"],))
 
-    property_validator_settings = {}
+    property_validator_settings: Dict[str, Any] = {}
 
     if "properties" in definition:
         properties_validators = {
@@ -202,10 +202,14 @@ def _build_object_validator(definition: Dict[str, Any]) -> Callable:
         if isinstance(definition["additionalProperties"], bool):
             property_validator_settings["additional_properties"] = definition["additionalProperties"]
         else:
-            property_validator_settings["additional_properties"] = build_validator_from_schema(definition["additionalProperties"])
+            property_validator_settings["additional_properties"] = build_validator_from_schema(
+                definition["additionalProperties"]
+            )
 
     if "patternProperties" in definition:
-        property_validator_settings["pattern_properties"] = {key: build_validator_from_schema(value) for key, value in definition["patternProperties"].items()}
+        property_validator_settings["pattern_properties"] = {
+            key: build_validator_from_schema(value) for key, value in definition["patternProperties"].items()
+        }
 
     if property_validator_settings:
         validators.append(partial(validate_object_properties, **property_validator_settings))
