@@ -1,4 +1,5 @@
-from typing import Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Optional, Union
+import re
 
 from .errors import (
     AdditionalPropertyError,
@@ -12,40 +13,62 @@ from .errors import (
 
 
 def validate_object_properties(
-    obj: dict, properties: Dict[str, Callable], additional_properties: Union[bool, Callable] = True,
+    obj: dict,
+    properties: Dict[str, Callable] = None,
+    additional_properties: Union[bool, Callable] = True,
+    pattern_properties: Dict[str, Callable] = None,
 ) -> dict:
-
-    property_length = 0
+    properties = properties if properties is not None else {}
     for key, value in obj.items():
-        property_length += 1
-        if key not in properties:
-            if not additional_properties:
+        if key in properties:
+            try:
+                obj[key] = properties[key](value)
+                continue
+            except PropertyValueError as error:
+                raise PropertyValueError(
+                    sub_code=error.code,
+                    property_name=key + "." + error.context["property_name"],
+                    validation_error=error.context["validation_error"],
+                )
+            except ValidationError as error:
+                raise PropertyValueError(property_name=key, validation_error=str(error), sub_code=error.code)
+            except ValueError as error:
+                raise PropertyValueError(property_name=key, validation_error=str(error))
+
+        if not additional_properties and not pattern_properties:
+            raise AdditionalPropertyError(property_name=key)
+
+        if pattern_properties:
+            property_validator: Optional[Callable] = None
+            for property_pattern, tmp_validator in pattern_properties.items():
+                if re.search(property_pattern, key):
+                    property_validator = tmp_validator
+                    break
+
+            if property_validator:
+                obj[key] = property_validator(value)
+                continue
+
+            if additional_properties is False:
                 raise AdditionalPropertyError(property_name=key)
-            if callable(additional_properties):
-                try:
-                    obj[key] = additional_properties(value)
-                except PropertyValueError as error:
-                    raise PropertyValueError(
-                        property_name=key + "." + error.context["property_name"],
-                        validation_error=error.context["validation_error"],
-                    )
-                except ValidationError as error:
-                    raise PropertyValueError(
-                        property_name=key, validation_error=str(error), sub_code=error.code,
-                    )
-                except ValueError as error:
-                    raise PropertyValueError(property_name=key, validation_error=str(error))
+
+        if additional_properties is False:
+            raise AdditionalPropertyError(property_name=key)
+
+        if additional_properties is True:
             continue
+
         try:
-            obj[key] = properties[key](value)
+            obj[key] = additional_properties(value)  # type: ignore
         except PropertyValueError as error:
             raise PropertyValueError(
-                sub_code=error.code,
                 property_name=key + "." + error.context["property_name"],
                 validation_error=error.context["validation_error"],
             )
         except ValidationError as error:
-            raise PropertyValueError(property_name=key, validation_error=str(error), sub_code=error.code)
+            raise PropertyValueError(
+                property_name=key, validation_error=str(error), sub_code=error.code,
+            )
         except ValueError as error:
             raise PropertyValueError(property_name=key, validation_error=str(error))
 

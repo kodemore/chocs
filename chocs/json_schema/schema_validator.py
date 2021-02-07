@@ -84,7 +84,8 @@ def _build_validator_for_type(schema_type: str, definition: Dict[str, Any]) -> C
     if schema_type == "object":
         return _build_object_validator(definition)
 
-    raise ValueError(f"Unsupported schema type: {schema_type}")
+    # default to string validation
+    return _build_string_validator(definition)
 
 
 def _build_string_validator(definition: Dict[str, Any]) -> Callable:
@@ -187,24 +188,31 @@ def _build_object_validator(definition: Dict[str, Any]) -> Callable:
     if "required" in definition:
         validators.append(partial(validate_object_required_properties, required_properties=definition["required"],))
 
+    property_validator_settings: Dict[str, Any] = {}
+
     if "properties" in definition:
         properties_validators = {
             property_name: build_validator_from_schema(property_schema)
             for property_name, property_schema in definition["properties"].items()
         }
 
-        object_validator = partial(validate_object_properties, properties=properties_validators)
+        property_validator_settings["properties"] = properties_validators
 
-        if "additionalProperties" in definition:
-            if isinstance(definition["additionalProperties"], bool):
-                object_validator = partial(object_validator, additional_properties=definition["additionalProperties"],)
-            else:
-                object_validator = partial(
-                    object_validator,
-                    additional_properties=build_validator_from_schema(definition["additionalProperties"]),
-                )
+    if "additionalProperties" in definition:
+        if isinstance(definition["additionalProperties"], bool):
+            property_validator_settings["additional_properties"] = definition["additionalProperties"]
+        else:
+            property_validator_settings["additional_properties"] = build_validator_from_schema(
+                definition["additionalProperties"]
+            )
 
-        validators.append(object_validator)
+    if "patternProperties" in definition:
+        property_validator_settings["pattern_properties"] = {
+            key: build_validator_from_schema(value) for key, value in definition["patternProperties"].items()
+        }
+
+    if property_validator_settings:
+        validators.append(partial(validate_object_properties, **property_validator_settings))
 
     return partial(validate_all_of, validators=validators)
 
