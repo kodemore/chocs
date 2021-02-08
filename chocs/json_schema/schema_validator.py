@@ -17,6 +17,7 @@ from .number_validators import (
     validate_multiple_of,
 )
 from .object_validators import (
+    validate_object_dependencies,
     validate_object_maximum_properties,
     validate_object_minimum_properties,
     validate_object_properties,
@@ -187,6 +188,9 @@ def _build_object_validator(definition: Dict[str, Any]) -> Callable:
 
     if "required" in definition:
         validators.append(partial(validate_object_required_properties, required_properties=definition["required"],))
+
+    if "dependencies" in definition:
+        validators.append(partial(validate_object_dependencies, dependencies=definition["dependencies"]))
 
     property_validator_settings: Dict[str, Any] = {}
 

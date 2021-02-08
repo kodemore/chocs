@@ -24,7 +24,7 @@ def test_fail_validate_array(value: Any) -> None:
         validate_array(value)
     assert e.value.args[0] == (
         "Passed value must be valid array type. "
-        f"Actual type passed was {type(value)}"
+        f"Actual type passed was {type(value)}."
     )
 
 
@@ -39,7 +39,7 @@ def test_fail_validate_boolean(value: Any) -> None:
         validate_boolean(value)
     assert e.value.args[0] == (
         "Passed value must be valid <class 'bool'> type. "
-        f"Actual type passed was {type(value)}"
+        f"Actual type passed was {type(value)}."
     )
 
 
@@ -68,7 +68,7 @@ def test_fail_validate_integer(value: Any) -> None:
         validate_integer(value)
     assert e.value.args[0] == (
         "Passed value must be valid <class 'int'> type. "
-        f"Actual type passed was {type(value)}"
+        f"Actual type passed was {type(value)}."
     )
 
 
@@ -105,7 +105,7 @@ def test_fail_validate_number(value: Any) -> None:
         validate_number(value)
     assert e.value.args[0] == (
         "Passed value must be valid <class 'numbers.Number'> type. "
-        f"Actual type passed was {type(value)}"
+        f"Actual type passed was {type(value)}."
     )
 
 
@@ -120,5 +120,5 @@ def test_fail_validate_string(value: Any) -> None:
         validate_string(value)
     assert e.value.args[0] == (
         "Passed value must be valid <class 'str'> type. "
-        f"Actual type passed was {type(value)}"
+        f"Actual type passed was {type(value)}."
     )

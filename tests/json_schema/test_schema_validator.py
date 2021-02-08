@@ -14,6 +14,7 @@ from chocs.json_schema.errors import (
     RequiredPropertyError,
     TypeValidationError,
     UniqueItemsValidationError,
+    MissingDependencyError,
 )
 
 
@@ -27,7 +28,7 @@ def test_can_build_validator_for_boolean_type() -> None:
         validate(1)
     assert e.value.args[0] == (
         "Passed value must be valid <class 'bool'> type. "
-        "Actual type passed was <class 'int'>"
+        "Actual type passed was <class 'int'>."
     )
 
 
@@ -39,7 +40,7 @@ def test_can_build_validator_for_number_type() -> None:
         validate(5.0)
     assert e.value.args[0] == (
         "Passed value must be valid <class 'int'> type. "
-        "Actual type passed was <class 'float'>"
+        "Actual type passed was <class 'float'>."
     )
 
     # validate number
@@ -49,7 +50,7 @@ def test_can_build_validator_for_number_type() -> None:
         validate("4")
     assert e.value.args[0] == (
         "Passed value must be valid <class 'numbers.Number'> type. "
-        "Actual type passed was <class 'str'>"
+        "Actual type passed was <class 'str'>."
     )
 
     # validate minimum
@@ -94,7 +95,7 @@ def test_can_build_validator_for_number_type() -> None:
         validate("a")
     assert e.value.args[0] == (
         "Passed value must be valid <class 'numbers.Number'> type. "
-        "Actual type passed was <class 'str'>"
+        "Actual type passed was <class 'str'>."
     )
 
 
@@ -107,7 +108,7 @@ def test_can_build_validator_for_string_type() -> None:
         validate(5.0)
     assert e.value.args[0] == (
         "Passed value must be valid <class 'str'> type. "
-        "Actual type passed was <class 'float'>"
+        "Actual type passed was <class 'float'>."
     )
 
     # validate format
@@ -159,7 +160,7 @@ def test_can_build_validator_for_array() -> None:
         validate("a")
     assert e.value.args[0] == (
         "Passed value must be valid array type. "
-        "Actual type passed was <class 'str'>"
+        "Actual type passed was <class 'str'>."
     )
 
     # validate min items
@@ -194,7 +195,7 @@ def test_can_build_validator_for_array() -> None:
         assert validate([1, 2, "a"])
     assert e.value.args[0] == (
         "Passed value must be valid array type. "
-        "Actual type passed was <class 'str'>"
+        "Actual type passed was <class 'str'>."
     )
     validate = build_validator_from_schema(
         {"type": "array", "items": {"type": "string", "format": "email"}}
@@ -252,7 +253,7 @@ def test_can_build_validator_for_array() -> None:
         assert validate(["bob@email.com", "Bob", 12, 10])
     assert e.value.args[0] == (
         "Passed value must be valid <class 'str'> type. "
-        "Actual type passed was <class 'int'>"
+        "Actual type passed was <class 'int'>."
     )
     with pytest.raises(RangeValidationError):
         assert validate(["bob@email.com", "Bob", 151])
@@ -267,7 +268,7 @@ def test_can_build_validator_for_object() -> None:
         validate("a")
     assert e.value.args[0] == (
         "Passed value must be valid object type. "
-        "Actual type passed was <class 'str'>"
+        "Actual type passed was <class 'str'>."
     )
 
     # validate properties
@@ -399,10 +400,15 @@ def test_validate_object_pattern_properties() -> None:
 
     assert validate({"a": "valid"})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeValidationError) as e:
         validate({
             "x-a": 1,
         })
+
+    assert e.value.args[0] == (
+        "Passed value must be valid <class 'str'> type. "
+        "Actual type passed was <class 'int'>."
+    )
 
 
 def test_validate_object_pattern_properties_without_additional_parameters() -> None:
@@ -423,12 +429,72 @@ def test_validate_object_pattern_properties_without_additional_parameters() -> N
         "y-2": 2,
     })
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         validate({
             "a": 1,
         })
+    assert e.value.args[0] == (
+        "Object does not expect additional properties. "
+        "Property `a` is not allowed."
+    )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         validate({
             "x-a": 1,
         })
+
+    assert e.value.args[0] == (
+        "Passed value must be valid <class 'str'> type. "
+        "Actual type passed was <class 'int'>."
+    )
+
+
+def test_validate_property_dependencies() -> None:
+    schema = {
+        "type": "object",
+
+        "properties": {
+            "name": {"type": "string"},
+            "credit_card": {"type": "number"},
+            "billing_address": {"type": "string"}
+        },
+
+        "required": ["name"],
+
+        "dependencies": {
+            "credit_card": ["billing_address"],
+            "billing_address": ["credit_card"]
+        }
+    }
+    validate = build_validator_from_schema(schema)
+
+    assert validate({
+        "name": "John Doe"
+    })
+
+    assert validate({
+        "name": "John Doe",
+        "credit_card": 5555555555555555,
+        "billing_address": "555 Debtor's Lane"
+    })
+
+    with pytest.raises(MissingDependencyError) as e:
+        validate({
+            "name": "John Doe",
+            "credit_card": 5555555555555555
+        })
+
+    assert e.value.args[0] == (
+        "Property `credit_card` requires ['billing_address'] to be provided."
+    )
+
+    with pytest.raises(MissingDependencyError) as e:
+        validate({
+            "name": "John Doe",
+            "billing_address": "555 Debtor's Lane"
+        })
+
+    assert e.value.args[0] == (
+        "Property `billing_address` requires ['credit_card'] to be provided."
+    )
+
