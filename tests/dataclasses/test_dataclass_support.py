@@ -3,20 +3,19 @@ from typing import List
 
 import pytest
 
-from chocs.dataclasses.hydrators import build_hydrator_for_type
+from chocs.dataclasses import asdict, make_dataclass
 
 
-def test_can_hydrate_simple_dataclass() -> None:
+def test_can_make_simple_dataclass() -> None:
     # given
     @dataclass
     class Pet:
         name: str
         age: int
         tags: List[str]
-    hydrator = build_hydrator_for_type(Pet)
 
     # when
-    pet = hydrator.hydrate({"name": "Bobek", "age": 4, "tags": ["1", "a", "True"]})
+    pet = make_dataclass({"name": "Bobek", "age": 4, "tags": ["1", "a", "True"]}, Pet)
 
     # then
     assert isinstance(pet, Pet)
@@ -27,7 +26,7 @@ def test_can_hydrate_simple_dataclass() -> None:
         assert isinstance(tag, str)
 
 
-def test_can_hydrate_nested_dataclasses() -> None:
+def test_can_make_nested_dataclasses() -> None:
     # given
     @dataclass
     class Tag:
@@ -39,10 +38,8 @@ def test_can_hydrate_nested_dataclasses() -> None:
         age: int
         tags: List[Tag]
 
-    hydrator = build_hydrator_for_type(Pet)
-
     # when
-    pet = hydrator.hydrate({"name": "Bobek", "age": "4", "tags": [{"name": "Cat"}, {"name": "Brown"}]})
+    pet = make_dataclass({"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}, {"name": "Brown"}]}, Pet)
 
     # then
     assert isinstance(pet, Pet)
@@ -66,12 +63,11 @@ def test_can_extract_nested_dataclasses() -> None:
         age: int
         tags: List[Tag]
 
-    json = {"name": "Bobek", "age": "4", "tags": [{"name": "Cat"}, {"name": "Brown"}]}
-    hydrator = build_hydrator_for_type(Pet)
-    pet = hydrator.hydrate(json)
+    json = {"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}, {"name": "Brown"}]}
+    pet = make_dataclass(json, Pet)
 
     # when
-    data = hydrator.extract(pet)
+    data = asdict(pet)
 
     # then
     assert data == {
@@ -84,23 +80,22 @@ def test_can_extract_nested_dataclasses() -> None:
     }
 
 
-def test_fail_hydrating_with_missing_property() -> None:
+def test_fail_make_with_missing_property() -> None:
     # given
     @dataclass
     class Pet:
         name: str
         age: int
-    hydrator = build_hydrator_for_type(Pet)
 
     # when
     with pytest.raises(AttributeError) as error:
-        hydrator.hydrate({"name": "Bobek"})
+        make_dataclass({"name": "Bobek"}, Pet)
 
     # then
     assert str(error.value) == "Property `age` is required."
 
 
-def test_hydrate_with_default_values() -> None:
+def test_make_with_default_values() -> None:
     # given
     @dataclass
     class Pet:
@@ -108,10 +103,8 @@ def test_hydrate_with_default_values() -> None:
         age: int = 10
         tags: list = field(default_factory=list)
 
-    hydrator = build_hydrator_for_type(Pet)
-
     # when
-    pet = hydrator.hydrate({"name": "Bobek"})
+    pet = make_dataclass({"name": "Bobek"}, Pet)
 
     # then
     assert pet.name == "Bobek"
