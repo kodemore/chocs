@@ -1,14 +1,9 @@
-import datetime
-import ipaddress
-import uuid
-from decimal import Decimal
+from abc import ABC, abstractmethod
+from dataclasses import MISSING, _MISSING_TYPE, is_dataclass
+from enum import Enum
 from functools import partial
 from inspect import isclass
-from typing import Any, AnyStr, ByteString, Callable, Dict, List, Optional, Pattern, Protocol, Set, Type, Union, \
-    Sequence, Tuple, TypeVar
-from dataclasses import is_dataclass, MISSING, _MISSING_TYPE
-from enum import Enum
-from abc import ABC, abstractmethod
+from typing import Any, AnyStr, Callable, Dict, List, NamedTuple, Optional, Sequence, Set, Tuple, Type, TypeVar, Union
 
 T = TypeVar("T")
 
@@ -32,7 +27,7 @@ class DatalassStrategy(HydrationStrategy):
         fields = dataclass_name.__dataclass_fields__
 
         for field_name, field_descriptor in fields.items():
-            self._strategies[field_name] = get_strategy_for_type(field_descriptor.type)
+            self._strategies[field_name] = get_strategy_for(field_descriptor.type)
 
             # Sadly setting value is a bit more complex than getting it in dataclasses
             self._setters[field_name] = partial(
@@ -144,12 +139,51 @@ class TupleStrategy(HydrationStrategy):
         return result
 
 
-class EnumStrategy(HydrationStrategy):
-    def __init__(self, class_name: Type[Enum]):
-        self.class_name = class_name
+class NamedTupleStrategy(HydrationStrategy):
+    def __init__(self, class_name: Type[NamedTuple]):
+        self._class_name = class_name
+        self._is_typed = hasattr(class_name, "_field_types")
+        self._arg_strategies: List[HydrationStrategy] = []
+        if self._is_typed:
+            self._build_type_mapper(class_name._field_types)
 
     def hydrate(self, value: Any) -> Any:
-        return self.class_name(value)
+        if not self._is_typed:
+            return self._class_name(*value)
+
+        hydrated_values = []
+        for index, item in enumerate(value):
+            if index < len(self._arg_strategies):
+                hydrated_values.append(self._arg_strategies[index].hydrate(item))
+                continue
+            hydrated_values.append(item)
+
+        return self._class_name(*hydrated_values)
+
+    def extract(self, value: Any) -> Any:
+        result = list(value)
+        if not self._is_typed:
+            return result
+        extracted_values = []
+        for index, item in enumerate(result):
+            if index < len(self._arg_strategies):
+                extracted_values.append(self._arg_strategies[index].extract(item))
+                continue
+            extracted_values.append(item)
+
+        return extracted_values
+
+    def _build_type_mapper(self, field_types: Dict[str, Type]) -> None:
+        for item_type in field_types.values():
+            self._arg_strategies.append(get_strategy_for(item_type))
+
+
+class EnumStrategy(HydrationStrategy):
+    def __init__(self, class_name: Type[Enum]):
+        self._class_name = class_name
+
+    def hydrate(self, value: Any) -> Any:
+        return self._class_name(value)
 
     def extract(self, value: Any) -> Any:
         return value.value
@@ -235,7 +269,11 @@ def is_enum_type(type_name: Type) -> bool:
     return issubclass(type_name, Enum)
 
 
-def get_strategy_for_type(type_name: Type) -> HydrationStrategy:
+def is_named_tuple(type_name: Type) -> bool:
+    return issubclass(type_name, tuple) and hasattr(type_name, "_fields")
+
+
+def get_strategy_for(type_name: Type) -> HydrationStrategy:
     if type_name in BUILT_IN_HYDRATOR_STRATEGY:
         return BUILT_IN_HYDRATOR_STRATEGY[type_name]
 
@@ -256,7 +294,11 @@ def get_strategy_for_type(type_name: Type) -> HydrationStrategy:
             CACHED_HYDRATION_STRATEGIES[type_name] = EnumStrategy(type_name)
             return CACHED_HYDRATION_STRATEGIES[type_name]
 
-        return CACHED_HYDRATION_STRATEGIES[Any]
+        if is_named_tuple(type_name):
+            CACHED_HYDRATION_STRATEGIES[type_name] = NamedTupleStrategy(type_name)
+            return CACHED_HYDRATION_STRATEGIES[type_name]
+
+        return BUILT_IN_HYDRATOR_STRATEGY[Any]
 
     if origin_type not in BUILT_IN_HYDRATOR_STRATEGY:
         return BUILT_IN_HYDRATOR_STRATEGY[Any]
@@ -266,7 +308,7 @@ def get_strategy_for_type(type_name: Type) -> HydrationStrategy:
         if subtype is ...:
             subtypes.append(...)
             continue
-        subtypes.append(get_strategy_for_type(subtype))
+        subtypes.append(get_strategy_for(subtype))
 
     if origin_type is list:
         CACHED_HYDRATION_STRATEGIES[type_name] = ListStrategy(subtypes[0])

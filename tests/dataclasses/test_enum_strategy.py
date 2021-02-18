@@ -1,7 +1,7 @@
 from enum import Enum, IntEnum
 import pytest
 
-from chocs.dataclasses import get_strategy_for_type
+from chocs.dataclasses import get_strategy_for
 
 
 def test_hydrate_enum() -> None:
@@ -12,7 +12,7 @@ def test_hydrate_enum() -> None:
         GREEN = "green"
         ORANGE = "orange"
 
-    strategy = get_strategy_for_type(Colors)
+    strategy = get_strategy_for(Colors)
 
     # when
     red = strategy.hydrate("red")
@@ -32,7 +32,7 @@ def test_hydrate_int_enum() -> None:
         YELLOW = 2
         GREEN = 3
         ORANGE = 4
-    strategy = get_strategy_for_type(Colors)
+    strategy = get_strategy_for(Colors)
 
     # when
     red = strategy.hydrate(1)
@@ -52,7 +52,7 @@ def test_extract_enum() -> None:
         YELLOW = "yellow"
         GREEN = "green"
         ORANGE = "orange"
-    strategy = get_strategy_for_type(Colors)
+    strategy = get_strategy_for(Colors)
     red = strategy.hydrate("red")
     orange = strategy.hydrate("orange")
 
@@ -73,7 +73,7 @@ def test_fail_hydrating_invalid_enum() -> None:
         GREEN = "green"
         ORANGE = "orange"
 
-    strategy = get_strategy_for_type(Colors)
+    strategy = get_strategy_for(Colors)
 
     # when
     with pytest.raises(ValueError) as error:

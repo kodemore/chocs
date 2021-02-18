@@ -3,7 +3,7 @@ from typing import List, Sequence, Type
 
 import pytest
 
-from chocs.dataclasses import get_strategy_for_type
+from chocs.dataclasses import get_strategy_for
 
 
 @pytest.mark.parametrize("list_type", [
@@ -13,7 +13,7 @@ from chocs.dataclasses import get_strategy_for_type
 ])
 def test_hydrate_generic_list(list_type: Type) -> None:
     # given
-    strategy = get_strategy_for_type(list_type)
+    strategy = get_strategy_for(list_type)
     list_items = ["a", 1, 2.1, True]
 
     # when
@@ -25,7 +25,7 @@ def test_hydrate_generic_list(list_type: Type) -> None:
 
 def test_hydrate_typed_list() -> None:
     # given
-    strategy = get_strategy_for_type(List[str])
+    strategy = get_strategy_for(List[str])
     list_items = ["a", 1, 2.1, True]
 
     # when
@@ -42,7 +42,7 @@ def test_hydrate_list_of_dataclasses() -> None:
         x: int
         y: int
 
-    strategy = get_strategy_for_type(List[Point])
+    strategy = get_strategy_for(List[Point])
 
     # when
     hydrated = strategy.hydrate([{"x": 1, "y": 1}, {"x": 2, "y": 1}, {"x": 2, "y": 2}])
@@ -64,7 +64,7 @@ def test_extract_list() -> None:
         x: int
         y: int
 
-    strategy = get_strategy_for_type(List[Point])
+    strategy = get_strategy_for(List[Point])
     list_of_points = [Point(1, 1), Point(1, 2), Point(2, 2)]
 
     # when

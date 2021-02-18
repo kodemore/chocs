@@ -1,11 +1,12 @@
-from typing import Tuple
+from typing import Tuple, NamedTuple
+from collections import namedtuple
 
-from chocs.dataclasses import get_strategy_for_type
+from chocs.dataclasses import get_strategy_for
 
 
 def test_hydrate_generic_tuple() -> None:
     # given
-    strategy = get_strategy_for_type(tuple)
+    strategy = get_strategy_for(tuple)
     items = ["a", 1, 2.1, True]
 
     # when
@@ -17,7 +18,7 @@ def test_hydrate_generic_tuple() -> None:
 
 def test_hydrate_typed_tuple() -> None:
     # given
-    strategy = get_strategy_for_type(Tuple[str, int, str, int])
+    strategy = get_strategy_for(Tuple[str, int, str, int])
     items = ["a", 1, 2.1, True]
 
     # when
@@ -29,7 +30,7 @@ def test_hydrate_typed_tuple() -> None:
 
 def test_hydrate_ellipsis_tuple() -> None:
     # given
-    strategy = get_strategy_for_type(Tuple[str, ...])
+    strategy = get_strategy_for(Tuple[str, ...])
     items = ["a", 1, 2.1, True]
 
     # when
@@ -41,7 +42,8 @@ def test_hydrate_ellipsis_tuple() -> None:
 
 def test_extract_simple_tuple() -> None:
     # given
-    strategy = get_strategy_for_type(tuple)
+    strategy = get_strategy_for(tuple)
+
     items = ("a", 1, 2.1, True)
 
     # when
@@ -53,7 +55,7 @@ def test_extract_simple_tuple() -> None:
 
 def test_extract_typed_tuple() -> None:
     # given
-    strategy = get_strategy_for_type(Tuple[str, int, str, int])
+    strategy = get_strategy_for(Tuple[str, int, str, int])
     items = ("a", 1, 2.1, True)
 
     # when
@@ -65,7 +67,7 @@ def test_extract_typed_tuple() -> None:
 
 def test_extract_ellipsis_tuple() -> None:
     # given
-    strategy = get_strategy_for_type(Tuple[str, ...])
+    strategy = get_strategy_for(Tuple[str, ...])
     items = ("a", 1, 2.1, True)
 
     # when
