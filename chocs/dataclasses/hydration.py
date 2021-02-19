@@ -1,14 +1,18 @@
-from abc import ABC, abstractmethod
+import collections
+from abc import abstractmethod
 from dataclasses import MISSING, _MISSING_TYPE, is_dataclass
 from enum import Enum
 from functools import partial
 from inspect import isclass
-from typing import Any, AnyStr, Callable, Dict, List, NamedTuple, Optional, Sequence, Set, Tuple, Type, TypeVar, Union
+from typing import Any, AnyStr, Callable, Dict, List, NamedTuple, Optional, Protocol, Sequence, Set, Tuple, Type, \
+    TypeVar, Union
+
+from typing_extensions import TypedDict
 
 T = TypeVar("T")
 
 
-class HydrationStrategy(ABC):
+class HydrationStrategy(Protocol):
     @abstractmethod
     def hydrate(self, value: Any) -> Any:
         ...
@@ -57,7 +61,7 @@ class DatalassStrategy(HydrationStrategy):
         return result
 
 
-class AnyStrategy(HydrationStrategy):
+class DummyStrategy(HydrationStrategy):
     def hydrate(self, value: Any, *args) -> Any:
         return value
 
@@ -66,14 +70,15 @@ class AnyStrategy(HydrationStrategy):
 
 
 class SimpleStrategy(HydrationStrategy):
-    def __init__(self, base_type: Type):
-        self._base_type = base_type
+    def __init__(self, hydrate_type: Type, extract_type: Type):
+        self._hydrate_type = hydrate_type
+        self._extract_type = extract_type
 
-    def hydrate(self, value: Any, *args) -> Any:
-        return self._base_type(value)
+    def hydrate(self, value: Any) -> Any:
+        return self._hydrate_type(value)
 
-    def extract(self, value: Any, *args) -> Any:
-        return self._base_type(value)
+    def extract(self, value: Any) -> Any:
+        return self._extract_type(value)
 
 
 class ListStrategy(HydrationStrategy):
@@ -88,16 +93,12 @@ class ListStrategy(HydrationStrategy):
 
 
 class TupleStrategy(HydrationStrategy):
-    def __init__(self, subtypes: List[HydrationStrategy] = None):
+    def __init__(self, subtypes: List[HydrationStrategy]):
         self._subtypes = subtypes
-        self._subtypes_length = len(subtypes) if subtypes else 0
-        self._is_ellipsis_present = self._subtypes[-1] is ... if subtypes else False
-        self._is_dummy = self._subtypes_length == 0 or self._subtypes_length == 1 and self._is_ellipsis_present
+        self._subtypes_length = len(subtypes)
+        self._is_ellipsis_present = self._subtypes[-1] is ...
 
     def hydrate(self, value: Any) -> Any:
-        if self._is_dummy:
-            return tuple(value)
-
         if self._is_ellipsis_present:
             return self._hydrate_ellipsis_tuple(value)
 
@@ -108,9 +109,6 @@ class TupleStrategy(HydrationStrategy):
         return tuple(result)
 
     def extract(self, value: Any) -> Any:
-        if self._is_dummy:
-            return list(value)
-
         if self._is_ellipsis_present:
             return self._extract_ellipsis_tuple(value)
 
@@ -189,12 +187,51 @@ class EnumStrategy(HydrationStrategy):
         return value.value
 
 
-class UnionStrategy(HydrationStrategy):
+class DictStrategy(HydrationStrategy):
+    def __init__(self, key: HydrationStrategy, value: HydrationStrategy):
+        self._key = key
+        self._value = value
+
+    def hydrate(self, value: Any) -> Any:
+        return {self._key.hydrate(key): self._value.hydrate(item) for key, item in value.items()}
+
+    def extract(self, value: Any) -> Any:
+        return {self._key.extract(key): self._value.extract(item) for key, item in value.items()}
+
+
+class OrderedDictStrategy(DictStrategy):
+    def hydrate(self, value: Any) -> Any:
+        return collections.OrderedDict(super().hydrate(value))
+
+
+class TypedDictStrategy(HydrationStrategy):
+    def __init__(self, type_name: Type[TypedDict]):
+        self._strategies = {}
+        for key_name, key_type in type_name.__annotations__.items():
+            self._strategies[key_name] = get_strategy_for(key_type)
+
+    def hydrate(self, value: Any) -> Any:
+        return {key: self._strategies[key].hydrate(item) for key, item in value.items()}
+
+    def extract(self, value: Any) -> Any:
+        return {key: self._strategies[key].extract(item) for key, item in value.items()}
+
+
+class OptionalTypeStrategy(HydrationStrategy):
+    def __init__(self, type_strategy: HydrationStrategy):
+        self._type_strategy = type_strategy
+
     def hydrate(self, value: Any, *args) -> Any:
-        return value
+        if value is None:
+            return None
+
+        return self._type_strategy.hydrate(value)
 
     def extract(self, value: Any, *args) -> Any:
-        return value
+        if value is None:
+            return None
+
+        return self._type_strategy.extract(value)
 
 
 def set_dataclass_property(
@@ -229,21 +266,23 @@ def set_dataclass_property(
 
 
 BUILT_IN_HYDRATOR_STRATEGY: Dict[Type, HydrationStrategy] = {
-    bool: SimpleStrategy(bool),
-    int: SimpleStrategy(int),
-    float: SimpleStrategy(float),
-    str: SimpleStrategy(str),
-    bytes: SimpleStrategy(bytes),
-    list: SimpleStrategy(list),
-    set: SimpleStrategy(set),
-    tuple: TupleStrategy(),
-    dict: SimpleStrategy(dict),
-    List: SimpleStrategy(list),
-    Sequence: SimpleStrategy(list),
-    Tuple: TupleStrategy(),
-    Set: SimpleStrategy(set),
-    Any: AnyStrategy(),
-    AnyStr: SimpleStrategy(str),
+    bool: SimpleStrategy(bool, bool),
+    collections.OrderedDict: SimpleStrategy(collections.OrderedDict, dict),
+    int: SimpleStrategy(int, int),
+    float: SimpleStrategy(float, float),
+    str: SimpleStrategy(str, str),
+    bytes: SimpleStrategy(bytes, bytes),
+    list: SimpleStrategy(list, list),
+    set: SimpleStrategy(set, list),
+    tuple: SimpleStrategy(tuple, list),
+    dict: SimpleStrategy(dict, dict),
+    TypedDict: SimpleStrategy(dict, dict),
+    List: SimpleStrategy(list, list),
+    Sequence: SimpleStrategy(list, list),
+    Tuple: SimpleStrategy(tuple, list),
+    Set: SimpleStrategy(set, list),
+    AnyStr: SimpleStrategy(str, str),
+    Any: DummyStrategy(),
 }
 
 CACHED_HYDRATION_STRATEGIES: Dict[Type, HydrationStrategy] = {}
@@ -273,6 +312,10 @@ def is_named_tuple(type_name: Type) -> bool:
     return issubclass(type_name, tuple) and hasattr(type_name, "_fields")
 
 
+def is_typed_dict(type_name: Type) -> bool:
+    return issubclass(type_name, dict) and hasattr(type_name, "__annotations__")
+
+
 def get_strategy_for(type_name: Type) -> HydrationStrategy:
     if type_name in BUILT_IN_HYDRATOR_STRATEGY:
         return BUILT_IN_HYDRATOR_STRATEGY[type_name]
@@ -298,10 +341,18 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
             CACHED_HYDRATION_STRATEGIES[type_name] = NamedTupleStrategy(type_name)
             return CACHED_HYDRATION_STRATEGIES[type_name]
 
+        if is_typed_dict(type_name):
+            CACHED_HYDRATION_STRATEGIES[type_name] = TypedDictStrategy(type_name)
+            return CACHED_HYDRATION_STRATEGIES[type_name]
+
         return BUILT_IN_HYDRATOR_STRATEGY[Any]
 
     if origin_type not in BUILT_IN_HYDRATOR_STRATEGY:
-        return BUILT_IN_HYDRATOR_STRATEGY[Any]
+        if not is_optional(type_name):
+            return BUILT_IN_HYDRATOR_STRATEGY[Any]
+
+        CACHED_HYDRATION_STRATEGIES[type_name] = OptionalTypeStrategy(get_strategy_for(unpack_optional(type_name)))
+        return CACHED_HYDRATION_STRATEGIES[type_name]
 
     subtypes: List[HydrationStrategy] = []
     for subtype in get_type_args(type_name):
@@ -316,6 +367,14 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
 
     if origin_type is tuple:
         CACHED_HYDRATION_STRATEGIES[type_name] = TupleStrategy(subtypes)
+        return CACHED_HYDRATION_STRATEGIES[type_name]
+
+    if origin_type is dict:
+        CACHED_HYDRATION_STRATEGIES[type_name] = DictStrategy(subtypes[0], subtypes[1])
+        return CACHED_HYDRATION_STRATEGIES[type_name]
+
+    if origin_type is collections.OrderedDict:
+        CACHED_HYDRATION_STRATEGIES[type_name] = OrderedDictStrategy(subtypes[0], subtypes[1])
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
     return BUILT_IN_HYDRATOR_STRATEGY[Any]
