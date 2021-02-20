@@ -50,8 +50,8 @@ class HydrationStrategy(Protocol):
 
 class DatalassStrategy(HydrationStrategy):
     def __init__(self, dataclass_name: Type):
-        self._strategies = {}
-        self._setters = {}
+        self._strategies: Dict[str, HydrationStrategy] = {}
+        self._setters: Dict[str, Callable] = {}
         self._dataclass_name = dataclass_name
 
         fields = dataclass_name.__dataclass_fields__
@@ -69,7 +69,7 @@ class DatalassStrategy(HydrationStrategy):
             )
 
     def hydrate(self, value: Any) -> Any:
-        instance = self._dataclass_name.__new__(self._dataclass_name)
+        instance = self._dataclass_name.__new__(self._dataclass_name)  # type: ignore
 
         for name, setter in self._setters.items():
             setter(instance, value)
@@ -246,8 +246,8 @@ class OrderedDictStrategy(DictStrategy):
 
 
 class TypedDictStrategy(HydrationStrategy):
-    def __init__(self, type_name: Type[TypedDict]):
-        self._strategies = {}
+    def __init__(self, type_name: Type):
+        self._strategies: Dict[str, HydrationStrategy] = {}
         for key_name, key_type in type_name.__annotations__.items():
             self._strategies[key_name] = get_strategy_for(key_type)
 
@@ -347,7 +347,7 @@ def set_dataclass_property(
         setattr(obj, property_name, strategy.hydrate(attributes[property_name]))
         return
 
-    if default_factory is not MISSING:
+    if callable(default_factory):
         setattr(obj, property_name, default_factory())
         return
 
@@ -383,15 +383,15 @@ BUILT_IN_HYDRATOR_STRATEGY: Dict[Type, HydrationStrategy] = {
     datetime.datetime: DateTimeStrategy(),
     datetime.timedelta: TimeDeltaStrategy(),
     collections.deque: SimpleStrategy(collections.deque, list),
-    TypedDict: SimpleStrategy(dict, dict),
+    TypedDict: SimpleStrategy(dict, dict),  # type: ignore
     List: SimpleStrategy(list, list),
     Sequence: SimpleStrategy(list, list),
-    Tuple: SimpleStrategy(tuple, list),
+    Tuple: SimpleStrategy(tuple, list),  # type: ignore
     Set: SimpleStrategy(set, list),
     FrozenSet: SimpleStrategy(frozenset, list),
     Deque: SimpleStrategy(collections.deque, list),
     AnyStr: SimpleStrategy(str, str),
-    Any: DummyStrategy(),
+    Any: DummyStrategy(),  # type: ignore
     Decimal: SimpleStrategy(Decimal, str),
 }
 
@@ -408,7 +408,9 @@ def get_type_args(type_name: Type) -> List[Type]:
 
 def is_optional(type_name: Type) -> bool:
     return (
-        get_origin_type(type_name) is Union and get_type_args(type_name) and get_type_args(type_name)[-1] is type(None)
+        get_origin_type(type_name) is Union
+        and bool(get_type_args(type_name))
+        and get_type_args(type_name)[-1] is type(None)
     )
 
 
@@ -443,7 +445,7 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
 
     if origin_type is None:
         if not isclass(type_name):
-            return BUILT_IN_HYDRATOR_STRATEGY[Any]
+            return BUILT_IN_HYDRATOR_STRATEGY[Any]  # type: ignore
 
         if is_enum_type(type_name):
             CACHED_HYDRATION_STRATEGIES[type_name] = EnumStrategy(type_name)
@@ -457,16 +459,16 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
             CACHED_HYDRATION_STRATEGIES[type_name] = TypedDictStrategy(type_name)
             return CACHED_HYDRATION_STRATEGIES[type_name]
 
-        return BUILT_IN_HYDRATOR_STRATEGY[Any]
+        return BUILT_IN_HYDRATOR_STRATEGY[Any]  # type: ignore
 
     if origin_type not in BUILT_IN_HYDRATOR_STRATEGY:
         if not is_optional(type_name):
-            return BUILT_IN_HYDRATOR_STRATEGY[Any]
+            return BUILT_IN_HYDRATOR_STRATEGY[Any]  # type: ignore
 
         CACHED_HYDRATION_STRATEGIES[type_name] = OptionalTypeStrategy(get_strategy_for(unpack_optional(type_name)))
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
-    subtypes: List[HydrationStrategy] = []
+    subtypes: List[Union[HydrationStrategy, Any]] = []
     for subtype in get_type_args(type_name):
         if subtype is ...:
             subtypes.append(...)
@@ -501,4 +503,4 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
         CACHED_HYDRATION_STRATEGIES[type_name] = DequeStrategy(subtypes[0])
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
-    return BUILT_IN_HYDRATOR_STRATEGY[Any]
+    return BUILT_IN_HYDRATOR_STRATEGY[Any]  # type: ignore

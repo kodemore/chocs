@@ -41,7 +41,7 @@ class ParsedBodyMiddleware(Middleware):
                     raise ValueError(
                         f"parsed_body argument expects valid dataclass type to be passed, {constructor} was given."
                     )
-                return init_dataclass(body, constructor)
+                return init_dataclass(body, constructor)  # type: ignore
 
             request._parsed_body_getter = _get_non_strict_parsed_body
 
