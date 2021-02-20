@@ -1,5 +1,5 @@
-from typing import List, Tuple, NamedTuple
 from collections import namedtuple
+from typing import List, NamedTuple, Tuple
 
 from chocs.dataclasses import get_strategy_for
 
@@ -38,6 +38,7 @@ def test_hydrate_class_based_named_tuple() -> None:
         age: int
         name: str
         tags: list = []
+
     strategy = get_strategy_for(Pet)
 
     # when

@@ -1,6 +1,7 @@
+from dataclasses import dataclass
+
 import decimal
 import enum
-from dataclasses import dataclass
 
 from chocs.dataclasses import asdict, init_dataclass
 

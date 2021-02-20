@@ -1,18 +1,39 @@
+from dataclasses import _MISSING_TYPE, MISSING, is_dataclass
+
 import collections
 import datetime
 from abc import abstractmethod
-from dataclasses import MISSING, _MISSING_TYPE, is_dataclass
 from decimal import Decimal
 from enum import Enum
 from functools import partial
 from inspect import isclass
-from typing import Any, AnyStr, Callable, Deque, Dict, FrozenSet, List, NamedTuple, Optional, Protocol, Sequence, Set, \
-    Tuple, Type, TypeVar, Union
-
+from typing import (
+    Any,
+    AnyStr,
+    Callable,
+    Deque,
+    Dict,
+    FrozenSet,
+    List,
+    NamedTuple,
+    Optional,
+    Protocol,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 from typing_extensions import TypedDict
 
-from chocs.json_schema.iso_datetime import parse_iso_date_string, parse_iso_datetime_string, parse_iso_duration_string, \
-    parse_iso_time_string, timedelta_to_iso_string
+from chocs.json_schema.iso_datetime import (
+    parse_iso_date_string,
+    parse_iso_datetime_string,
+    parse_iso_duration_string,
+    parse_iso_time_string,
+    timedelta_to_iso_string,
+)
 
 T = TypeVar("T")
 
@@ -44,7 +65,7 @@ class DatalassStrategy(HydrationStrategy):
                 strategy=self._strategies[field_name],
                 property_name=field_name,
                 default_factory=field_descriptor.default_factory,
-                default_value=field_descriptor.default
+                default_value=field_descriptor.default,
             )
 
     def hydrate(self, value: Any) -> Any:
@@ -241,6 +262,7 @@ class DateStrategy(HydrationStrategy):
     """
     Conforms ISO 8601 standard https://www.iso.org/iso-8601-date-and-time-format.html
     """
+
     def hydrate(self, value: Any) -> Any:
         if isinstance(value, datetime.date):
             return value
@@ -255,6 +277,7 @@ class DateTimeStrategy(HydrationStrategy):
     """
     Conforms ISO 8601 standard https://www.iso.org/iso-8601-date-and-time-format.html
     """
+
     def hydrate(self, value: Any) -> Any:
         if isinstance(value, datetime.datetime):
             return value
@@ -269,6 +292,7 @@ class TimeStrategy(HydrationStrategy):
     """
     Conforms ISO 8601 standard https://www.iso.org/iso-8601-date-and-time-format.html
     """
+
     def hydrate(self, value: Any) -> Any:
         if isinstance(value, datetime.time):
             return value
@@ -283,6 +307,7 @@ class TimeDeltaStrategy(HydrationStrategy):
     """
     Conforms ISO 8601 standard https://www.iso.org/iso-8601-date-and-time-format.html
     """
+
     def hydrate(self, value: Any) -> Any:
         if isinstance(value, datetime.timedelta):
             return value
@@ -316,7 +341,7 @@ def set_dataclass_property(
     property_name: str,
     strategy: HydrationStrategy,
     default_factory: Union[Callable, _MISSING_TYPE],
-    default_value: Any
+    default_value: Any,
 ) -> None:
     if property_name in attributes:
         setattr(obj, property_name, strategy.hydrate(attributes[property_name]))
@@ -374,15 +399,17 @@ CACHED_HYDRATION_STRATEGIES: Dict[Type, HydrationStrategy] = {}
 
 
 def get_origin_type(type_name: Type) -> Optional[Type]:
-    return getattr(type_name, '__origin__', None)
+    return getattr(type_name, "__origin__", None)
 
 
 def get_type_args(type_name: Type) -> List[Type]:
-    return getattr(type_name, '__args__', [])
+    return getattr(type_name, "__args__", [])
 
 
 def is_optional(type_name: Type) -> bool:
-    return get_origin_type(type_name) is Union and get_type_args(type_name) and get_type_args(type_name)[-1] is type(None)
+    return (
+        get_origin_type(type_name) is Union and get_type_args(type_name) and get_type_args(type_name)[-1] is type(None)
+    )
 
 
 def unpack_optional(type_name: Type) -> Type:

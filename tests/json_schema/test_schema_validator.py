@@ -158,8 +158,7 @@ def test_can_build_validator_for_array() -> None:
     with pytest.raises(TypeValidationError) as e:
         validate("a")
     assert e.value.args[0] == (
-        "Passed value must be valid array type. "
-        "Actual type passed was <class 'str'>"
+        "Passed value must be valid array type. " "Actual type passed was <class 'str'>"
     )
 
     # validate min items
@@ -193,8 +192,7 @@ def test_can_build_validator_for_array() -> None:
     with pytest.raises(TypeValidationError):
         assert validate([1, 2, "a"])
     assert e.value.args[0] == (
-        "Passed value must be valid array type. "
-        "Actual type passed was <class 'str'>"
+        "Passed value must be valid array type. " "Actual type passed was <class 'str'>"
     )
     validate = build_validator_from_schema(
         {"type": "array", "items": {"type": "string", "format": "email"}}
@@ -382,53 +380,38 @@ def test_can_build_validator_for_object() -> None:
 def test_validate_object_pattern_properties() -> None:
     schema = {
         "type": "object",
-        "patternProperties": {
-            "^x-": {"type": "string"},
-            "^y-": {"type": "integer"},
-        }
+        "patternProperties": {"^x-": {"type": "string"}, "^y-": {"type": "integer"},},
     }
 
     validate = build_validator_from_schema(schema)
-    assert validate({
-        "x-a": "a",
-        "x-b": "b",
-        "y-1": 1,
-        "y-2": 2,
-        "a": True
-    })
+    assert validate({"x-a": "a", "x-b": "b", "y-1": 1, "y-2": 2, "a": True})
 
     assert validate({"a": "valid"})
 
     with pytest.raises(ValueError):
-        validate({
-            "x-a": 1,
-        })
+        validate(
+            {"x-a": 1,}
+        )
 
 
 def test_validate_object_pattern_properties_without_additional_parameters() -> None:
     schema = {
         "type": "object",
-        "patternProperties": {
-            "^x-": {"type": "string"},
-            "^y-": {"type": "integer"},
-        },
+        "patternProperties": {"^x-": {"type": "string"}, "^y-": {"type": "integer"},},
         "additionalProperties": False,
     }
 
     validate = build_validator_from_schema(schema)
-    validate({
-        "x-a": "a",
-        "x-b": "b",
-        "y-1": 1,
-        "y-2": 2,
-    })
+    validate(
+        {"x-a": "a", "x-b": "b", "y-1": 1, "y-2": 2,}
+    )
 
     with pytest.raises(ValueError):
-        validate({
-            "a": 1,
-        })
+        validate(
+            {"a": 1,}
+        )
 
     with pytest.raises(ValueError):
-        validate({
-            "x-a": 1,
-        })
+        validate(
+            {"x-a": 1,}
+        )

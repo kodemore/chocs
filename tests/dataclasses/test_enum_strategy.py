@@ -1,5 +1,5 @@
-from enum import Enum, IntEnum
 import pytest
+from enum import Enum, IntEnum
 
 from chocs.dataclasses import get_strategy_for
 
@@ -32,6 +32,7 @@ def test_hydrate_int_enum() -> None:
         YELLOW = 2
         GREEN = 3
         ORANGE = 4
+
     strategy = get_strategy_for(Colors)
 
     # when
@@ -52,6 +53,7 @@ def test_extract_enum() -> None:
         YELLOW = "yellow"
         GREEN = "green"
         ORANGE = "orange"
+
     strategy = get_strategy_for(Colors)
     red = strategy.hydrate("red")
     orange = strategy.hydrate("orange")

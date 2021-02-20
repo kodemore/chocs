@@ -1,7 +1,8 @@
+from dataclasses import dataclass
+
 import datetime
 import decimal
 import enum
-from dataclasses import dataclass
 from typing import List
 
 from chocs.dataclasses import asdict, init_dataclass
@@ -37,30 +38,21 @@ transactions = init_dataclass(
             {
                 "started": "2020-10-01T15:21:31",
                 "status": "approved",
-                "value": {
-                    "currency": "GBP",
-                    "amount": "10.21",
-                }
+                "value": {"currency": "GBP", "amount": "10.21",},
             },
             {
                 "started": "2020-09-01T12:21:31",
                 "status": "declined",
-                "value": {
-                    "currency": "GBP",
-                    "amount": "100.00",
-                }
+                "value": {"currency": "GBP", "amount": "100.00",},
             },
             {
                 "started": "2020-09-01T19:12:00",
                 "status": "pending",
-                "value": {
-                    "currency": "GBP",
-                    "amount": "50.21",
-                }
+                "value": {"currency": "GBP", "amount": "50.21",},
             },
-        ]
+        ],
     },
-    Transactions
+    Transactions,
 )
 
 assert isinstance(transactions, Transactions)

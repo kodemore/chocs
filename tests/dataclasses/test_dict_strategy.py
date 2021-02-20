@@ -48,4 +48,9 @@ def test_extract_annotated_dict() -> None:
     hydrated_data = strategy.extract(input_data)
 
     # then
-    assert hydrated_data == {"int": "1", "float": "2.2", "bool": "True", "string": "Hello"}
+    assert hydrated_data == {
+        "int": "1",
+        "float": "2.2",
+        "bool": "True",
+        "string": "Hello",
+    }

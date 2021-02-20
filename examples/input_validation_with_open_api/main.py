@@ -20,7 +20,9 @@ def error_handler(request, next) -> HttpResponse:
         )
 
 
-app = Application(error_handler, OpenApiMiddleware(open_api_filename), ParsedBodyMiddleware())
+app = Application(
+    error_handler, OpenApiMiddleware(open_api_filename), ParsedBodyMiddleware()
+)
 
 
 @dataclass()

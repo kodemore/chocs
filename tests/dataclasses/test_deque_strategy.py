@@ -1,5 +1,5 @@
-from typing import Deque
 from collections import deque
+from typing import Deque
 
 from chocs.dataclasses import get_strategy_for
 

@@ -1,7 +1,7 @@
+import os
 from io import BytesIO
 
-from chocs import FormHttpMessage, HttpRequest, JsonHttpMessage, MultipartHttpMessage, UploadedFile, SimpleHttpMessage
-import os
+from chocs import FormHttpMessage, HttpRequest, JsonHttpMessage, MultipartHttpMessage, SimpleHttpMessage, UploadedFile
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -52,9 +52,9 @@ cat_file_body = {
     "wsgi.input": BytesIO(
         b"--__CAT_BOUNDARY__\r\n"
         b'Content-Disposition: Content-Disposition: form-data; name="image"; filename="generic-cat.jpg"\r\nContent-Type: image/jpeg"\r\n\r\n'
-        + cat_file.read() +
-        b"\r\n--__CAT_BOUNDARY__--\r\n"
-    )
+        + cat_file.read()
+        + b"\r\n--__CAT_BOUNDARY__--\r\n"
+    ),
 }
 
 

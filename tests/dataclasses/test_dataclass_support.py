@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List
 
 import pytest
+from typing import List
 
 from chocs.dataclasses import asdict, init_dataclass
 
@@ -39,7 +39,9 @@ def test_can_make_nested_dataclasses() -> None:
         tags: List[Tag]
 
     # when
-    pet = init_dataclass({"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}, {"name": "Brown"}]}, Pet)
+    pet = init_dataclass(
+        {"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}, {"name": "Brown"}]}, Pet
+    )
 
     # then
     assert isinstance(pet, Pet)
@@ -73,10 +75,7 @@ def test_can_extract_nested_dataclasses() -> None:
     assert data == {
         "name": "Bobek",
         "age": 4,
-        "tags": [
-            {"name": "Cat"},
-            {"name": "Brown"},
-        ]
+        "tags": [{"name": "Cat"}, {"name": "Brown"},],
     }
 
 

@@ -1,16 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Sequence, Type
 
 import pytest
+from typing import List, Sequence, Type
 
 from chocs.dataclasses import get_strategy_for
 
 
-@pytest.mark.parametrize("list_type", [
-    list,
-    List,
-    Sequence
-])
+@pytest.mark.parametrize("list_type", [list, List, Sequence])
 def test_hydrate_generic_list(list_type: Type) -> None:
     # given
     strategy = get_strategy_for(list_type)
@@ -79,4 +75,3 @@ def test_extract_list() -> None:
     assert extracted_list[0]["y"] == 1
     assert extracted_list[1]["x"] == 1
     assert extracted_list[1]["y"] == 2
-

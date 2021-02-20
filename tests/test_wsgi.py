@@ -14,10 +14,7 @@ def test_create_wsgi_handler() -> None:
 
     def _serve_response(request: HttpRequest, next: Callable) -> HttpResponse:
         assert request.method == HttpMethod.POST
-        return HttpResponse(
-            "OK",
-            headers=request.headers
-        )
+        return HttpResponse("OK", headers=request.headers)
 
     app = Application(_serve_response)
     handler = create_wsgi_handler(app)

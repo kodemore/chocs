@@ -1,6 +1,7 @@
-from chocs.dataclasses import get_strategy_for
 from collections import OrderedDict
 from typing import OrderedDict as TypingOrderedDict
+
+from chocs.dataclasses import get_strategy_for
 
 
 def test_hydrate_generic_collection_ordered_dict() -> None:
@@ -13,7 +14,9 @@ def test_hydrate_generic_collection_ordered_dict() -> None:
 
     # then
     assert isinstance(result, OrderedDict)
-    assert result == OrderedDict({"int": 1, "float": 2.2, "bool": True, "string": "Hello"})
+    assert result == OrderedDict(
+        {"int": 1, "float": 2.2, "bool": True, "string": "Hello"}
+    )
 
 
 def test_hydrate_annotated_ordered_dict() -> None:
@@ -53,4 +56,3 @@ def test_extract_annotated_ordered_dict() -> None:
     # then
     assert not isinstance(result, OrderedDict)
     assert result == {"int": "1", "float": "2.2", "bool": "True", "string": "Hello"}
-

@@ -1,5 +1,5 @@
-from typing import Tuple, NamedTuple
 from collections import namedtuple
+from typing import NamedTuple, Tuple
 
 from chocs.dataclasses import get_strategy_for
 
