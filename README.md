@@ -23,6 +23,58 @@ pip install chocs
 
 # Usage
 
+## TOC
+
+* [Quick start](#quick-start)
+* [Running application with Gunicorn (or any other WSGI server)](#running-application-with-gunicorn--or-any-other-wsgi-server-)
+* [Running application in AWS Lambda (Http api or rest api)](#running-application-in-aws-lambda--http-api-or-rest-api-)
+* [Routing](#routing)
+ + [Parametrized routes](#parametrized-routes)
+ + [Wildcard routes](#wildcard-routes)
+ + [Route groups](#route-groups)
+* [Middleware](#middleware)
+* [Integration with openapi](#integration-with-openapi)
+* [Transforming request's payload to custom dataclasses](#transforming-request-s-payload-to-custom-dataclasses)
+ + [Strict mode](#strict-mode)
+ + [Non-strict mode, aka: auto hydration](#non-strict-mode--aka--auto-hydration)
+ + [Dataclass support library](#dataclass-support-library)
+  - [`chocs.dataclasses.make_dataclass(value: dict, type_name)`](#-chocsdataclassesmake-dataclass-value--dict--type-name--)
+  - [`chocs.dataclasses.asdict(value)`](#-chocsdataclassesasdict-value--)
+  - [Supported data types](#supported-data-types)
+* [Handling validation errors with custom middleware](#handling-validation-errors-with-custom-middleware)
+* [Defining and using a custom middleware](#defining-and-using-a-custom-middleware)
+* [Request](#request)
+ - [`chocs.Request.headers:chocs.HttpHeaders (read-only)`](#-chocsrequestheaders-chocshttpheaders--read-only--)
+ - [`chocs.Request.body:io.BytesIO`](#-chocsrequestbody-iobytesio-)
+ - [`chocs.Request.parsed_body:chocs.HttpMessage`](#-chocsrequestparsed-body-chocshttpmessage-)
+ - [`chocs.Request.as_dict(): dict`](#-chocsrequestas-dict----dict-)
+ - [`chocs.Request.as_str(): str`](#-chocsrequestas-str----str-)
+ - [`chocs.Request.cookies:typing.List[chocs.HttpCookie]`](#-chocsrequestcookies-typinglist-chocshttpcookie--)
+ - [`chocs.Request.method:chocs.HttpMethod`](#-chocsrequestmethod-chocshttpmethod-)
+ - [`chocs.Request.path:str`](#-chocsrequestpath-str-)
+ - [`chocs.Request.query_string:chocs.HttpQueryString`](#-chocsrequestquery-string-chocshttpquerystring-)
+ - [`chocs.Request.path_parameters:dict`](#-chocsrequestpath-parameters-dict-)
+ - [`chocs.Request.attributes:dict`](#-chocsrequestattributes-dict-)
+* [Response](#response)
+ - [`chocs.Response.body: io.BytesIO`](#-chocsresponsebody--iobytesio-)
+ + [`chocs.Response.status_code: chocs.HttpStatus`](#-chocsresponsestatus-code--chocshttpstatus-)
+  - [`chocs.Response.cookies:chocs.HttpCookieJar`](#-chocsresponsecookies-chocshttpcookiejar-)
+  - [`chocs.Response.write(body: Union[bytes, str, bytearray])`](#-chocsresponsewrite-body--union-bytes--str--bytearray---)
+  - [`chocs.Response.close()`](#-chocsresponseclose---)
+  - [`chocs.Response.writable: bool`](#-chocsresponsewritable--bool-)
+  - [`chocs.Response.parsed_body:chocs.HttpMessage`](#-chocsresponseparsed-body-chocshttpmessage-)
+  - [`chocs.Response.as_dict(): dict`](#-chocsresponseas-dict----dict-)
+  - [`chocs.Response.as_str(): str`](#-chocsresponseas-str----str-)
+* [Working with cookies](#working-with-cookies)
+ + [Reading client cookies](#reading-client-cookies)
+ + [Setting cookies](#setting-cookies)
+- [Contributing](#contributing)
+ * [Prerequisites](#prerequisites)
+ * [Installation](#installation-1)
+ * [Running tests](#running-tests)
+ * [Linting](#linting)
+ * [PR](#pr)
+
 ## Quick start
 
 ```python
@@ -297,7 +349,7 @@ Chocs automatically validates:
  - query string parameters
  - request headers
 
-## Mapping request payload to custom dataclasses
+## Transforming request's payload to custom dataclasses
 
 ```python
 from chocs.middleware import ParsedBodyMiddleware
@@ -312,25 +364,227 @@ class Pet:
     id: str
     name: str
 
-@app.post("/pets", parsed_body=Pet, strict=False) # you can also override default strict mode
+@app.post("/pets", parsed_body=Pet) # you can also override default strict mode
 def create_pet(request: HttpRequest) -> HttpResponse:
     pet: Pet = request.parsed_body
     assert isinstance(pet, Pet)
     return HttpResponse(pet.name)
 ```
 
-> Note: By default chocs works in a strict mode, which means when you map request
-> data to your object `__init__` method is called. To override this behaviour set
-> `strict` property to false: `@app.post("/pets", parsed_body=Pet, strict=False)`
-> or use `strict=False` when initialising middleware: `ParsedBodyMiddleware(strict=False)`
+### Strict mode
+
+Strict mode is using initialiser defined in dataclass. Which means the request data
+is simply unpacked and passed to your dataclass, so you have to manually transform 
+nested data to dataclasses in order to conform your dataclass interface, for example:
+
+```python
+from chocs.middleware import ParsedBodyMiddleware
+from chocs import Application, HttpRequest, HttpResponse
+from dataclasses import dataclass
+from typing import List
+
+app = Application(ParsedBodyMiddleware())
+
+@dataclass
+class Tag:
+  name: str
+  id: str
+
+@dataclass
+class Pet:
+ id: str
+ name: str
+ age: int
+ tags: List[Tag]
+ 
+ def __post_init__(self):  # post init might be used to reformat your data
+  self.age = int(self.age)
+  tmp_tags = self.tags
+  self.tags = []
+  for tag in tmp_tags:
+   self.tags.append(Tag(**tag))
+
+@app.post("/pets", parsed_body=Pet) 
+def create_pet(request: HttpRequest) -> HttpResponse:
+ pet: Pet = request.parsed_body
+ assert isinstance(pet.tags[0], Tag)
+ assert isinstance(pet, Pet)
+ return HttpResponse(pet.name)
+
+```
+
+### Non-strict mode, aka: auto hydration
+
+In non-strict mode `chocs` takes care of instantiating and hydrating your dataclasses. Complex and deeply
+nested structures are supported as long as used types are supported by `chocs` hydration mechanism.
+List of supported types can be found below in dataclass support library
+
+> Note: __post_init__ method is not called as a part of hydration process.
+
+### Dataclass support library
+
+Dataclass support library is composed of two functions to help with daily tasks while working
+with dataclasses. 
+
+#### `chocs.dataclasses.make_dataclass(value: dict, type_name)`
+
+`make_dataclass` function is instantiating dataclass of specified `type_name` and will hydrate the instance 
+with values passed in `value` dictionary. Each of the passed dictionary's keys must correspond to dataclass'
+attributes in order to be properly interpreted. 
+
+This function support complex and nested hydration, which means if your dataclass aggregates other dataclasses 
+or defines complex typing, `make_dataclass` function will respect your type annotations and will cast values 
+to match the defined types. 
+
+If attributes in your dataclass do not specify the type value will be hydrated in to newly created instance as is.
+
+#### `chocs.dataclasses.asdict(value)`
+
+`asdict` is the opposite of `make_dataclass` function, it takes an instance of dataclass as argument, and
+extracts its members to dictionary, so the returned data can be stored as json object or serialised to any other format.
+
+#### Supported data types
+
+`bool`
+
+Passed value is automatically hydrated to boolean with python's built-in `bool` on hydration and extraction.
+
+`dict`
+
+Passed value is automatically hydrated to dict with python's built-in `dict` on hydration and extraction.
+
+`float`
+
+Passed value is automatically hydrated to float with python's built-in `float` on hydration and extraction.
+
+`frozenset`
+
+Passed value is automatically hydrated to frozen set with python's built-in `frozenset` and extracted to `list`.
+
+`int`
+
+Passed value is automatically hydrated to int with python's built-in `int` on hydration and extraction.
+
+`list`
+
+Passed value is automatically hydrated to list with python's built-in `list` on hydration and extraction.
+
+`set`
+
+Passed value is automatically hydrated to set with python's built-in `set` and extracted to `list`.
+
+`str`
+
+Passed value is automatically hydrated to string with python's built-in `str` on hydration and extraction.
+
+`tuple`
+
+Passed value is automatically hydrated to tuple with python's built-in `tuple` and extracted to `list`.
+
+`collections.namedtuple`
+
+Passed value is automatically hydrated to named tuple and extracted to `list`.
+
+`collections.deque`
+
+Passed value is automatically hydrated to an instance of `collections.deque` and extracted to `list`.
+
+`collections.OrderedDict`
+
+Passed value is automatically hydrated to an instance of `collections.OrderedDict` and extracted to `dict`.
+
+`datetime.date`
+
+Passed value must be valid ISO-8601 date string, then it is automatically hydrated to an instance of `datetime.date` 
+class and extracted to ISO-8601 format compatible string.
+
+`datetime.datetime`
+
+Passed value must be valid ISO-8601 date time string, then it is automatically hydrated to an instance of `datetime.datetime` 
+class and extracted to ISO-8601 format compatible string.
+
+`datetime.time`
+
+Passed value must be valid ISO-8601 time string, then it is automatically hydrated to an instance of `datetime.time` 
+class and extracted to ISO-8601 format compatible string.
+
+`datetime.timedelta`
+
+Passed value must be valid ISO-8601 duration string, then it is automatically hydrated to an instance of `datetime.timedelta`
+class and extracted to ISO-8601 format compatible string.
+
+`decimal.Decimal`
+
+Passed value must be a string containing valid decimal number representation, for more please read python's manual
+about [`decimal.Decimal`](https://docs.python.org/3/library/decimal.html#decimal.Decimal), on extraction value is
+extracted back to string.
+
+`enum.Enum`
+
+Supports hydration of all instances of `enum.Enum` subclasses as long as value can be assigned
+to one of the members defined in the specified `enum.Enum` subclass. During extraction the value is
+extracted to value of the enum member.
+
+`enum.IntEnum`
+
+Same as `enum.Enum`.
+
+`typing.Any`
+
+Passed value is unchanged during hydration and extraction process.
+
+`typing.AnyStr`
+
+Same as `str`
+
+`typing.Deque`
+
+Same as `collection.dequeue` with one exception, if subtype is defined, eg `typing.Deque[int]` each item inside queue
+is hydrated accordingly to subtype.
+
+`typing.Dict`
+
+Same as `dict` with exception that keys and values are respectively hydrated and extracted to match
+annotated type.
+
+`typing.FrozenSet`
+
+Same as `frozenset` with exception that values of a frozen set are respectively hydrated and extracted to
+match annotated type.
+
+`typing.List`
+
+Same as `list` with exception that values of a list are respectively hydrated and extracted to match annotated type.
+
+`typing.NamedTuple`
+
+Same as `namedtuple`.
+
+`typing.Optional`
+
+Optional types can carry additional `None` value which chocs' hydration process will respect, so for example 
+if your type is `typing.Optional[int]` `None` value is not hydrated to `int`.
+
+`typing.Set`
+
+Same as `set` with exception that values of a set are respectively hydrated and extracted to match annotated type.
+
+`typing.Tuple`
+
+Same as `tuple` with exception that values of a set are respectively hydrated and extracted to match annotated types.
+Ellipsis operator (`...`) is also supported.
+
+`typing.TypedDict`
+
+Same as `dict` but values of a dict are respectively hydrated and extracted to match annotated types. 
 
 
-### Handling validation errors with custom middleware
+## Handling validation errors with custom middleware
 
 By default, if validation fails users will see `500 response`. This behavior can be changed if custom middleware that
 catches validation errors is defined and used in application.
 
-### Defining and using a custom middleware
+## Defining and using a custom middleware
  
 The following code defines simple function middleware to catch validation errors when they appear and notifies users:
 
