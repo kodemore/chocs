@@ -1,13 +1,18 @@
 import collections
+import datetime
 from abc import abstractmethod
 from dataclasses import MISSING, _MISSING_TYPE, is_dataclass
+from decimal import Decimal
 from enum import Enum
 from functools import partial
 from inspect import isclass
-from typing import Any, AnyStr, Callable, Dict, List, NamedTuple, Optional, Protocol, Sequence, Set, Tuple, Type, \
-    TypeVar, Union
+from typing import Any, AnyStr, Callable, Deque, Dict, FrozenSet, List, NamedTuple, Optional, Protocol, Sequence, Set, \
+    Tuple, Type, TypeVar, Union
 
 from typing_extensions import TypedDict
+
+from chocs.json_schema.iso_datetime import parse_iso_date_string, parse_iso_datetime_string, parse_iso_duration_string, \
+    parse_iso_time_string, timedelta_to_iso_string
 
 T = TypeVar("T")
 
@@ -90,6 +95,21 @@ class ListStrategy(HydrationStrategy):
 
     def extract(self, value: Any) -> Any:
         return [self._subtype.extract(item) for item in value]
+
+
+class SetStrategy(ListStrategy):
+    def hydrate(self, value: Any) -> Any:
+        return set(super().hydrate(value))
+
+
+class FrozenSetStrategy(ListStrategy):
+    def hydrate(self, value: Any) -> Any:
+        return frozenset(super().hydrate(value))
+
+
+class DequeStrategy(ListStrategy):
+    def hydrate(self, value: Any) -> Any:
+        return collections.deque(super().hydrate(value))
 
 
 class TupleStrategy(HydrationStrategy):
@@ -217,6 +237,62 @@ class TypedDictStrategy(HydrationStrategy):
         return {key: self._strategies[key].extract(item) for key, item in value.items()}
 
 
+class DateStrategy(HydrationStrategy):
+    """
+    Conforms ISO 8601 standard https://www.iso.org/iso-8601-date-and-time-format.html
+    """
+    def hydrate(self, value: Any) -> Any:
+        if isinstance(value, datetime.date):
+            return value
+
+        return parse_iso_date_string(value)
+
+    def extract(self, value: Any) -> Any:
+        return value.isoformat()
+
+
+class DateTimeStrategy(HydrationStrategy):
+    """
+    Conforms ISO 8601 standard https://www.iso.org/iso-8601-date-and-time-format.html
+    """
+    def hydrate(self, value: Any) -> Any:
+        if isinstance(value, datetime.datetime):
+            return value
+
+        return parse_iso_datetime_string(value)
+
+    def extract(self, value: Any) -> Any:
+        return value.isoformat()
+
+
+class TimeStrategy(HydrationStrategy):
+    """
+    Conforms ISO 8601 standard https://www.iso.org/iso-8601-date-and-time-format.html
+    """
+    def hydrate(self, value: Any) -> Any:
+        if isinstance(value, datetime.time):
+            return value
+
+        return parse_iso_time_string(value)
+
+    def extract(self, value: Any) -> Any:
+        return value.isoformat()
+
+
+class TimeDeltaStrategy(HydrationStrategy):
+    """
+    Conforms ISO 8601 standard https://www.iso.org/iso-8601-date-and-time-format.html
+    """
+    def hydrate(self, value: Any) -> Any:
+        if isinstance(value, datetime.timedelta):
+            return value
+
+        return parse_iso_duration_string(value)
+
+    def extract(self, value: Any) -> Any:
+        return timedelta_to_iso_string(value)
+
+
 class OptionalTypeStrategy(HydrationStrategy):
     def __init__(self, type_strategy: HydrationStrategy):
         self._type_strategy = type_strategy
@@ -274,15 +350,24 @@ BUILT_IN_HYDRATOR_STRATEGY: Dict[Type, HydrationStrategy] = {
     bytes: SimpleStrategy(bytes, bytes),
     list: SimpleStrategy(list, list),
     set: SimpleStrategy(set, list),
+    frozenset: SimpleStrategy(frozenset, list),
     tuple: SimpleStrategy(tuple, list),
     dict: SimpleStrategy(dict, dict),
+    datetime.time: TimeStrategy(),
+    datetime.date: DateStrategy(),
+    datetime.datetime: DateTimeStrategy(),
+    datetime.timedelta: TimeDeltaStrategy(),
+    collections.deque: SimpleStrategy(collections.deque, list),
     TypedDict: SimpleStrategy(dict, dict),
     List: SimpleStrategy(list, list),
     Sequence: SimpleStrategy(list, list),
     Tuple: SimpleStrategy(tuple, list),
     Set: SimpleStrategy(set, list),
+    FrozenSet: SimpleStrategy(frozenset, list),
+    Deque: SimpleStrategy(collections.deque, list),
     AnyStr: SimpleStrategy(str, str),
     Any: DummyStrategy(),
+    Decimal: SimpleStrategy(Decimal, str),
 }
 
 CACHED_HYDRATION_STRATEGIES: Dict[Type, HydrationStrategy] = {}
@@ -375,6 +460,18 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
 
     if origin_type is collections.OrderedDict:
         CACHED_HYDRATION_STRATEGIES[type_name] = OrderedDictStrategy(subtypes[0], subtypes[1])
+        return CACHED_HYDRATION_STRATEGIES[type_name]
+
+    if origin_type is set:
+        CACHED_HYDRATION_STRATEGIES[type_name] = SetStrategy(subtypes[0])
+        return CACHED_HYDRATION_STRATEGIES[type_name]
+
+    if origin_type is frozenset:
+        CACHED_HYDRATION_STRATEGIES[type_name] = FrozenSetStrategy(subtypes[0])
+        return CACHED_HYDRATION_STRATEGIES[type_name]
+
+    if origin_type is collections.deque:
+        CACHED_HYDRATION_STRATEGIES[type_name] = DequeStrategy(subtypes[0])
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
     return BUILT_IN_HYDRATOR_STRATEGY[Any]
