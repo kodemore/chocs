@@ -12,7 +12,9 @@ from chocs.routing import Route
 
 
 class OpenApiMiddleware(Middleware):
-    def __init__(self, openapi_filename: str, validate_body: bool = True, validate_query: bool = True):
+    def __init__(
+        self, openapi_filename: str, validate_body: bool = True, validate_query: bool = True,
+    ):
         self.openapi = OpenApiSchema(openapi_filename)
         self.validate_body = validate_body
         self.validate_query = validate_query

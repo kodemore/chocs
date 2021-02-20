@@ -1,5 +1,5 @@
-from typing import Any, Callable, Dict, List, Optional, Union
 import re
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from .errors import (
     AdditionalPropertyError,

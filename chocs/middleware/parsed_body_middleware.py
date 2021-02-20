@@ -1,6 +1,7 @@
 import inspect
 from typing import Any
 
+from chocs.dataclasses.support import init_dataclass, is_dataclass
 from chocs.http_message import CompositeHttpMessage
 from chocs.http_request import HttpRequest
 from chocs.http_response import HttpResponse
@@ -36,15 +37,11 @@ class ParsedBodyMiddleware(Middleware):
         if not strict:
 
             def _get_non_strict_parsed_body() -> Any:
-
-                instance = constructor.__new__(constructor)
-                for prop_name, prop_value in body.items():
-                    setattr(instance, prop_name, prop_value)
-
-                if hasattr(instance, "__post_init__"):
-                    instance.__post_init__()
-
-                return instance
+                if not is_dataclass(constructor):
+                    raise ValueError(
+                        f"parsed_body argument expects valid dataclass type to be passed, {constructor} was given."
+                    )
+                return init_dataclass(body, constructor)  # type: ignore
 
             request._parsed_body_getter = _get_non_strict_parsed_body
 

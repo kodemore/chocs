@@ -1,12 +1,11 @@
 import json
+import yaml
 from abc import ABC
 from collections.abc import Iterable
 from copy import copy
 from io import BytesIO
 from json.decoder import JSONDecodeError
 from typing import Any, Dict, ItemsView, KeysView, Optional, ValuesView
-
-import yaml
 
 from .http_multipart_message_parser import parse_multipart_message
 from .http_query_string import parse_qs
