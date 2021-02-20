@@ -17,7 +17,6 @@ from typing import (
     List,
     NamedTuple,
     Optional,
-    Protocol,
     Sequence,
     Set,
     Tuple,
@@ -25,7 +24,7 @@ from typing import (
     TypeVar,
     Union,
 )
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, Protocol
 
 from chocs.json_schema.iso_datetime import (
     parse_iso_date_string,
@@ -48,7 +47,7 @@ class HydrationStrategy(Protocol):
         ...
 
 
-class DatalassStrategy(HydrationStrategy):
+class DataclassStrategy(HydrationStrategy):
     def __init__(self, dataclass_name: Type):
         self._strategies: Dict[str, HydrationStrategy] = {}
         self._setters: Dict[str, Callable] = {}
@@ -438,7 +437,7 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
     if is_dataclass(type_name):
-        CACHED_HYDRATION_STRATEGIES[type_name] = DatalassStrategy(type_name)
+        CACHED_HYDRATION_STRATEGIES[type_name] = DataclassStrategy(type_name)
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
     origin_type = get_origin_type(type_name)
