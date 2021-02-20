@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 
-from chocs.dataclasses import asdict, make_dataclass
+from chocs.dataclasses import asdict, init_dataclass
 
 
 def test_can_make_simple_dataclass() -> None:
@@ -15,7 +15,7 @@ def test_can_make_simple_dataclass() -> None:
         tags: List[str]
 
     # when
-    pet = make_dataclass({"name": "Bobek", "age": 4, "tags": ["1", "a", "True"]}, Pet)
+    pet = init_dataclass({"name": "Bobek", "age": 4, "tags": ["1", "a", "True"]}, Pet)
 
     # then
     assert isinstance(pet, Pet)
@@ -39,7 +39,7 @@ def test_can_make_nested_dataclasses() -> None:
         tags: List[Tag]
 
     # when
-    pet = make_dataclass({"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}, {"name": "Brown"}]}, Pet)
+    pet = init_dataclass({"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}, {"name": "Brown"}]}, Pet)
 
     # then
     assert isinstance(pet, Pet)
@@ -64,7 +64,7 @@ def test_can_extract_nested_dataclasses() -> None:
         tags: List[Tag]
 
     json = {"name": "Bobek", "age": 4, "tags": [{"name": "Cat"}, {"name": "Brown"}]}
-    pet = make_dataclass(json, Pet)
+    pet = init_dataclass(json, Pet)
 
     # when
     data = asdict(pet)
@@ -89,7 +89,7 @@ def test_fail_make_with_missing_property() -> None:
 
     # when
     with pytest.raises(AttributeError) as error:
-        make_dataclass({"name": "Bobek"}, Pet)
+        init_dataclass({"name": "Bobek"}, Pet)
 
     # then
     assert str(error.value) == "Property `age` is required."
@@ -104,7 +104,7 @@ def test_make_with_default_values() -> None:
         tags: list = field(default_factory=list)
 
     # when
-    pet = make_dataclass({"name": "Bobek"}, Pet)
+    pet = init_dataclass({"name": "Bobek"}, Pet)
 
     # then
     assert pet.name == "Bobek"

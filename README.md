@@ -21,60 +21,6 @@ It provides an elegant API for writing fault-proof, extensible microservices.
 pip install chocs
 ```
 
-# Usage
-
-## TOC
-
-* [Quick start](#quick-start)
-* [Running application with Gunicorn (or any other WSGI server)](#running-application-with-gunicorn--or-any-other-wsgi-server-)
-* [Running application in AWS Lambda (Http api or rest api)](#running-application-in-aws-lambda--http-api-or-rest-api-)
-* [Routing](#routing)
- + [Parametrized routes](#parametrized-routes)
- + [Wildcard routes](#wildcard-routes)
- + [Route groups](#route-groups)
-* [Middleware](#middleware)
-* [Integration with openapi](#integration-with-openapi)
-* [Transforming request's payload to custom dataclasses](#transforming-request-s-payload-to-custom-dataclasses)
- + [Strict mode](#strict-mode)
- + [Non-strict mode, aka: auto hydration](#non-strict-mode--aka--auto-hydration)
- + [Dataclass support library](#dataclass-support-library)
-  - [`chocs.dataclasses.make_dataclass(value: dict, type_name)`](#-chocsdataclassesmake-dataclass-value--dict--type-name--)
-  - [`chocs.dataclasses.asdict(value)`](#-chocsdataclassesasdict-value--)
-  - [Supported data types](#supported-data-types)
-* [Handling validation errors with custom middleware](#handling-validation-errors-with-custom-middleware)
-* [Defining and using a custom middleware](#defining-and-using-a-custom-middleware)
-* [Request](#request)
- - [`chocs.Request.headers:chocs.HttpHeaders (read-only)`](#-chocsrequestheaders-chocshttpheaders--read-only--)
- - [`chocs.Request.body:io.BytesIO`](#-chocsrequestbody-iobytesio-)
- - [`chocs.Request.parsed_body:chocs.HttpMessage`](#-chocsrequestparsed-body-chocshttpmessage-)
- - [`chocs.Request.as_dict(): dict`](#-chocsrequestas-dict----dict-)
- - [`chocs.Request.as_str(): str`](#-chocsrequestas-str----str-)
- - [`chocs.Request.cookies:typing.List[chocs.HttpCookie]`](#-chocsrequestcookies-typinglist-chocshttpcookie--)
- - [`chocs.Request.method:chocs.HttpMethod`](#-chocsrequestmethod-chocshttpmethod-)
- - [`chocs.Request.path:str`](#-chocsrequestpath-str-)
- - [`chocs.Request.query_string:chocs.HttpQueryString`](#-chocsrequestquery-string-chocshttpquerystring-)
- - [`chocs.Request.path_parameters:dict`](#-chocsrequestpath-parameters-dict-)
- - [`chocs.Request.attributes:dict`](#-chocsrequestattributes-dict-)
-* [Response](#response)
- - [`chocs.Response.body: io.BytesIO`](#-chocsresponsebody--iobytesio-)
- + [`chocs.Response.status_code: chocs.HttpStatus`](#-chocsresponsestatus-code--chocshttpstatus-)
-  - [`chocs.Response.cookies:chocs.HttpCookieJar`](#-chocsresponsecookies-chocshttpcookiejar-)
-  - [`chocs.Response.write(body: Union[bytes, str, bytearray])`](#-chocsresponsewrite-body--union-bytes--str--bytearray---)
-  - [`chocs.Response.close()`](#-chocsresponseclose---)
-  - [`chocs.Response.writable: bool`](#-chocsresponsewritable--bool-)
-  - [`chocs.Response.parsed_body:chocs.HttpMessage`](#-chocsresponseparsed-body-chocshttpmessage-)
-  - [`chocs.Response.as_dict(): dict`](#-chocsresponseas-dict----dict-)
-  - [`chocs.Response.as_str(): str`](#-chocsresponseas-str----str-)
-* [Working with cookies](#working-with-cookies)
- + [Reading client cookies](#reading-client-cookies)
- + [Setting cookies](#setting-cookies)
-- [Contributing](#contributing)
- * [Prerequisites](#prerequisites)
- * [Installation](#installation-1)
- * [Running tests](#running-tests)
- * [Linting](#linting)
- * [PR](#pr)
-
 ## Quick start
 
 ```python
@@ -93,8 +39,31 @@ def hello(request: HttpRequest) -> HttpResponse:
 serve(http)
 ```
 
- > Keep in mind that the `serve()` function is using the `bjoern` package, so make sure you included it in your project 
- > dependencies before using it. You are able to use any WSGI compatible server.
+> Keep in mind that the `serve()` function is using the `bjoern` package, so make sure you included it in your project
+> dependencies before using it. You are able to use any WSGI compatible server.
+
+## Table of Contents
+
+- [Usage](#usage)
+    - [Running application with Gunicorn (or any other WSGI server)](#running-application-with-gunicorn-or-any-other-wsgi-server)
+    - [Running application in AWS Lambda (Http api or rest api)](#running-application-in-aws-lambda-http-api-or-rest-api)
+    - [Routing](#routing)
+    - [Middleware](#middleware)
+    - [Integration with openapi](#integration-with-openapi)
+    - [Transforming request's payload to custom dataclasses](#transforming-requests-payload-to-custom-dataclasses)
+    - [Handling validation errors with custom middleware](#handling-validation-errors-with-custom-middleware)
+    - [Defining and using a custom middleware](#defining-and-using-a-custom-middleware)
+    - [Request](#request)
+    - [Response](#response)
+    - [Working with cookies](#working-with-cookies)
+- [Contributing](#contributing)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Running tests](#running-tests)
+    - [Linting](#linting)
+    - [PR](#pr)
+
+# Usage
 
 ## Running application with Gunicorn (or any other WSGI server)
 
@@ -354,12 +323,14 @@ Chocs automatically validates:
 ```python
 from chocs.middleware import ParsedBodyMiddleware
 from chocs import Application, HttpRequest, HttpResponse
+from chocs.dataclasses import asdict
 from dataclasses import dataclass
+import json
 
 # You can define whether to use strict mode or not for all defined routes.
 app = Application(ParsedBodyMiddleware(strict=False))
 
-@dataclass()
+@dataclass
 class Pet:
     id: str
     name: str
@@ -368,7 +339,7 @@ class Pet:
 def create_pet(request: HttpRequest) -> HttpResponse:
     pet: Pet = request.parsed_body
     assert isinstance(pet, Pet)
-    return HttpResponse(pet.name)
+    return HttpResponse(json.dumps(asdict(pet)))
 ```
 
 ### Strict mode
@@ -426,22 +397,22 @@ List of supported types can be found below in dataclass support library
 Dataclass support library is composed of two functions to help with daily tasks while working
 with dataclasses. 
 
-#### `chocs.dataclasses.make_dataclass(value: dict, type_name)`
+#### `chocs.dataclasses.init_dataclass(value: dict, type_name)`
 
-`make_dataclass` function is instantiating dataclass of specified `type_name` and will hydrate the instance 
+`init_dataclass` function is instantiating dataclass of specified `type_name` and will hydrate the instance 
 with values passed in `value` dictionary. Each of the passed dictionary's keys must correspond to dataclass'
 attributes in order to be properly interpreted. 
 
 This function support complex and nested hydration, which means if your dataclass aggregates other dataclasses 
-or defines complex typing, `make_dataclass` function will respect your type annotations and will cast values 
+or defines complex typing, `init_dataclass` function will respect your type annotations and will cast values 
 to match the defined types. 
 
-If attributes in your dataclass do not specify the type value will be hydrated in to newly created instance as is.
+If attributes in your dataclass do not specify the type value will be hydrated in to a newly created instance as is.
 
 #### `chocs.dataclasses.asdict(value)`
 
-`asdict` is the opposite of `make_dataclass` function, it takes an instance of dataclass as argument, and
-extracts its members to dictionary, so the returned data can be stored as json object or serialised to any other format.
+`asdict` is the opposite of `init_dataclass` function, it takes an instance of dataclass as argument, and
+extracts its members to a dictionary, so the returned data can be stored as json object orn easily serialised to any other format.
 
 #### Supported data types
 

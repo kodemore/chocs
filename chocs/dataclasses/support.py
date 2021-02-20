@@ -6,7 +6,7 @@ from .hydration import CACHED_HYDRATION_STRATEGIES, get_strategy_for
 T = TypeVar("T")
 
 
-def make_dataclass(data: Dict[str, Any], dataclass: Type[T]) -> T:
+def init_dataclass(data: Dict[str, Any], dataclass: Type[T]) -> T:
     if dataclass in CACHED_HYDRATION_STRATEGIES:
         return CACHED_HYDRATION_STRATEGIES[dataclass].hydrate(data)
 
