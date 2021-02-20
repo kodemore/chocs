@@ -25,12 +25,12 @@ class ValidationError(ValueError):
 
 class InvalidInputValidationError(ValidationError):
     code = "input_error"
-    message = "Request body is invalid or malformed: {message}"
+    message = "Request body is invalid or malformed: {message}."
 
 
 class TypeValidationError(ValidationError):
     code = "type_error"
-    message = "Passed value must be valid {expected_type} type. " "Actual type passed was {actual_type}"
+    message = "Passed value must be valid {expected_type} type. " "Actual type passed was {actual_type}."
 
 
 class EnumValidationError(ValidationError):
@@ -60,7 +60,7 @@ class ArithmeticValidationError(ValidationError, ArithmeticError):
 
 class MultipleOfValidationError(ArithmeticValidationError):
     code = "multiple_of_error"
-    message = "Passed value must be multiple of `{multiple_of}`"
+    message = "Passed value must be multiple of `{multiple_of}`."
 
 
 class LengthValidationError(ArithmeticValidationError):
@@ -103,7 +103,7 @@ class MaximumLengthError(LengthValidationError):
 
 class PropertyError(ValidationError):
     code = "property_error"
-    message = "Problem with property {property_name}"
+    message = "Problem with property {property_name}."
     property_name = "unknown"
 
     def __init__(self, *args, **kwargs: Any):
@@ -120,24 +120,29 @@ class RequiredPropertyError(PropertyError):
 
 class PropertyValueError(PropertyError):
     code = "property_value_error:{sub_code}"
-    message = "Property `{property_name}` failed to pass validation: {validation_error}"
+    message = "Property `{property_name}` failed to pass validation: {validation_error}."
 
 
 class PropertyNameError(PropertyError):
     code = "property_name_error:{sub_code}"
-    message = "Property name `{property_name}` is invalid: {validation_error}"
+    message = "Property name `{property_name}` is invalid: {validation_error}."
 
 
 class AdditionalPropertyError(PropertyError):
     code = "additional_property_error"
-    message = "Property `{property_name}` is not allowed."
+    message = "Object does not expect additional properties. Property `{property_name}` is not allowed."
 
 
 class MinimumPropertyError(PropertyError):
     code = "minimum_property_error"
-    message = "The number of properties is lower than expected minimum: {expected_minimum}"
+    message = "The number of properties is lower than expected minimum: {expected_minimum}."
 
 
 class MaximumPropertyError(PropertyError):
     code = "maximum_property_error"
-    message = "The number of properties is greater than expected maximum: {expected_maximum}"
+    message = "The number of properties is greater than expected maximum: {expected_maximum}."
+
+
+class MissingDependencyError(PropertyError):
+    code = "missing_property_error"
+    message = "Property `{property}` requires {dependencies} to be provided."

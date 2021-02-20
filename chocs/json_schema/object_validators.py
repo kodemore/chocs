@@ -9,6 +9,7 @@ from .errors import (
     PropertyValueError,
     RequiredPropertyError,
     ValidationError,
+    MissingDependencyError,
 )
 
 
@@ -110,7 +111,18 @@ def validate_object_maximum_properties(obj: dict, expected_maximum: int) -> dict
     return obj
 
 
+def validate_object_dependencies(obj: dict, dependencies: Dict[str, List[str]]) -> dict:
+    for field_name, field_dependencies in dependencies.items():
+        if field_name not in obj:
+            continue
+        if not all(k in obj for k in field_dependencies):
+            raise MissingDependencyError(property=field_name, dependencies=field_dependencies)
+
+    return obj
+
+
 __all__ = [
+    "validate_object_dependencies",
     "validate_object_maximum_properties",
     "validate_object_minimum_properties",
     "validate_object_properties",
