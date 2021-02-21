@@ -610,49 +610,7 @@ def create_pet(request: HttpRequest) -> HttpResponse:
 Full working example can be found inside [examples directory](./examples/input_validation_with_open_api)
 
 ## Request
-`chocs.Request` object is an abstraction around WSGI's environment and `wsgi.input` data with handy interface 
-to ease everyday work.
-
-#### `chocs.Request.headers:chocs.HttpHeaders (read-only)`
-Keeps parsed headers in dict-like object.
-
-#### `chocs.Request.body:io.BytesIO` 
-Raw body data
-
-#### `chocs.Request.parsed_body:chocs.HttpMessage`
-Depending on the content type it could be one of the following:
- - `chocs.FormHttpMessage`
- - `chocs.JsonHttpMessage`
- - `chocs.MultipartHttpMessage`
- - `chocs.YamlHttpMessage`
-
-#### `chocs.Request.as_dict(): dict`
-Tries to convert request body to a dict and returns it.
-
-> Note this will only work with json and yaml content types.
-
-#### `chocs.Request.as_str(): str`
-Returns request content as a string.
- 
-#### `chocs.Request.cookies:typing.List[chocs.HttpCookie]` 
-Request's cookies
-
-#### `chocs.Request.method:chocs.HttpMethod`
-The request's method
-
-#### `chocs.Request.path:str`
-The request's path
-
-#### `chocs.Request.query_string:chocs.HttpQueryString`
-A dict like object with parsed query string with JSON forms support
-        
-#### `chocs.Request.path_parameters:dict`
-Matched route parameters, for example when `/users/john` matches the `/users/{name}` route, parameters will contain a 
-`name` key with a value of `john`
-
-#### `chocs.Request.attributes:dict`
-Other environmental or custom attributes attached to the request object, eg.: `aws_event` or `aws_context`
-when running chocs app as aws lambda.
+[Moved to wiki](https://github.com/kodemore/chocs/wiki/Request)
 
 ## Response
 `chocs.Response` object is a part of request-response flow and it is required to be returned by all functions
