@@ -5,7 +5,7 @@ app = Application()
 
 @app.get("/hello/{name}")
 def hello(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(body=f"Hello {request.attributes['name']}!")
+    return HttpResponse(body=f"Hello {request.path_parameters['name']}!")
 
 
 @app.get("*")

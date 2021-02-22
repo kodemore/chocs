@@ -61,7 +61,7 @@ serve(http)
   - [Defining and using a custom middleware](#defining-and-using-a-custom-middleware)
   - [Request](#request)
   - [Response](#response)
-    - [`chocs.Response.status_code: chocs.HttpStatus`](#chocsresponsestatus_code-chocshttpstatus)
+    - [`chocs.HttpResponse.status_code: chocs.HttpStatus`](#chocsresponsestatus_code-chocshttpstatus)
   - [Working with cookies](#working-with-cookies)
     - [Reading client cookies](#reading-client-cookies)
     - [Setting cookies](#setting-cookies)
@@ -613,41 +613,41 @@ Full working example can be found inside [examples directory](./examples/input_v
 [Moved to wiki](https://github.com/kodemore/chocs/wiki/Request)
 
 ## Response
-`chocs.Response` object is a part of request-response flow and it is required to be returned by all functions
+`chocs.Response` object is a part of request-response flow, and it is required to be returned by all functions
 decorated with `router.*` method. Instance of the response class is recognised by `chocs.Application` and used to 
 generate real response served to your clients.
 
-#### `chocs.Response.body: io.BytesIO` 
+#### `chocs.HttpResponse.body: io.BytesIO` 
 Body served to server's clients.
 
-### `chocs.Response.status_code: chocs.HttpStatus`
+### `chocs.HttpResponse.status_code: chocs.HttpStatus`
 Valid response code, instance of `chocs.HttpStatus` enum can be used or just a status code's number.
 
-#### `chocs.Response.cookies:chocs.HttpCookieJar` 
+#### `chocs.HttpResponse.cookies:chocs.HttpCookieJar` 
 Response's cookies
 
-#### `chocs.Response.write(body: Union[bytes, str, bytearray])`
+#### `chocs.HttpResponse.write(body: Union[bytes, str, bytearray])`
 Write bytes to response body
 
-#### `chocs.Response.close()`
+#### `chocs.HttpResponse.close()`
 Makes body non-writable.
 
-#### `chocs.Response.writable: bool`
+#### `chocs.HttpResponse.writable: bool`
 Indicates whether response's body is writable.
 
-#### `chocs.Response.parsed_body:chocs.HttpMessage`
+#### `chocs.HttpResponse.parsed_body:chocs.HttpMessage`
 Depending on the content type it could be one of the following:
 - `chocs.FormHttpMessage`
 - `chocs.JsonHttpMessage`
 - `chocs.MultipartHttpMessage`
 - `chocs.YamlHttpMessage`
 
-#### `chocs.Response.as_dict(): dict`
+#### `chocs.HttpResponse.as_dict(): dict`
 Tries to convert response body to a dict and returns it.
 
 > Note this will only work with json and yaml content types.
 
-#### `chocs.Response.as_str(): str`
+#### `chocs.HttpResponse.as_str(): str`
 Returns response content as a string.
 
 ## Working with cookies

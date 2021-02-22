@@ -1,4 +1,3 @@
-import copy
 from io import BytesIO
 from typing import Dict, Optional, Sequence, Union
 
@@ -30,13 +29,6 @@ class HttpResponse(HttpParsedBodyTrait):
         if body:
             self.write(body)
 
-    @property
-    def headers(self) -> HttpHeaders:
-        headers: HttpHeaders = copy.copy(self._headers)
-        for cookie in self.cookies.values():
-            headers.set("Set-Cookie", cookie.serialise())
-        return headers
-
     def write(self, body: Union[str, bytes, bytearray]) -> None:
         if isinstance(body, str):
             self._body.write(body.encode(self.encoding))
@@ -59,6 +51,10 @@ class HttpResponse(HttpParsedBodyTrait):
     @property
     def writable(self) -> bool:
         return not self._body.closed
+
+    @property
+    def headers(self) -> HttpHeaders:
+        return self._headers
 
     def close(self) -> None:
         self._body.close()

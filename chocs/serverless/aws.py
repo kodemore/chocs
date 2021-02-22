@@ -54,10 +54,14 @@ def is_http_api_lambda(event: AwsEvent) -> bool:
 def format_response_to_aws(event: AwsEvent, response: HttpResponse) -> Dict[str, Any]:
     serverless_response: Dict[str, Any] = {"statusCode": int(response.status_code)}
 
+    headers = response.headers
+    for cookie in response.cookies.values():
+        headers.set("Set-Cookie", cookie.serialise())
+
     if "multiValueHeaders" in event:
-        serverless_response["multiValueHeaders"] = response.headers._headers
+        serverless_response["multiValueHeaders"] = headers._headers
     else:
-        serverless_response["headers"] = {key: value for key, value in response.headers.items()}
+        serverless_response["headers"] = {key: value for key, value in headers.items()}
 
     # If the request comes from ALB we need to add a status description
     is_elb = event.get("requestContext", {}).get("elb")
@@ -73,7 +77,6 @@ def format_response_to_aws(event: AwsEvent, response: HttpResponse) -> Dict[str,
     if (mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES) and not response.headers.get(
         "Content-Encoding", ""
     ):
-
         serverless_response["body"] = body
         serverless_response["isBase64Encoded"] = False
     else:

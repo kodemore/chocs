@@ -35,7 +35,8 @@ def test_headers() -> None:
 def test_set_cookie() -> None:
     instance = HttpResponse()
     instance.cookies.append(HttpCookie("name", "value"))
-    assert instance.headers.get("Set-Cookie") == "name=value"
+
+    assert "name" in instance.cookies
 
 
 @pytest.mark.parametrize(
