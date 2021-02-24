@@ -16,8 +16,12 @@ TEXT_MIME_TYPES = [
     "application/json",
     "application/javascript",
     "application/xml",
+    "application/x-yaml",
     "application/vnd.api+json",
     "image/svg+xml",
+    "text/vnd.yaml",
+    "text/yaml",
+    "text/x-yaml",
 ]
 
 AwsEvent = Dict[str, Any]
