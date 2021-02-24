@@ -92,10 +92,20 @@ def test_middleware_for_serverless() -> None:
     assert "access-control-allow-origin" in response["headers"]
 
 
-def test_json_content_with_charset_is_not_base64_encoded() -> None:
+@pytest.mark.parametrize(
+    "content_type",
+    [
+        "application/json; charset=utf-8",
+        "application/x-yaml",
+        "text/vnd.yaml",
+        "text/yaml",
+        "text/x-yaml",
+    ],
+)
+def test_content_types_are_not_base64_encoded(content_type) -> None:
     def test_callback(request: HttpRequest) -> HttpResponse:
         return HttpResponse(
-            request.path, headers={"Content-Type": "application/json; charset=utf-8",},
+            request.path, headers={"Content-Type": content_type,},
         )
 
     serverless_callback = AwsServerlessFunction(test_callback)
