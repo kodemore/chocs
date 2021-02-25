@@ -44,7 +44,7 @@ def test_fail_request_with_invalid_value() -> None:
     _add_create_pet_route(app)
     body = json.dumps({"name": 11,})
 
-    with pytest.raises(PropertyValueError):
+    with pytest.raises(PropertyValueError) as e:
         app(
             HttpRequest(
                 HttpMethod.POST,
@@ -53,6 +53,12 @@ def test_fail_request_with_invalid_value() -> None:
                 headers={"content-type": "application/json"},
             )
         )
+
+    assert str(e.value) == (
+        "Property `name` failed to pass validation: "
+        "Passed value must be valid <class 'str'> type. "
+        "Actual type passed was <class 'int'>."
+    )
 
 
 def test_pass_valid_request_with_query() -> None:

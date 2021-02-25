@@ -120,7 +120,7 @@ class RequiredPropertyError(PropertyError):
 
 class PropertyValueError(PropertyError):
     code = "property_value_error:{sub_code}"
-    message = "Property `{property_name}` failed to pass validation: {validation_error}."
+    message = "Property `{property_name}` failed to pass validation: {validation_error}"
 
 
 class PropertyNameError(PropertyError):
