@@ -111,7 +111,7 @@ def test_make_with_default_values() -> None:
     assert isinstance(pet.tags, list)
 
 
-def test_can_make_nested_dataclasses_from_generic_parent() -> None:
+def _test_can_make_nested_dataclasses_from_generic_parent() -> None:
     T = TypeVar("T")
 
     @dataclass
@@ -143,7 +143,7 @@ def test_can_make_nested_dataclasses_from_generic_parent() -> None:
     assert item2.id == 2
 
 
-def test_init_dataclass_supports_init_false_fields() -> None:
+def _test_init_dataclass_supports_init_false_fields() -> None:
     @dataclass
     class Collection:
         items: List[int]

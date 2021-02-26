@@ -1,30 +1,15 @@
-from dataclasses import _MISSING_TYPE, MISSING, is_dataclass
-
 import collections
 import datetime
 from abc import abstractmethod
+from dataclasses import MISSING, _MISSING_TYPE, is_dataclass
 from decimal import Decimal
 from enum import Enum
 from functools import partial
 from inspect import isclass
-from typing import (
-    Any,
-    AnyStr,
-    Callable,
-    Deque,
-    Dict,
-    FrozenSet,
-    List,
-    NamedTuple,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
-from typing_extensions import TypedDict, Protocol
+from typing import (Any, AnyStr, Callable, Deque, Dict, FrozenSet, Generic, List, NamedTuple, Sequence, Set, Tuple,
+                    Type, TypeVar, Union)
+
+from typing_extensions import Protocol, TypedDict
 
 from chocs.json_schema.iso_datetime import (
     parse_iso_date_string,
@@ -33,6 +18,8 @@ from chocs.json_schema.iso_datetime import (
     parse_iso_time_string,
     timedelta_to_iso_string,
 )
+from .typing import get_dataclass_fields, get_origin_type, get_parameters_map, get_type_args, is_enum_type, \
+    is_named_tuple, is_optional, is_typed_dict, map_generic_type
 
 T = TypeVar("T")
 
@@ -52,20 +39,7 @@ class DataclassStrategy(HydrationStrategy):
         self._strategies: Dict[str, HydrationStrategy] = {}
         self._setters: Dict[str, Callable] = {}
         self._dataclass_name = dataclass_name
-
-        fields = dataclass_name.__dataclass_fields__
-
-        for field_name, field_descriptor in fields.items():
-            self._strategies[field_name] = get_strategy_for(field_descriptor.type)
-
-            # Sadly setting value is a bit more complex than getting it in dataclasses
-            self._setters[field_name] = partial(
-                set_dataclass_property,
-                strategy=self._strategies[field_name],
-                property_name=field_name,
-                default_factory=field_descriptor.default_factory,
-                default_value=field_descriptor.default,
-            )
+        self._set_strategies()
 
     def hydrate(self, value: Any) -> Any:
         instance = self._dataclass_name.__new__(self._dataclass_name)  # type: ignore
@@ -84,6 +58,48 @@ class DataclassStrategy(HydrationStrategy):
             result[name] = strategy.extract(getattr(value, name, None))
 
         return result
+
+    def _set_strategies(self) -> None:
+        fields = get_dataclass_fields(self._dataclass_name)
+        for field_name, field_descriptor in fields.items():
+            self._strategies[field_name] = get_strategy_for(field_descriptor.type)
+
+            # Sadly setting value is a bit more complex than getting it in dataclasses
+            self._setters[field_name] = partial(
+                set_dataclass_property,
+                strategy=self._strategies[field_name],
+                property_name=field_name,
+                default_factory=field_descriptor.default_factory,
+                default_value=field_descriptor.default,
+            )
+
+
+class GenericDataclassStrategy(DataclassStrategy):
+    def __init__(self, dataclass_name: Type):
+        self._origin = get_origin_type(dataclass_name)
+        super().__init__(dataclass_name)
+
+    def _set_strategies(self) -> None:
+        fields = get_dataclass_fields(self._origin)
+        parameters_map = get_parameters_map(self._dataclass_name)
+
+        for field_name, field_descriptor in fields.items():
+            self._strategies[field_name] = get_strategy_for(map_generic_type(field_descriptor.type, parameters_map))
+            self._setters[field_name] = partial(
+                set_dataclass_property,
+                strategy=self._strategies[field_name],
+                property_name=field_name,
+                default_factory=field_descriptor.default_factory,
+                default_value=field_descriptor.default,
+            )
+
+    def hydrate(self, value: Any) -> Any:
+        instance = self._origin.__new__(self._origin)  # type: ignore
+
+        for name, setter in self._setters.items():
+            setter(instance, value)
+
+        return instance
 
 
 class DummyStrategy(HydrationStrategy):
@@ -397,38 +413,6 @@ BUILT_IN_HYDRATOR_STRATEGY: Dict[Type, HydrationStrategy] = {
 CACHED_HYDRATION_STRATEGIES: Dict[Type, HydrationStrategy] = {}
 
 
-def get_origin_type(type_name: Type) -> Optional[Type]:
-    return getattr(type_name, "__origin__", None)
-
-
-def get_type_args(type_name: Type) -> List[Type]:
-    return getattr(type_name, "__args__", [])
-
-
-def is_optional(type_name: Type) -> bool:
-    return (
-        get_origin_type(type_name) is Union
-        and bool(get_type_args(type_name))
-        and get_type_args(type_name)[-1] is type(None)
-    )
-
-
-def unpack_optional(type_name: Type) -> Type:
-    return get_type_args(type_name)[0]
-
-
-def is_enum_type(type_name: Type) -> bool:
-    return issubclass(type_name, Enum)
-
-
-def is_named_tuple(type_name: Type) -> bool:
-    return issubclass(type_name, tuple) and hasattr(type_name, "_fields")
-
-
-def is_typed_dict(type_name: Type) -> bool:
-    return issubclass(type_name, dict) and hasattr(type_name, "__annotations__")
-
-
 def get_strategy_for(type_name: Type) -> HydrationStrategy:
     if type_name in BUILT_IN_HYDRATOR_STRATEGY:
         return BUILT_IN_HYDRATOR_STRATEGY[type_name]
@@ -437,6 +421,9 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
     if is_dataclass(type_name):
+        if issubclass(type_name, Generic):
+            raise ValueError("Cannot automatically hydrate non-parametrised generic classes.")
+
         CACHED_HYDRATION_STRATEGIES[type_name] = DataclassStrategy(type_name)
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
@@ -459,6 +446,10 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
             return CACHED_HYDRATION_STRATEGIES[type_name]
 
         return BUILT_IN_HYDRATOR_STRATEGY[Any]  # type: ignore
+
+    if is_dataclass(origin_type):
+        CACHED_HYDRATION_STRATEGIES[type_name] = GenericDataclassStrategy(type_name)
+        return CACHED_HYDRATION_STRATEGIES[type_name]
 
     if origin_type not in BUILT_IN_HYDRATOR_STRATEGY:
         if not is_optional(type_name):

@@ -7,3 +7,4 @@ __pycache__
 /examples/serverless/node_modules
 /examples/serverless/.serverless
 /.DS_Store
+/.python-version
