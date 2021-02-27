@@ -6,8 +6,23 @@ from decimal import Decimal
 from enum import Enum
 from functools import partial
 from inspect import isclass
-from typing import (Any, AnyStr, Callable, Deque, Dict, FrozenSet, Generic, List, NamedTuple, Sequence, Set, Tuple,
-                    Type, TypeVar, Union)
+from typing import (
+    Any,
+    AnyStr,
+    Callable,
+    Deque,
+    Dict,
+    FrozenSet,
+    Generic,
+    List,
+    NamedTuple,
+    Sequence,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from typing_extensions import Protocol, TypedDict
 
@@ -18,8 +33,18 @@ from chocs.json_schema.iso_datetime import (
     parse_iso_time_string,
     timedelta_to_iso_string,
 )
-from .typing import get_dataclass_fields, get_origin_type, get_parameters_map, get_type_args, is_enum_type, \
-    is_named_tuple, is_optional, is_typed_dict, map_generic_type
+from .typing import (
+    get_dataclass_fields,
+    get_origin_type,
+    get_parameters_map,
+    get_type_args,
+    is_enum_type,
+    is_named_tuple,
+    is_optional,
+    is_typed_dict,
+    map_generic_type,
+    unpack_optional,
+)
 
 T = TypeVar("T")
 
@@ -36,7 +61,7 @@ class HydrationStrategy(Protocol):
 
 class DataclassStrategy(HydrationStrategy):
     def __init__(self, dataclass_name: Type):
-        self._strategies: Dict[str, HydrationStrategy] = {}
+        self._getters: Dict[str, Callable] = {}
         self._setters: Dict[str, Callable] = {}
         self._dataclass_name = dataclass_name
         self._set_strategies()
@@ -47,6 +72,9 @@ class DataclassStrategy(HydrationStrategy):
         for name, setter in self._setters.items():
             setter(instance, value)
 
+        if hasattr(instance, "__post_init__"):
+            instance.__post_init__()
+
         return instance
 
     def extract(self, value: Any) -> Any:
@@ -54,52 +82,44 @@ class DataclassStrategy(HydrationStrategy):
             raise ValueError(f"Passed value must be type of {self._dataclass_name}.")
 
         result = {}
-        for name, strategy in self._strategies.items():
-            result[name] = strategy.extract(getattr(value, name, None))
+        for name, get in self._getters.items():
+            result[name] = get(getattr(value, name, None))
 
         return result
+
+    def _get_strategy(self, field_type: Type) -> HydrationStrategy:
+        return get_strategy_for(field_type)
 
     def _set_strategies(self) -> None:
         fields = get_dataclass_fields(self._dataclass_name)
         for field_name, field_descriptor in fields.items():
-            self._strategies[field_name] = get_strategy_for(field_descriptor.type)
+            if not field_descriptor.init and not field_descriptor.repr:
+                continue
 
-            # Sadly setting value is a bit more complex than getting it in dataclasses
-            self._setters[field_name] = partial(
-                set_dataclass_property,
-                strategy=self._strategies[field_name],
-                property_name=field_name,
-                default_factory=field_descriptor.default_factory,
-                default_value=field_descriptor.default,
-            )
+            strategy = self._get_strategy(field_descriptor.type)
+
+            if field_descriptor.init:
+                self._setters[field_name] = partial(
+                    set_dataclass_property,
+                    setter=strategy.hydrate,
+                    property_name=field_name,
+                    default_factory=field_descriptor.default_factory,  # type: ignore
+                    default_value=field_descriptor.default,
+                )
+
+            if field_descriptor.repr:
+                self._getters[field_name] = strategy.extract
 
 
 class GenericDataclassStrategy(DataclassStrategy):
     def __init__(self, dataclass_name: Type):
-        self._origin = get_origin_type(dataclass_name)
-        super().__init__(dataclass_name)
+        self._generic_type = dataclass_name
+        self._generic_parameters = get_parameters_map(dataclass_name)
+        type_: Type = get_origin_type(dataclass_name)  # type: ignore
+        super().__init__(type_)
 
-    def _set_strategies(self) -> None:
-        fields = get_dataclass_fields(self._origin)
-        parameters_map = get_parameters_map(self._dataclass_name)
-
-        for field_name, field_descriptor in fields.items():
-            self._strategies[field_name] = get_strategy_for(map_generic_type(field_descriptor.type, parameters_map))
-            self._setters[field_name] = partial(
-                set_dataclass_property,
-                strategy=self._strategies[field_name],
-                property_name=field_name,
-                default_factory=field_descriptor.default_factory,
-                default_value=field_descriptor.default,
-            )
-
-    def hydrate(self, value: Any) -> Any:
-        instance = self._origin.__new__(self._origin)  # type: ignore
-
-        for name, setter in self._setters.items():
-            setter(instance, value)
-
-        return instance
+    def _get_strategy(self, field_type: Type) -> HydrationStrategy:
+        return get_strategy_for(map_generic_type(field_type, self._generic_parameters))
 
 
 class DummyStrategy(HydrationStrategy):
@@ -354,12 +374,12 @@ def set_dataclass_property(
     obj: object,
     attributes: Dict[str, Any],
     property_name: str,
-    strategy: HydrationStrategy,
-    default_factory: Union[Callable, _MISSING_TYPE],
+    setter: Callable,
+    default_factory: Union[Callable, Any],
     default_value: Any,
 ) -> None:
     if property_name in attributes:
-        setattr(obj, property_name, strategy.hydrate(attributes[property_name]))
+        setattr(obj, property_name, setter(attributes[property_name]))
         return
 
     if callable(default_factory):
@@ -376,7 +396,7 @@ def set_dataclass_property(
         raise AttributeError(f"Property `{property_name}` is required.")
 
     try:
-        setattr(obj, property_name, strategy.hydrate(attribute_value))
+        setattr(obj, property_name, setter(attribute_value))
     except Exception as error:
         raise AttributeError(f"Could not hydrate `{property_name}` property with `{attribute_value}` value.") from error
 
@@ -421,7 +441,7 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
     if is_dataclass(type_name):
-        if issubclass(type_name, Generic):
+        if issubclass(type_name, Generic):  # type: ignore
             raise ValueError("Cannot automatically hydrate non-parametrised generic classes.")
 
         CACHED_HYDRATION_STRATEGIES[type_name] = DataclassStrategy(type_name)

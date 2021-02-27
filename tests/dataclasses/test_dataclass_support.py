@@ -111,7 +111,8 @@ def test_make_with_default_values() -> None:
     assert isinstance(pet.tags, list)
 
 
-def _test_can_make_nested_dataclasses_from_generic_parent() -> None:
+def test_can_make_nested_dataclasses_from_generic_parent() -> None:
+    # given
     T = TypeVar("T")
 
     @dataclass
@@ -123,12 +124,12 @@ def _test_can_make_nested_dataclasses_from_generic_parent() -> None:
         items: List[T]
 
     @dataclass
-    class Child(Parent[Item]):
+    class Child(Parent, Generic[T]):
         name: str
 
     # when
     example = init_dataclass(
-        {"name": "Example One", "items": [{"id": 1,}, {"id": 2,},]}, Child
+        {"name": "Example One", "items": [{"id": 1,}, {"id": 2,},]}, Child[Item]
     )
 
     # then
@@ -143,7 +144,8 @@ def _test_can_make_nested_dataclasses_from_generic_parent() -> None:
     assert item2.id == 2
 
 
-def _test_init_dataclass_supports_init_false_fields() -> None:
+def test_init_dataclass_supports_init_false_fields() -> None:
+    # given
     @dataclass
     class Collection:
         items: List[int]
@@ -157,8 +159,32 @@ def _test_init_dataclass_supports_init_false_fields() -> None:
         {"items": [1, 2, 3]},
         Collection
     )
+    extracted_data = asdict(collection)
 
     # then
     assert isinstance(collection, Collection)
     assert len(collection.items) == 3
     assert collection.total == 3
+
+    assert extracted_data["total"] == 3
+    assert extracted_data["items"] == [1, 2, 3]
+
+
+def test_init_dataclass_supports_repr_false_fields() -> None:
+    # given
+    @dataclass
+    class Collection:
+        items: List[int]
+        total: int = field(init=False, repr=False)
+
+        def __post_init__(self):
+            self.total = len(self.items)
+
+    # when
+    collection = Collection(items=[1, 2, 3])
+    extracted_data = asdict(collection)
+
+    # then
+    assert isinstance(extracted_data, dict)
+    assert extracted_data["items"] == [1, 2, 3]
+    assert "total" not in extracted_data

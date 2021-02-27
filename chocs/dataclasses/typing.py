@@ -2,6 +2,7 @@ import typing
 from enum import Enum
 from itertools import zip_longest
 from typing import Any, Dict, Iterable, List, Optional, Type, Union, Generic
+from dataclasses import Field
 
 try:
     from typing import _TypingBase as typing_base  # type: ignore
@@ -9,7 +10,7 @@ except ImportError:
     from typing import _Final as typing_base  # type: ignore
 
 
-AnnotatedTypeNames = {'AnnotatedMeta', '_AnnotatedAlias'}
+AnnotatedTypeNames = {"AnnotatedMeta", "_AnnotatedAlias"}
 _GenericAlias = getattr(typing, "_GenericAlias")
 EMPTY = object()
 
@@ -24,9 +25,9 @@ def get_type_args(type_name: Type) -> List[Type]:
 
 def is_optional(type_name: Type) -> bool:
     return (
-            get_origin_type(type_name) is Union
-            and bool(get_type_args(type_name))
-            and get_type_args(type_name)[-1] is type(None)
+        get_origin_type(type_name) is Union
+        and bool(get_type_args(type_name))
+        and get_type_args(type_name)[-1] is type(None)
     )
 
 
@@ -41,7 +42,7 @@ def get_parameters_map(type_name: Type) -> Dict[Type, Type]:
     return dict(zip(parameters, args))
 
 
-def get_dataclass_fields(type_name: Type) -> Dict[str, Any]:
+def get_dataclass_fields(type_name: Type) -> Dict[str, Field]:
     return getattr(type_name, "__dataclass_fields__", {})
 
 
