@@ -1,7 +1,7 @@
 import collections
 import datetime
 from abc import abstractmethod
-from dataclasses import MISSING, _MISSING_TYPE, is_dataclass
+from dataclasses import MISSING, is_dataclass
 from decimal import Decimal
 from enum import Enum
 from functools import partial
@@ -216,10 +216,10 @@ class TupleStrategy(HydrationStrategy):
 class NamedTupleStrategy(HydrationStrategy):
     def __init__(self, class_name: Type[NamedTuple]):
         self._class_name = class_name
-        self._is_typed = hasattr(class_name, "_field_types")
+        self._is_typed = hasattr(class_name, "__annotations__")
         self._arg_strategies: List[HydrationStrategy] = []
         if self._is_typed:
-            self._build_type_mapper(class_name._field_types)
+            self._build_type_mapper(class_name.__annotations__)
 
     def hydrate(self, value: Any) -> Any:
         if not self._is_typed:
@@ -419,6 +419,7 @@ BUILT_IN_HYDRATOR_STRATEGY: Dict[Any, HydrationStrategy] = {
     datetime.timedelta: TimeDeltaStrategy(),
     collections.deque: SimpleStrategy(collections.deque, list),
     TypedDict: SimpleStrategy(dict, dict),  # type: ignore
+    Dict: SimpleStrategy(dict, dict),  # type: ignore
     List: SimpleStrategy(list, list),
     Sequence: SimpleStrategy(list, list),
     Tuple: SimpleStrategy(tuple, list),  # type: ignore
