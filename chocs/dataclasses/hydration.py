@@ -401,7 +401,7 @@ def set_dataclass_property(
         raise AttributeError(f"Could not hydrate `{property_name}` property with `{attribute_value}` value.") from error
 
 
-BUILT_IN_HYDRATOR_STRATEGY: Dict[Type, HydrationStrategy] = {
+BUILT_IN_HYDRATOR_STRATEGY: Dict[Any, HydrationStrategy] = {
     bool: SimpleStrategy(bool, bool),
     collections.OrderedDict: SimpleStrategy(collections.OrderedDict, dict),
     int: SimpleStrategy(int, int),
@@ -430,7 +430,7 @@ BUILT_IN_HYDRATOR_STRATEGY: Dict[Type, HydrationStrategy] = {
     Decimal: SimpleStrategy(Decimal, str),
 }
 
-CACHED_HYDRATION_STRATEGIES: Dict[Type, HydrationStrategy] = {}
+CACHED_HYDRATION_STRATEGIES: Dict[Any, HydrationStrategy] = {}
 
 
 def get_strategy_for(type_name: Type) -> HydrationStrategy:
