@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 import pytest
-from typing import List
+from typing import Generic, List, TypeVar
 
 from chocs.dataclasses import asdict, init_dataclass
 
@@ -109,3 +109,82 @@ def test_make_with_default_values() -> None:
     assert pet.name == "Bobek"
     assert pet.age == 10
     assert isinstance(pet.tags, list)
+
+
+def test_can_make_nested_dataclasses_from_generic_parent() -> None:
+    # given
+    T = TypeVar("T")
+
+    @dataclass
+    class Item:
+        id: int
+
+    @dataclass
+    class Parent(Generic[T]):
+        items: List[T]
+
+    @dataclass
+    class Child(Parent, Generic[T]):
+        name: str
+
+    # when
+    example = init_dataclass(
+        {"name": "Example One", "items": [{"id": 1,}, {"id": 2,},]}, Child[Item]
+    )
+
+    # then
+    assert isinstance(example, Child)
+    assert example.name == "Example One"
+    assert len(example.items) == 2
+    item1 = example.items[0]
+    item2 = example.items[1]
+    assert isinstance(item1, Item)
+    assert item1.id == 1
+    assert isinstance(item2, Item)
+    assert item2.id == 2
+
+
+def test_init_dataclass_supports_init_false_fields() -> None:
+    # given
+    @dataclass
+    class Collection:
+        items: List[int]
+        total: int = field(init=False)
+
+        def __post_init__(self):
+            self.total = len(self.items)
+
+    # when
+    collection = init_dataclass(
+        {"items": [1, 2, 3]},
+        Collection
+    )
+    extracted_data = asdict(collection)
+
+    # then
+    assert isinstance(collection, Collection)
+    assert len(collection.items) == 3
+    assert collection.total == 3
+
+    assert extracted_data["total"] == 3
+    assert extracted_data["items"] == [1, 2, 3]
+
+
+def test_init_dataclass_supports_repr_false_fields() -> None:
+    # given
+    @dataclass
+    class Collection:
+        items: List[int]
+        total: int = field(init=False, repr=False)
+
+        def __post_init__(self):
+            self.total = len(self.items)
+
+    # when
+    collection = Collection(items=[1, 2, 3])
+    extracted_data = asdict(collection)
+
+    # then
+    assert isinstance(extracted_data, dict)
+    assert extracted_data["items"] == [1, 2, 3]
+    assert "total" not in extracted_data
