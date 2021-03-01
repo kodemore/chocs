@@ -11,7 +11,6 @@ from chocs.middleware import Middleware, MiddlewareHandler
 from chocs.routing import Route
 
 _UNDEFINED = object()
-_UNDEFINED_TYPE = TypeVar("_UNDEFINED_TYPE", bound=object)
 
 
 class OpenApiValidationError(ValueError):
@@ -58,17 +57,17 @@ class _OpenApiValidatorGroup:
         self.validate_path = validate_path
         self.validate_cookies = validate_cookies
 
-        self._query_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
-        self._body_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
-        self._header_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
-        self._path_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
-        self._cookie_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
+        self._query_schema: Union[Dict[str, Any], Any] = _UNDEFINED
+        self._body_schema: Union[Dict[str, Any], Any] = _UNDEFINED
+        self._header_schema: Union[Dict[str, Any], Any] = _UNDEFINED
+        self._path_schema: Union[Dict[str, Any], Any] = _UNDEFINED
+        self._cookie_schema: Union[Dict[str, Any], Any] = _UNDEFINED
 
-        self._query_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
-        self._body_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
-        self._path_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
-        self._cookie_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
-        self._header_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
+        self._query_validator: Union[Callable, Any] = _UNDEFINED
+        self._body_validator: Union[Callable, Any] = _UNDEFINED
+        self._path_validator: Union[Callable, Any] = _UNDEFINED
+        self._cookie_validator: Union[Callable, Any] = _UNDEFINED
+        self._header_validator: Union[Callable, Any] = _UNDEFINED
 
     def _get_schema_for(self, attribute: str) -> Dict[str, Any]:
         full_attribute_name = "_" + attribute + "_schema"
@@ -153,8 +152,11 @@ class _OpenApiValidatorGroup:
     def _validate_body(self, request: HttpRequest) -> None:
         parsed_body: Union[Dict, List]
 
-        if isinstance(request.parsed_body.data, dict) or isinstance(request.parsed_body.data, list):
-            parsed_body = request.parsed_body.data
+        if not hasattr(request.parsed_body, "data"):
+            raise InvalidInputValidationError(message="Request body could not be validated.")
+
+        if isinstance(request.parsed_body.data, dict) or isinstance(request.parsed_body.data, list):  # type: ignore
+            parsed_body = request.parsed_body.data  # type: ignore
         else:
             raise InvalidInputValidationError(message="Request body could not be validated.")
 
@@ -226,7 +228,7 @@ class OpenApiMiddleware(Middleware):
 
         if validator_cache_key not in self._validators:
             self._validators[validator_cache_key] = self._generate_validator_group_for(
-                route.route, request.method, request.headers.get("content-type", "application/json")
+                route.route, request.method, str(request.headers.get("content-type", "application/json"))
             )
 
         self._validators[validator_cache_key].validate(request)

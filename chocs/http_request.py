@@ -51,7 +51,7 @@ class HttpRequest(HttpParsedBodyTrait):
     @property
     def cookies(self) -> HttpCookieJar:
         if self._cookies is None:
-            self._cookies = parse_cookie_header(self._headers.get("cookie"))
+            self._cookies = parse_cookie_header(str(self._headers.get("cookie")))
 
         return copy(self._cookies)
 
