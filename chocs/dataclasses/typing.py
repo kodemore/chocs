@@ -62,13 +62,6 @@ def is_typed_dict(type_name: Type) -> bool:
     return issubclass(type_name, dict) and hasattr(type_name, "__annotations__")
 
 
-def all_identical(left: Iterable[Any], right: Iterable[Any]) -> bool:
-    for left_item, right_item in zip_longest(left, right, fillvalue=EMPTY):
-        if left_item is not right_item:
-            return False
-    return True
-
-
 def map_generic_type(type_name: Any, type_map: Dict[Any, Any]) -> Any:
     if not type_map:
         return type_name

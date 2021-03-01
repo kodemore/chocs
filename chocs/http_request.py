@@ -33,7 +33,7 @@ class HttpRequest(HttpParsedBodyTrait):
 
         self.method = method
         self.path = path
-        self.query_string = query_string
+        self.query_string = query_string if query_string else HttpQueryString("")
         self.path_parameters: Dict[str, str] = {}
         self.route: Optional[Route] = None  # type: ignore
         self.attributes: Dict[str, Any] = {}
@@ -49,9 +49,9 @@ class HttpRequest(HttpParsedBodyTrait):
         return copy(self._body)
 
     @property
-    def cookies(self):
+    def cookies(self) -> HttpCookieJar:
         if self._cookies is None:
-            self._cookies = parse_cookie_header(self._headers.get("cookie"))
+            self._cookies = parse_cookie_header(str(self._headers.get("cookie")))
 
         return copy(self._cookies)
 

@@ -88,7 +88,9 @@ def parse_multipart_message(data: bytes, boundary: str, encoding: str = "utf8") 
             tmp_file.write(_content_data)
             tmp_file.seek(0)
             body[parsed_content_disposition[1]["name"]] = UploadedFile(
-                tmp_file, _content_type[14:].lower(), parsed_content_disposition[1]["filename"],
+                tmp_file,
+                _content_type[14:].lower(),
+                parsed_content_disposition[1]["filename"],
             )
         else:
             # mypy bug?

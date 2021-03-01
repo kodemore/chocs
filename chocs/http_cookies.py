@@ -53,10 +53,10 @@ class HttpCookie:
     @property
     def name(self):
         """
-       Cookie's name must be valid RFC-2616 token. Once set should not be changed as this causes some implications
-       how we keep cookies in the cookie jar.
-       .. _RFC-2616 token: https://tools.ietf.org/html/rfc2616#section-2.2
-       """
+        Cookie's name must be valid RFC-2616 token. Once set should not be changed as this causes some implications
+        how we keep cookies in the cookie jar.
+        .. _RFC-2616 token: https://tools.ietf.org/html/rfc2616#section-2.2
+        """
         return self._name
 
     @property
@@ -108,10 +108,10 @@ class HttpCookieJar:
     def __init__(self):
         self._cookies: Dict[str, HttpCookie] = {}
 
-    def append(self, cookie: HttpCookie):
+    def append(self, cookie: HttpCookie) -> None:
         self._cookies[cookie.name] = cookie
 
-    def __setitem__(self, key: str, value: str):
+    def __setitem__(self, key: str, value: str) -> None:
         if isinstance(value, str):
             cookie = HttpCookie(key, value)
         else:
@@ -124,10 +124,10 @@ class HttpCookieJar:
     def __getitem__(self, key: str) -> HttpCookie:
         return self._cookies[key]
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         del self._cookies[key]
 
-    def __contains__(self, key) -> bool:
+    def __contains__(self, key: str) -> bool:
         return key in self._cookies
 
     def __len__(self) -> int:
@@ -159,7 +159,10 @@ def parse_cookie_header(header: str) -> HttpCookieJar:
             continue
         try:
             result.append(
-                HttpCookie(cookie[0:separator_position].strip(), unquote(cookie[separator_position + 1 :].strip()),)
+                HttpCookie(
+                    cookie[0:separator_position].strip(),
+                    unquote(cookie[separator_position + 1 :].strip()),
+                )
             )
         except HttpCookieError:  # Invalid cookie name
             continue

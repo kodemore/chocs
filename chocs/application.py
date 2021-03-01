@@ -24,7 +24,10 @@ class Application:
         self._cached_middleware: Optional[MiddlewarePipeline] = None
 
     def _append_route(
-        self, method: HttpMethod, route: Route, handler: Callable[[HttpRequest], HttpResponse],
+        self,
+        method: HttpMethod,
+        route: Route,
+        handler: Callable[[HttpRequest], HttpResponse],
     ):
         if self.parent:
             self.parent._append_route(method, route, handler)

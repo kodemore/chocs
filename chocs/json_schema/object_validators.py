@@ -68,7 +68,9 @@ def validate_object_properties(
             )
         except ValidationError as error:
             raise PropertyValueError(
-                property_name=key, validation_error=str(error), sub_code=error.code,
+                property_name=key,
+                validation_error=str(error),
+                sub_code=error.code,
             )
         except ValueError as error:
             raise PropertyValueError(property_name=key, validation_error=str(error))

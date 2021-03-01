@@ -103,4 +103,10 @@ class TestClient:
         uri = path_parts[0]
         query_string = HttpQueryString(path_parts[1] if len(path_parts) > 1 else "")
 
-        return HttpRequest(method=method, path=uri, body=body, headers=headers, query_string=query_string,)
+        return HttpRequest(
+            method=method,
+            path=uri,
+            body=body,
+            headers=headers,
+            query_string=query_string,
+        )

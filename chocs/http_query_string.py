@@ -67,7 +67,7 @@ def parse_qs(query: str) -> Dict[str, Any]:
 
     for item in query.split("&"):
         (name, value) = item.split("=")
-        value = _parse_qs_value(value)
+        value = parse_qs_value(value)
         name = unquote_plus(name)
         if "[" in name:
             result = deep_merge(result, build_dict_from_path(name, value))
@@ -82,7 +82,7 @@ def parse_qs(query: str) -> Dict[str, Any]:
     return result
 
 
-def _parse_qs_value(value: str) -> Any:
+def parse_qs_value(value: str) -> Any:
     value = unquote_plus(value)
     if value == "true":
         return True
@@ -139,4 +139,4 @@ class HttpQueryString:
         return iter(self._params)
 
 
-__all__ = ["HttpQueryString", "build_dict_from_path", "parse_qs"]
+__all__ = ["HttpQueryString", "build_dict_from_path", "parse_qs", "parse_qs_value"]

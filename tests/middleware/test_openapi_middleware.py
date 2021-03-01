@@ -7,6 +7,7 @@ from os import path
 from chocs import Application, HttpMethod, HttpRequest, HttpResponse
 from chocs.json_schema.errors import PropertyValueError, RequiredPropertyError
 from chocs.middleware import OpenApiMiddleware
+from chocs.middleware.open_api_middleware import QueryValidationError, PathValidationError, HeadersValidationError, CookiesValidationError
 
 
 def test_pass_valid_request_with_body() -> None:
@@ -78,7 +79,7 @@ def test_fail_request_with_query_invalid_type() -> None:
     def get_pets(request: HttpRequest) -> HttpResponse:
         return HttpResponse("OK")
 
-    with pytest.raises(PropertyValueError):
+    with pytest.raises(QueryValidationError):
         app(HttpRequest(HttpMethod.GET, "/pets", query_string="tags=1"))
 
 
@@ -89,7 +90,7 @@ def test_fail_request_with_query_missing_field() -> None:
     def get_pets(request: HttpRequest) -> HttpResponse:
         return HttpResponse("OK")
 
-    with pytest.raises(RequiredPropertyError):
+    with pytest.raises(QueryValidationError):
         app(HttpRequest(HttpMethod.GET, "/pets"))
 
 
@@ -125,6 +126,68 @@ def test_body_validation_handles_arrays() -> None:
         headers={"content-type": "application/json"},
     )
     assert app(request=request)
+
+
+def test_pass_valid_request_with_path() -> None:
+    # given
+    app = _mockup_app()
+
+    @app.get("/pets/{id}")
+    def get_pets(request: HttpRequest) -> HttpResponse:
+        return HttpResponse("OK")
+
+    # when
+    result = app(HttpRequest(HttpMethod.GET, "/pets/12"))
+
+    # then
+    assert result
+
+
+def test_fail_invalid_request_with_path() -> None:
+    # given
+    app = _mockup_app()
+
+    @app.get("/pets/{id}")
+    def get_pets(request: HttpRequest) -> HttpResponse:
+        return HttpResponse("OK")
+
+    # when
+    with pytest.raises(PathValidationError) as error:
+        result = app(HttpRequest(HttpMethod.GET, "/pets/apet"))
+
+    # then
+    assert error.value.error.message == PropertyValueError.message
+
+
+def test_pass_valid_request_with_headers() -> None:
+    # given
+    app = _mockup_app()
+
+    @app.get("/test-headers")
+    def get_pets(request: HttpRequest) -> HttpResponse:
+        return HttpResponse("OK")
+
+    # when
+    app(HttpRequest(HttpMethod.GET, "/test-headers", headers={"test": "passed"}))
+
+    # then
+    pass
+
+
+def test_fail_request_with_headers() -> None:
+    # given
+    app = _mockup_app()
+
+    @app.get("/test-headers")
+    def get_pets(request: HttpRequest) -> HttpResponse:
+        return HttpResponse("OK")
+
+    # when
+    with pytest.raises(HeadersValidationError) as error:
+        app(HttpRequest(HttpMethod.GET, "/test-headers"))
+
+    # then
+    assert error.value.error.message == RequiredPropertyError.message
 
 
 def _mockup_app() -> Application:

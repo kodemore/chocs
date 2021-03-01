@@ -41,7 +41,7 @@ def test_route_match() -> None:
 
     route = Route("/pets/{pet_id}")
     route = route.match("/pets/22")
-    assert route._parameters == {"pet_id": "22"}
+    assert route._parameters == {"pet_id": 22}
 
 
 def test_router() -> None:
@@ -53,7 +53,7 @@ def test_router() -> None:
     router.append(Route("/pets"), test_controller)
     match = router.match("/pets/12")
 
-    assert match[0]["pet_id"] == "12"
+    assert match[0]["pet_id"] == 12
     assert router.match("/pets")
 
 
