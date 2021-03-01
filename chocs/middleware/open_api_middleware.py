@@ -62,12 +62,12 @@ class _OpenApiValidatorGroup:
         self._body_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
         self._header_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
         self._path_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
-        self._cookies_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
+        self._cookie_schema: Union[Dict[str, Any], _UNDEFINED_TYPE] = _UNDEFINED
 
         self._query_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
         self._body_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
         self._path_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
-        self._cookies_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
+        self._cookie_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
         self._header_validator: Union[Callable, _UNDEFINED_TYPE] = _UNDEFINED
 
     def _get_schema_for(self, attribute: str) -> Dict[str, Any]:
@@ -107,20 +107,20 @@ class _OpenApiValidatorGroup:
         return self._get_schema_for("query")
 
     @property
-    def headers_validator(self) -> Callable:
-        return self._get_validator_for("headers")
+    def header_validator(self) -> Callable:
+        return self._get_validator_for("header")
 
     @property
-    def headers_schema(self) -> Dict[str, Any]:
-        return self._get_schema_for("headers")
+    def header_schema(self) -> Dict[str, Any]:
+        return self._get_schema_for("header")
 
     @property
-    def cookies_validator(self) -> Callable:
-        return self._get_validator_for("cookies")
+    def cookie_validator(self) -> Callable:
+        return self._get_validator_for("cookie")
 
     @property
-    def cookies_schema(self) -> Dict[str, Any]:
-        return self._get_schema_for("cookies")
+    def cookie_schema(self) -> Dict[str, Any]:
+        return self._get_schema_for("cookie")
 
     @property
     def path_validator(self) -> Callable:
@@ -147,7 +147,7 @@ class _OpenApiValidatorGroup:
             self._validate_headers(request)
         if self.validate_query and self._query_schema is not _UNDEFINED:
             self._validate_query(request)
-        if self.validate_cookies and self._cookies_schema is not _UNDEFINED:
+        if self.validate_cookies and self._cookie_schema is not _UNDEFINED:
             self._validate_cookies(request)
 
     def _validate_body(self, request: HttpRequest) -> None:
@@ -168,9 +168,13 @@ class _OpenApiValidatorGroup:
             raise PathValidationError(error) from error
 
     def _validate_headers(self, request: HttpRequest) -> None:
-        headers = request.headers
+        # We have to normalise headers before validation
+        headers = {}
+        for name, values in request.headers.items():
+            headers[name] = values[0] if len(values) == 1 else values
+
         try:
-            self.headers_validator(headers)
+            self.header_validator(headers)
         except ValidationError as error:
             raise HeadersValidationError(error) from error
 
@@ -182,13 +186,13 @@ class _OpenApiValidatorGroup:
             raise QueryValidationError(error) from error
 
     def _validate_cookies(self, request: HttpRequest) -> None:
-        # We have to serialise cookies before validation
+        # We have to normalise cookies before validation
         cookies = {}
         for name, cookie in request.cookies.items():
             cookies[name] = str(cookie)
 
         try:
-            self.cookies_validator(cookies)
+            self.cookie_validator(cookies)
         except ValidationError as error:
             raise CookiesValidationError(error) from error
 

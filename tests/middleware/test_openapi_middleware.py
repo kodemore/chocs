@@ -159,6 +159,37 @@ def test_fail_invalid_request_with_path() -> None:
     assert error.value.error.message == PropertyValueError.message
 
 
+def test_pass_valid_request_with_headers() -> None:
+    # given
+    app = _mockup_app()
+
+    @app.get("/test-headers")
+    def get_pets(request: HttpRequest) -> HttpResponse:
+        return HttpResponse("OK")
+
+    # when
+    app(HttpRequest(HttpMethod.GET, "/test-headers", headers={"test": "passed"}))
+
+    # then
+    pass
+
+
+def test_fail_request_with_headers() -> None:
+    # given
+    app = _mockup_app()
+
+    @app.get("/test-headers")
+    def get_pets(request: HttpRequest) -> HttpResponse:
+        return HttpResponse("OK")
+
+    # when
+    with pytest.raises(HeadersValidationError) as error:
+        app(HttpRequest(HttpMethod.GET, "/test-headers"))
+
+    # then
+    assert error.value.error.message == RequiredPropertyError.message
+
+
 def _mockup_app() -> Application:
     openapi_file = path.realpath(path.dirname(__file__) + "/../fixtures/openapi.yml")
     app = Application(OpenApiMiddleware(openapi_file))

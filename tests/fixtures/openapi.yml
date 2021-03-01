@@ -14,6 +14,21 @@ info:
 servers:
   - url: http://petstore.swagger.io/api
 paths:
+  /test-headers:
+    get:
+      description: |
+        Test headers validation
+      operationId: validateHeaders
+      parameters:
+        - name: test
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Headers validated
+
   /pets:
     get:
       description: |
