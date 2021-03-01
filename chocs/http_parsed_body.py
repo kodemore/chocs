@@ -32,22 +32,27 @@ class HttpParsedBodyTrait:
             self._parsed_body = self._parsed_body_getter()  # type: ignore
             return self._parsed_body
 
-        content_type: Tuple[str, Dict[str, str]] = parse_header(
-            self._headers["Content-Type"]  # type: ignore
-        )
+        content_type: Tuple[str, Dict[str, str]] = parse_header(self._headers["Content-Type"])  # type: ignore
 
         parsed_body: HttpMessage
 
         if content_type[0] == "multipart/form-data":
             parsed_body = MultipartHttpMessage.from_bytes(
-                self._body, content_type[1].get("boundary", ""), content_type[1].get("charset", "utf8"),
+                self._body,
+                content_type[1].get("boundary", ""),
+                content_type[1].get("charset", "utf8"),
             )
         elif content_type[0] == "application/x-www-form-urlencoded":
             parsed_body = FormHttpMessage.from_bytes(self._body, content_type[1].get("charset", "utf8"))
 
         elif content_type[0] == "application/json":
             parsed_body = JsonHttpMessage.from_bytes(self._body, content_type[1].get("charset", "utf8"))
-        elif content_type[0] in ("text/vnd.yaml", "text/yaml", "text/x-yaml", "application/x-yaml",):
+        elif content_type[0] in (
+            "text/vnd.yaml",
+            "text/yaml",
+            "text/x-yaml",
+            "application/x-yaml",
+        ):
             parsed_body = YamlHttpMessage.from_bytes(self._body, content_type[1].get("charset", "utf8"))
         else:
             self._body.seek(0)

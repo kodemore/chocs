@@ -1,6 +1,7 @@
 import re
 from copy import copy
 from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Union
+from .http_query_string import parse_qs_value
 
 from .http_error import NotFoundError
 from .http_method import HttpMethod
@@ -10,6 +11,8 @@ _VAR_REGEX = "[^/]+"
 
 
 class Route:
+    __slots__ = ["route", "attributes", "_parameters_names", "_pattern", "_parameters", "is_wildcard"]
+
     def __init__(self, route: str, attributes: Optional[Dict] = None):
         self.route = route
         self.attributes = attributes if attributes is not None else {}
@@ -33,7 +36,10 @@ class Route:
         pattern = re.escape(self.route)
         pattern = re.sub(_ROUTE_REGEX, _parse_var, pattern, re.I | re.M)
         pattern = re.sub(r"\\\*", ".*?", pattern)
-        self._pattern = re.compile("^" + pattern + "$", re.I | re.M,)
+        self._pattern = re.compile(
+            "^" + pattern + "$",
+            re.I | re.M,
+        )
 
     def match(self, uri: str) -> Union[bool, "Route"]:
         matches = self.pattern.findall(uri)
@@ -49,7 +55,7 @@ class Route:
         route = copy(self)
         match_index = 0
         for value in matches:
-            route._parameters[self._parameters_names[match_index]] = value
+            route._parameters[self._parameters_names[match_index]] = parse_qs_value(value)
             match_index += 1
 
         return route

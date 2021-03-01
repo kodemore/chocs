@@ -56,7 +56,8 @@ def create_wsgi_handler(
             headers.set("Set-Cookie", cookie.serialise())
 
         start(
-            str(int(response.status_code)), [(key, value) for key, value in headers.items()],
+            str(int(response.status_code)),
+            [(key, value) for key, value in headers.items()],
         )
 
         response.body.seek(0)

@@ -44,6 +44,9 @@ class JsonReference:
         self._loader = loader
         self._data: Optional[Dict] = None
 
+    def __contains__(self, item) -> bool:
+        return item in self.data
+
     def __getitem__(self, key: str):
         return self.data[key]
 
