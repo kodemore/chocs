@@ -13,4 +13,4 @@ def default(request: HttpRequest) -> HttpResponse:
     return HttpResponse("Not found", HttpStatus.NOT_FOUND)
 
 
-serve(app)
+serve(app, port=8080, reload=False, debug=True)

@@ -8,6 +8,23 @@ from .http_method import HttpMethod
 from .http_query_string import HttpQueryString
 from .http_request import HttpRequest
 from .http_response import HttpResponse
+import gunicorn.app.base
+
+
+class ChocsGunicornApplication(gunicorn.app.base.BaseApplication):
+    def __init__(self, app: Callable, options: Dict[str, Any] = None):
+        self.options = options or {}
+        self.application = app
+        super().__init__()
+
+    def load_config(self) -> None:
+        config = {key: value for key, value in self.options.items() if key in self.cfg.settings and value is not None}
+
+        for key, value in config.items():
+            self.cfg.set(key.lower(), value)
+
+    def load(self) -> Any:
+        return self.application
 
 
 def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
@@ -66,9 +83,14 @@ def create_wsgi_handler(
     return _handler
 
 
-def serve(application: Application, host: str = "127.0.0.1", port: int = 80, debug: bool = False) -> None:
-    import bjoern
+def serve(application: Application, host: str = "127.0.0.1", port: int = 80, workers: int = 1, reload: bool = True, debug: bool = False) -> None:
 
     wsgi_handler = create_wsgi_handler(application, debug=debug)
+    options = {
+        "bind": f"{host}:{port}",
+        "workers": workers,
+        "reload": reload
+    }
 
-    bjoern.run(wsgi_handler, host, port)
+    server = ChocsGunicornApplication(wsgi_handler, options)
+    server.run()
