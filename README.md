@@ -30,22 +30,18 @@ poetry add chocs
 ## Quick start
 
 ```python
-from chocs import Application
-from chocs import HttpRequest
-from chocs import HttpResponse
-from chocs import serve
+import chocs
 
-
-http = Application()
+http = chocs.Application()
 
 @http.get("/hello/{name}")
-def hello(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(f"Hello {request.path_parameters.get('name')}!")
+def hello(request: chocs.HttpRequest) -> chocs.HttpResponse:
+    return chocs.HttpResponse(f"Hello {request.path_parameters.get('name')}!")
 
-serve(http)
+chocs.serve(http)
 ```
 
-> Keep in mind that the `serve()` function is using the `bjoern` package, so make sure you included it in your project
+> Keep in mind that the `chocs.serve()` function is using the `bjoern` package, so make sure you included it in your project
 > dependencies before using it. You are able to use any WSGI compatible server.
 
 # Documentation
