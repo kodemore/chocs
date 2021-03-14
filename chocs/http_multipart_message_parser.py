@@ -120,14 +120,17 @@ def parse_multipart_message(data: bytes, boundary: str, encoding: str = "utf8") 
             state = ParserState.CONTENT_TYPE
             if data[cursor + 1 : cursor + 13].decode(encoding).lower() != "content-type":
                 state = ParserState.CONTENT_HEADER
+
         elif state is ParserState.CONTENT_TYPE and line_break:
             content_type = string_buffer
             state = ParserState.CONTENT_HEADER
             string_buffer = ""
+
         elif state is ParserState.CONTENT_HEADER and line_break:
             string_buffer = ""
             state = ParserState.CONTENT_DATA
             content_cursor = cursor
+
         if state is ParserState.CONTENT_DATA:
             if line_break and string_buffer == "--" + boundary:
                 content_data = data[content_cursor + 1 : cursor - (boundary_length + 5)]

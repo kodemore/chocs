@@ -1,4 +1,5 @@
 from chocs import Application, HttpRequest, HttpResponse, HttpStatus, serve
+from chocs.wsgi import WsgiServers
 
 app = Application()
 
@@ -13,4 +14,4 @@ def default(request: HttpRequest) -> HttpResponse:
     return HttpResponse("Not found", HttpStatus.NOT_FOUND)
 
 
-serve(app, port=8080, reload=False, debug=True)
+serve(app, port=8080, debug=True, wsgi_server=WsgiServers.CHERRYPY)
