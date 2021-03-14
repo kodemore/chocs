@@ -2,7 +2,7 @@ from io import BytesIO
 from typing import Callable
 
 from chocs import Application, HttpCookie, HttpMethod, HttpRequest, HttpResponse
-from chocs.wsgi import create_wsgi_handler
+from chocs.wsgi.wsgi_support import create_wsgi_handler
 
 
 def test_create_wsgi_handler() -> None:

@@ -69,7 +69,7 @@ class DataclassStrategy(HydrationStrategy):
     def hydrate(self, value: Any) -> Any:
         instance = self._dataclass_name.__new__(self._dataclass_name)  # type: ignore
 
-        for name, setter in self._setters.items():
+        for setter in self._setters.values():
             setter(instance, value)
 
         if hasattr(instance, "__post_init__"):

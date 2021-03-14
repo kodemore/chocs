@@ -114,6 +114,9 @@ class HttpQueryString:
     def __contains__(self, key) -> bool:
         return key in self._params
 
+    def __repr__(self):
+        return self._str
+
     def __str__(self) -> str:
         return self._str
 

@@ -1,13 +1,14 @@
+from enum import Enum
 from io import BytesIO
 from typing import Any, Callable, Dict
 
-from .application import Application
-from .http_error import HttpError
-from .http_headers import HttpHeaders
-from .http_method import HttpMethod
-from .http_query_string import HttpQueryString
-from .http_request import HttpRequest
-from .http_response import HttpResponse
+from chocs.application import Application
+from chocs.http_error import HttpError
+from chocs.http_headers import HttpHeaders
+from chocs.http_method import HttpMethod
+from chocs.http_query_string import HttpQueryString
+from chocs.http_request import HttpRequest
+from chocs.http_response import HttpResponse
 
 
 def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
@@ -66,9 +67,48 @@ def create_wsgi_handler(
     return _handler
 
 
-def serve(application: Application, host: str = "127.0.0.1", port: int = 80, debug: bool = False) -> None:
-    import bjoern
+class WsgiServers(Enum):
+    DEFAULT = "bjoern"
+    GUNICORN = "gunicorn"
+    BJOERN = "bjoern"
+    CHERRYPY = "cherrypy"
+
+
+def serve(
+    application: Application,
+    host: str = "127.0.0.1",
+    port: int = 80,
+    workers: int = 1,
+    debug: bool = False,
+    wsgi_server: WsgiServers = WsgiServers.DEFAULT,
+) -> None:
 
     wsgi_handler = create_wsgi_handler(application, debug=debug)
+    wsgi_options = {
+        "host": host,
+        "port": port,
+        "workers": workers,
+    }
 
-    bjoern.run(wsgi_handler, host, port)
+    if wsgi_server == WsgiServers.BJOERN:
+        try:
+            from .bjoern_support import wsgi_serve  # type: ignore
+        except ImportError:
+            raise RuntimeError("`bjoern` package must be installed before using `chocs.serve`.")
+
+    elif wsgi_server == WsgiServers.GUNICORN:
+        try:
+            from .gunicorn_support import wsgi_serve  # type: ignore
+        except ImportError:
+            raise RuntimeError("`gunicorn` package must be installed before using `chocs.serve`.")
+
+    elif wsgi_server == WsgiServers.CHERRYPY:
+        try:
+            from .cherrypy_support import wsgi_serve  # type: ignore
+        except ImportError:
+            raise RuntimeError("`cheroot` package must be installed before using `chocs.serve`.")
+
+    else:
+        raise RuntimeError("Unsupported wsgi server")
+
+    wsgi_serve(wsgi_handler, **wsgi_options)  # type: ignore

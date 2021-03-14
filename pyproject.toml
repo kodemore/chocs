@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chocs"
-version = "0.15.0"
+version = "0.16.0"
 description = "Lightweight and powerful wsgi rest framework for rapid building applications based on wsgi servers."
 authors = [
     "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
@@ -19,9 +19,9 @@ classifiers = [
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
@@ -42,4 +42,5 @@ pytest-mock = "^1.9"
 black = "^20.8b1"
 isort = "^5.6.4"
 mypy = "^0.812"
-bjoern = "^3.0"
+bjoern = "^3.1.0"
+pylint = "^2.7.2"
