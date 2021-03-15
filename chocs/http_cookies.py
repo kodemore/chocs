@@ -142,6 +142,9 @@ class HttpCookieJar:
     def keys(self) -> KeysView[str]:
         return self._cookies.keys()
 
+    def __repr__(self) -> str:
+        return str(self._cookies)
+
 
 def parse_cookie_header(header: str) -> HttpCookieJar:
     """
