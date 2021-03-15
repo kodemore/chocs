@@ -30,6 +30,14 @@ def test_create_http_request_from_serverless_event(event_file: str) -> None:
     assert request.query_string.get("param_2") == "value2"
 
 
+def test_create_http_request_from_serverless_event_without_headers() -> None:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    event_json = json.load(open(os.path.join(dir_path, "fixtures/lambda_rest_api_event_without_headers.json")))
+    request = create_http_request_from_aws_event(event_json, {})
+    assert isinstance(request, HttpRequest)
+    assert request.headers
+
+
 def test_create_http_request_from_serverless_event_multipart_image() -> None:
     dir_path = os.path.dirname(os.path.realpath(__file__))
 

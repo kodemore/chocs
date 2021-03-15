@@ -155,8 +155,19 @@ def create_http_request_from_aws_rest_api(event: AwsEvent, context: AwsContext) 
 
 
 def get_normalised_headers_from_aws(event: AwsEvent) -> Dict[str, str]:
-    headers = event["headers"]
-    request_context = event.get("requestContext", {})  # Set serverless related additional headers
+    headers = {}
+
+    if "headers" in event and event["headers"]:
+        for header_name, header_value in event["headers"].items():
+            headers[header_name] = header_value
+
+    # Multi value headers takes the precedence
+    if "multiValueHeaders" in event and event["multiValueHeaders"]:
+        for header_name, header_values in event["multiValueHeaders"].items():
+            headers[header_name] = header_values
+
+    # Set serverless related additional headers
+    request_context = event.get("requestContext", {})
     if request_context.get("requestId"):
         headers["x-serverless-request-id"] = request_context.get("requestId")
     if request_context.get("stage"):
