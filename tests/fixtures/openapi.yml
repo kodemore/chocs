@@ -159,9 +159,19 @@ components:
             id:
               type: integer
               format: int64
+            tag:
+              $ref: '#/components/schemas/PetTag'
 
     NewPet:
       $ref: "new_pet.yml#/NewPet"
+
+    PetTag:
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: integer
 
     Error:
       type: object
