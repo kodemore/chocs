@@ -1,10 +1,10 @@
-from cleo import Application
-from cleo import CommandTester
-from cleo import Command
-from chocs.console.generate_dto import GenerateDtoCommand
 from os import path
-import tempfile
+
 import pytest
+from cleo import Application, Command, CommandTester
+
+from chocs.console.generate_dto import GenerateDtoCommand
+from chocs.dataclasses.support import init_dataclass
 
 
 def get_command_tester(command_class: Command, command_name: str) -> CommandTester:
@@ -38,9 +38,19 @@ def test_generate_dtos() -> None:
         f"{openapi_path} --module-path={dto_module}"
     )
 
+    assert not result
+
     try:
-        import tests.fixtures.generated_dtos
+        from tests.fixtures import generated_dtos
     except Exception:
         pytest.fail("Failed to generate valid dto classes")
+        return
+
+    pet_tag = init_dataclass({"name": "Test Tag", "id": 12}, generated_dtos.PetTag)
+    assert isinstance(pet_tag, generated_dtos.PetTag)
+
+    pet = init_dataclass({"id": 123, "name": "Boo"}, generated_dtos.Pet)
+    assert isinstance(pet, generated_dtos.Pet)
+    assert isinstance(pet, generated_dtos.NewPet)
 
 

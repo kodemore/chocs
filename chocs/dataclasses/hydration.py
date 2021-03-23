@@ -97,7 +97,6 @@ class DataclassStrategy(HydrationStrategy):
                 continue
 
             strategy = self._get_strategy(field_descriptor.type)
-
             if field_descriptor.init:
                 self._setters[field_name] = partial(
                     set_dataclass_property,
@@ -105,6 +104,7 @@ class DataclassStrategy(HydrationStrategy):
                     property_name=field_name,
                     default_factory=field_descriptor.default_factory,  # type: ignore
                     default_value=field_descriptor.default,
+                    optional=is_optional(field_descriptor.type),
                 )
 
             if field_descriptor.repr:
@@ -377,6 +377,7 @@ def set_dataclass_property(
     setter: Callable,
     default_factory: Union[Callable, Any],
     default_value: Any,
+    optional: bool,
 ) -> None:
     if property_name in attributes:
         setattr(obj, property_name, setter(attributes[property_name]))
@@ -393,6 +394,9 @@ def set_dataclass_property(
     attribute_value = attributes.get(property_name, MISSING)
 
     if attribute_value is MISSING:
+        if optional:
+            setattr(obj, property_name, None)
+            return
         raise AttributeError(f"Property `{property_name}` is required.")
 
     try:

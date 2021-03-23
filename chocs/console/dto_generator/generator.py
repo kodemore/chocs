@@ -1,26 +1,52 @@
 from typing import Callable, Dict, List
+from os import path
+import datetime
+import re
 
 from chocs.json_schema.json_schema import OpenApiSchema
-from .processor import AstPropertyNode, SchemaProcessor, AstTypeNode, AstClassNode, AstReferenceTypeNode, AstListTypeNode
+from .processor import (
+    AstPropertyNode,
+    SchemaProcessor,
+    AstTypeNode,
+    AstClassNode,
+    AstReferenceTypeNode,
+    AstListTypeNode,
+)
+
+
+def to_snake_case(text: str) -> str:
+    snake_cased = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", text)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", snake_cased).lower()
 
 
 class DtoGenerator:
-    def __init__(self, openapi_path: str, out: str):
+    def __init__(self, openapi_path: str, out: str, snake_case: bool = False, class_suffix: str = ""):
+        openapi_path = path.realpath(openapi_path)
         self.openapi_schema = OpenApiSchema(openapi_path)
+        self.openapi_path = openapi_path
+        self.snake_case = snake_case
+        self.class_suffix = class_suffix
         self.out = out
 
     def generate(self, log_info: Callable, log_error: Callable) -> None:
         schema_processor = SchemaProcessor(self.openapi_schema)
         ast_classes = self._order_ast_classes(schema_processor.process())
 
-        module_str = "import datetime\n"
+        module_str = (
+            '"""\n'
+            "Do not edit! \n\n"
+            f"This file was automatically generated from: \n{self.openapi_path}\n\n"
+            f"Generation time: \n{datetime.datetime.utcnow()} \n"
+            '"""\n\n'
+        )
+        module_str += "import datetime\n"
         module_str += "import typing\n"
         module_str += "import decimal\n"
         module_str += "import ipaddress\n"
         module_str += "import dataclasses\n"
 
         for ast_class in ast_classes:
-            log_info(f"Generating class `{ast_class.class_name}` from `{ast_class.id}`")
+            log_info(f"Generating class `{ast_class.class_name + self.class_suffix}` from `{ast_class.id}`")
             try:
                 module_str += "\n\n" + self._generate_class(ast_class)
             except Exception as e:
@@ -32,9 +58,9 @@ class DtoGenerator:
 
     def _generate_class(self, ast_class: AstClassNode) -> str:
         out = "@dataclasses.dataclass()\n"
-        out += f"class {ast_class.class_name}"
+        out += f"class {ast_class.class_name + self.class_suffix}"
         if ast_class.parent_classes:
-            out += "(" + ",".join([parent.class_name for parent in ast_class.parent_classes]) + ")"
+            out += "(" + ",".join([parent.class_name + self.class_suffix for parent in ast_class.parent_classes]) + ")"
 
         out += ":\n"
 
@@ -52,7 +78,10 @@ class DtoGenerator:
         return out
 
     def _generate_property(self, property_: AstPropertyNode) -> str:
-        out = f"{property_.name}: "
+        if self.snake_case:
+            out = f"{to_snake_case(property_.name)}: "
+        else:
+            out = f"{property_.name}: "
         property_type = self._generate_type(property_.type)
         if property_.optional:
             out += f"typing.Optional[{property_type}]"
@@ -63,7 +92,7 @@ class DtoGenerator:
     def _generate_type(self, type_: AstTypeNode) -> str:
 
         if isinstance(type_, AstReferenceTypeNode):
-            return f"'{type_.reference.class_name}'"
+            return f"'{type_.reference.class_name + self.class_suffix}'"
         if isinstance(type_, AstListTypeNode):
             return self._generate_list_type(type_)
         return type_.name

@@ -1,12 +1,6 @@
-import re
 from typing import Any, Dict, List, Union
 
 from chocs.json_schema.json_schema import JsonReference, OpenApiSchema
-
-
-def to_snake_case(text: str) -> str:
-    snake_cased = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', text)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', snake_cased).lower()
 
 
 class AstTypeNode:
@@ -17,9 +11,9 @@ class AstTypeNode:
 
 
 class AstReferenceTypeNode(AstTypeNode):
-    reference: 'AstClassNode'
+    reference: "AstClassNode"
 
-    def __init__(self, reference: 'AstClassNode'):
+    def __init__(self, reference: "AstClassNode"):
         self.reference = reference
         super().__init__(reference.id)
 
@@ -39,12 +33,12 @@ class AstPropertyNode:
     optional: bool = True
 
     def __init__(self, name: str):
-        self.name = to_snake_case(name)
+        self.name = name
 
 
 class AstClassNode:
     id: str
-    parent_classes: List['AstClassNode']
+    parent_classes: List["AstClassNode"]
     properties: Dict[str, AstPropertyNode]
 
     def __init__(self, class_id: str):
@@ -95,7 +89,10 @@ class SchemaProcessor:
 
         return class_node
 
-    def _process_properties_nodes(self, dto_class: AstClassNode, schema: Dict[str, Any]) -> None:
+    def _process_properties_nodes(self, dto_class: AstClassNode, schema: Union[JsonReference, dict]) -> None:
+        if "properties" not in schema:
+            return
+
         for property_name, property_schema in schema["properties"].items():
             dto_property = AstPropertyNode(property_name)
             dto_class.properties[property_name] = dto_property
@@ -174,5 +171,3 @@ class SchemaProcessor:
             return property_type
 
         raise RuntimeError(f"Unknown property type {schema['type']}")
-
-
