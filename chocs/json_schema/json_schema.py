@@ -50,6 +50,12 @@ class JsonReference:
     def __getitem__(self, key: str):
         return self.data[key]
 
+    def get(self, key: str, default: Any = None) -> Any:
+        if key not in self:
+            return default
+
+        return self[key]
+
     @property
     def data(self) -> dict:
         if self._data:
@@ -114,7 +120,7 @@ class JsonReferenceResolver:
         else:
             uri = path.join(path.dirname(base_uri), uri_part)
 
-        full_ref = uri + "#" + ref_part
+        full_ref = path.realpath(uri) + "#" + ref_part
 
         if full_ref not in cls.reference_store:
             cls.reference_store[full_ref] = JsonReference(full_ref)
@@ -124,7 +130,7 @@ class JsonReferenceResolver:
 
 class OpenApiSchema:
     def __init__(self, file_name: str, loader: URILoader = _default_uri_loader):
-        self.file_name = file_name
+        self.file_name = path.realpath(file_name)
         self._contents: Optional[dict] = None
         self.loader = loader
 

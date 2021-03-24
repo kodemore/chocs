@@ -5,5 +5,5 @@ NewPet:
   properties:
     name:
       type: string
-    tag:
+    base_tag:
       type: string
