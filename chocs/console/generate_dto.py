@@ -5,7 +5,7 @@ from os import path
 
 class GenerateDtoCommand(Command):
     """
-    Generate dto classes from openapi file.
+    Generates dto classes from openapi file.
 
     generate:dto
         { openapi-path : Path to openapi.yml file }
