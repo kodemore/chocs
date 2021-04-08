@@ -25,7 +25,7 @@ class ParsedBodyMiddleware(Middleware):
         if not inspect.isclass(route.attributes["parsed_body"]):
             return
 
-        if not hasattr(request.parsed_body, '__getitem__') or not hasattr(request.parsed_body, '__iter__'):
+        if not hasattr(request.parsed_body, "__getitem__") or not hasattr(request.parsed_body, "__iter__"):
             return
 
         body = request.parsed_body
