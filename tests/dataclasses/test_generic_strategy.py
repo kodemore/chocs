@@ -4,6 +4,7 @@ from typing import Generic, List, TypeVar, cast
 from chocs.dataclasses import get_strategy_for
 
 T = TypeVar("T")
+U = TypeVar("U")
 
 @dataclass
 class Pet:
@@ -13,6 +14,15 @@ class Pet:
 class MyList(Generic[T]):
     count: int
     pets: List[T]
+
+@dataclass
+class Tag:
+    name: str
+
+@dataclass
+class TwoParameters(Generic[T, U]):
+    list_a: List[T]
+    list_b: List[U]
 
 
 def test_hydrate_generic_dataclass() -> None:
@@ -78,3 +88,20 @@ def test_extract_generic_dataclass() -> None:
     extracted_data = strategy.extract(data)
 
     assert extracted_data == {"count": 2, "pets": [{"name": "Bobek"}, {"name": "Boo"}]}
+
+
+def test_generic_class_with_multiple_parameters() -> None:
+    # given
+    strategy = get_strategy_for(TwoParameters[Pet, Tag])
+    raw_data = {
+        "list_a": [{"name": "Bobek"}, {"name": "Boo"}],
+        "list_b": [{"name": "Good boy"}, {"name": "Cute"}],
+    }
+
+    # when
+    hydrated_data = strategy.hydrate(raw_data)
+
+    # then
+    assert isinstance(hydrated_data, TwoParameters)
+    assert all(map(lambda i: isinstance(i, Pet), hydrated_data.list_a))
+    assert all(map(lambda i: isinstance(i, Tag), hydrated_data.list_b))

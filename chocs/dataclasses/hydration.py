@@ -169,7 +169,7 @@ class DequeStrategy(ListStrategy):
 
 
 class TupleStrategy(HydrationStrategy):
-    def __init__(self, subtypes: List[HydrationStrategy]):
+    def __init__(self, *subtypes: HydrationStrategy):
         self._subtypes = subtypes
         self._subtypes_length = len(subtypes)
         self._is_ellipsis_present = self._subtypes[-1] is ...
@@ -370,6 +370,67 @@ class OptionalTypeStrategy(HydrationStrategy):
         return self._type_strategy.extract(value)
 
 
+class UnionStrategy(HydrationStrategy):
+    PRIMITIVE_TYPES = {int, float, bool, str}
+
+    def __init__(self, types: List[Type]):
+        self.supported_types = types
+        self.primitive_types = []
+        self.dataclass_types = []
+        self.other_types = []
+
+        for i_type in types:
+            if i_type in UnionStrategy.PRIMITIVE_TYPES:
+                self.primitive_types.append(i_type)
+                continue
+            if is_dataclass(i_type):
+                self.dataclass_types.append(i_type)
+                continue
+
+            self.other_types.append(i_type)
+
+    def hydrate(self, value: Any) -> Any:
+        value_type = type(value)
+
+        # primitives
+        if value_type in UnionStrategy.PRIMITIVE_TYPES:
+            if value_type in self.primitive_types:
+                return get_strategy_for(value_type).hydrate(value)
+
+            for try_type in self.primitive_types:
+                try:
+                    return get_strategy_for(try_type).hydrate(value)
+                except Exception:
+                    continue
+
+            raise ValueError("Could not hydrate passed value.")
+
+        # dataclasses
+        if value_type is dict:
+            for dataclass in self.dataclass_types:
+                try:
+                    dataclass(**value)
+                    return get_strategy_for(dataclass).hydrate(value)
+                except Exception:
+                    continue
+
+        # other types
+        for try_type in self.other_types:
+            try:
+                return get_strategy_for(try_type).hydrate(value)
+            except Exception:
+                continue
+
+        raise ValueError("Could not hydrate passed value.")
+
+    def extract(self, value: Any) -> Any:
+        value_type = type(value)
+        if value_type not in self.supported_types:
+            raise ValueError("Could not extract passed value.")
+
+        return get_strategy_for(value_type).extract(value)
+
+
 def set_dataclass_property(
     obj: object,
     attributes: Dict[str, Any],
@@ -435,16 +496,30 @@ BUILT_IN_HYDRATOR_STRATEGY: Dict[Any, HydrationStrategy] = {
     Decimal: SimpleStrategy(Decimal, str),
 }
 
+BUILT_IN_GENERIC_HYDRATOR_STRATEGY: Dict[Any, Type] = {
+    list: ListStrategy,
+    tuple: TupleStrategy,
+    dict: DictStrategy,
+    set: SetStrategy,
+    frozenset: FrozenSetStrategy,
+    collections.deque: DequeStrategy,
+    collections.OrderedDict: OrderedDictStrategy,
+    Union: UnionStrategy,
+}
+
 CACHED_HYDRATION_STRATEGIES: Dict[Any, HydrationStrategy] = {}
 
 
 def get_strategy_for(type_name: Type) -> HydrationStrategy:
+    # Simple types
     if type_name in BUILT_IN_HYDRATOR_STRATEGY:
         return BUILT_IN_HYDRATOR_STRATEGY[type_name]
 
+    # Already resolved types
     if type_name in CACHED_HYDRATION_STRATEGIES:
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
+    # Dataclasses
     if is_dataclass(type_name):
         if issubclass(type_name, Generic):  # type: ignore
             raise ValueError("Cannot automatically hydrate non-parametrised generic classes.")
@@ -454,6 +529,7 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
 
     origin_type = get_origin_type(type_name)
 
+    # Other non-generic types
     if origin_type is None:
         if not isclass(type_name):
             return BUILT_IN_HYDRATOR_STRATEGY[Any]  # type: ignore
@@ -472,50 +548,32 @@ def get_strategy_for(type_name: Type) -> HydrationStrategy:
 
         return BUILT_IN_HYDRATOR_STRATEGY[Any]  # type: ignore
 
+    # Generic dataclass
     if is_dataclass(origin_type):
         CACHED_HYDRATION_STRATEGIES[type_name] = GenericDataclassStrategy(type_name)
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
-    if origin_type not in BUILT_IN_HYDRATOR_STRATEGY:
+    if origin_type not in BUILT_IN_GENERIC_HYDRATOR_STRATEGY:
+        # Unknown type, just ignore it
         if not is_optional(type_name):
             return BUILT_IN_HYDRATOR_STRATEGY[Any]  # type: ignore
 
+        # Optional type
         CACHED_HYDRATION_STRATEGIES[type_name] = OptionalTypeStrategy(get_strategy_for(unpack_optional(type_name)))
         return CACHED_HYDRATION_STRATEGIES[type_name]
 
-    subtypes: List[Union[HydrationStrategy, Any]] = []
+    if origin_type is Union:
+        CACHED_HYDRATION_STRATEGIES[type_name] = UnionStrategy(get_type_args(type_name))
+        return CACHED_HYDRATION_STRATEGIES[type_name]
+
+    # Resolve generic attributes
+    type_attributes: List[Union[HydrationStrategy, Any]] = []
     for subtype in get_type_args(type_name):
         if subtype is ...:
-            subtypes.append(...)
+            type_attributes.append(...)
             continue
-        subtypes.append(get_strategy_for(subtype))
+        type_attributes.append(get_strategy_for(subtype))
 
-    if origin_type is list:
-        CACHED_HYDRATION_STRATEGIES[type_name] = ListStrategy(subtypes[0])
-        return CACHED_HYDRATION_STRATEGIES[type_name]
-
-    if origin_type is tuple:
-        CACHED_HYDRATION_STRATEGIES[type_name] = TupleStrategy(subtypes)
-        return CACHED_HYDRATION_STRATEGIES[type_name]
-
-    if origin_type is dict:
-        CACHED_HYDRATION_STRATEGIES[type_name] = DictStrategy(subtypes[0], subtypes[1])
-        return CACHED_HYDRATION_STRATEGIES[type_name]
-
-    if origin_type is collections.OrderedDict:
-        CACHED_HYDRATION_STRATEGIES[type_name] = OrderedDictStrategy(subtypes[0], subtypes[1])
-        return CACHED_HYDRATION_STRATEGIES[type_name]
-
-    if origin_type is set:
-        CACHED_HYDRATION_STRATEGIES[type_name] = SetStrategy(subtypes[0])
-        return CACHED_HYDRATION_STRATEGIES[type_name]
-
-    if origin_type is frozenset:
-        CACHED_HYDRATION_STRATEGIES[type_name] = FrozenSetStrategy(subtypes[0])
-        return CACHED_HYDRATION_STRATEGIES[type_name]
-
-    if origin_type is collections.deque:
-        CACHED_HYDRATION_STRATEGIES[type_name] = DequeStrategy(subtypes[0])
-        return CACHED_HYDRATION_STRATEGIES[type_name]
-
-    return BUILT_IN_HYDRATOR_STRATEGY[Any]  # type: ignore
+    # Generic types
+    CACHED_HYDRATION_STRATEGIES[type_name] = BUILT_IN_GENERIC_HYDRATOR_STRATEGY[origin_type](*type_attributes)
+    return CACHED_HYDRATION_STRATEGIES[type_name]
