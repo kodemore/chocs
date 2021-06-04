@@ -1,6 +1,7 @@
 from io import BytesIO
 from typing import Dict, Optional, Sequence, Union
 
+from .http_body import write_body
 from .http_cookies import HttpCookieJar
 from .http_headers import HttpHeaders
 from .http_parsed_body import HttpParsedBodyTrait
@@ -10,10 +11,10 @@ from .http_status import HttpStatus
 class HttpResponse(HttpParsedBodyTrait):
     def __init__(
         self,
-        body: Union[bytes, bytearray, str, None] = None,
+        body: Union[BytesIO, bytes, bytearray, str, None] = None,
         status: Union[int, HttpStatus] = HttpStatus.OK,
-        encoding: str = "utf-8",
         headers: Optional[Union[Dict[str, Union[str, Sequence[str]]], HttpHeaders]] = None,
+        encoding: str = "utf-8",
     ):
         self._headers = headers if isinstance(headers, HttpHeaders) else HttpHeaders(headers)
         if isinstance(status, int):
@@ -29,11 +30,8 @@ class HttpResponse(HttpParsedBodyTrait):
         if body:
             self.write(body)
 
-    def write(self, body: Union[str, bytes, bytearray]) -> None:
-        if isinstance(body, str):
-            self._body.write(body.encode(self.encoding))
-        else:
-            self._body.write(body)
+    def write(self, body: Union[str, bytes, bytearray, BytesIO]) -> None:
+        write_body(self.body, body, self.encoding)
 
     @property
     def body(self) -> BytesIO:

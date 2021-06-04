@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 
 from chocs import HttpCookie, HttpHeaders, HttpMessage, HttpResponse, HttpStatus, JsonHttpMessage
@@ -14,6 +16,20 @@ def test_can_write_and_read_body() -> None:
     assert str(instance) == "Example text"
     instance.body.seek(0)
     assert instance.body.read() == b"Example text"
+
+
+def test_can_write_bytesio_body() -> None:
+    body = BytesIO()
+    body.write(b"example text")
+    instance = HttpResponse(status=200)
+    instance.write(body)
+
+    assert str(instance) == "example text"
+    instance.body.seek(0)
+    assert instance.body.read() == b"example text"
+
+    instance.write(" and string")
+    assert str(instance) == "example text and string"
 
 
 def test_can_close_body() -> None:
