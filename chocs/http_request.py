@@ -2,6 +2,7 @@ from copy import copy
 from io import BytesIO
 from typing import Any, Dict, Optional, Union
 
+from .http_body import write_body
 from .http_cookies import HttpCookieJar, parse_cookie_header
 from .http_headers import HttpHeaders
 from .http_method import HttpMethod
@@ -15,15 +16,13 @@ class HttpRequest(HttpParsedBodyTrait):
         self,
         method: Union[HttpMethod, str],
         path: str = "/",
-        body: Union[Optional[BytesIO], str] = None,
+        body: Union[BytesIO, bytes, bytearray, str, None] = None,
         query_string: Union[Optional[HttpQueryString], str] = None,
         headers: Union[Optional[HttpHeaders], Dict[str, str]] = None,
+        encoding: str = "utf-8",
     ):
         if isinstance(method, str):
             method = HttpMethod(method.upper())
-
-        if isinstance(body, str):
-            body = BytesIO(body.encode("utf8"))
 
         if isinstance(query_string, str):
             query_string = HttpQueryString(query_string)
@@ -37,12 +36,16 @@ class HttpRequest(HttpParsedBodyTrait):
         self.path_parameters: Dict[str, str] = {}
         self.route: Optional[Route] = None  # type: ignore
         self.attributes: Dict[str, Any] = {}
+        self.encoding = encoding
         self._headers = headers if headers else HttpHeaders()
         self._cookies: Optional[HttpCookieJar] = None
-        self._body = body if body else BytesIO(b"")
+        self._body = BytesIO()
         self._parsed_body = None
         self._as_dict = None
         self._as_str = None
+
+        if body:
+            write_body(self._body, body, encoding)
 
     @property
     def body(self) -> BytesIO:
@@ -66,6 +69,10 @@ class HttpRequest(HttpParsedBodyTrait):
             and self.query_string == other.query_string
             and self.body.getbuffer().nbytes == other.body.getbuffer().nbytes
         )
+
+    def __str__(self) -> str:
+        self._body.seek(0)
+        return self._body.read().decode(self.encoding)
 
     @property
     def headers(self) -> HttpHeaders:

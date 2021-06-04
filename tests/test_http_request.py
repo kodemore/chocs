@@ -1,4 +1,6 @@
 import json
+from typing import Union
+
 import pytest
 from io import BytesIO
 
@@ -84,3 +86,19 @@ def test_http_request_as_dict() -> None:
 
     assert request.as_str() == body
     assert request.as_dict() == {"a": 1}
+
+
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        [b"example body", "example body"],
+        [BytesIO(b"example body"), "example body"],
+        ["example body", "example body"],
+        [bytearray("example body", "utf8"), "example body"],
+        [None, ""],
+    ],
+)
+def test_http_request_body_type(data: Union[bytes, bytearray, BytesIO, str, None], expected: str) -> None:
+    request = HttpRequest(HttpMethod.GET, body=data)
+
+    assert str(request) == expected
