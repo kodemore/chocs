@@ -32,6 +32,9 @@ def validate_one_of(value: Any, validators: Iterable[Callable]) -> Any:
         if valid_count > 1:
             raise ValidationError("Value should only match one of validators", code="one_of_error")
 
+    if valid_count == 0:
+        raise ValidationError("Value does not conform any criteria", code="one_of_error")
+
     return value
 
 
