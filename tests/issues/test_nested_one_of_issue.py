@@ -1,7 +1,7 @@
 import pytest
 
 from chocs.json_schema import build_validator_from_schema
-from chocs.json_schema.errors import ValidationError
+from chocs.json_schema.errors import PropertyValueError, ValidationError
 
 
 def test_can_build_validator_for_nested_structures() -> None:
@@ -54,3 +54,6 @@ def test_can_build_validator_for_nested_structures() -> None:
 
     with pytest.raises(ValidationError):
         validate({})
+
+    with pytest.raises(PropertyValueError):
+        validate({"nested": {}})
