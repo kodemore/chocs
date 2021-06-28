@@ -12,6 +12,7 @@ class ValidationError(ValueError):
         self.context = kwargs
         self.code = self.code.format(**self.context)
         if args:
+            self.message = str(args[0])
             super().__init__(*args)
         else:
             super().__init__(str(self))

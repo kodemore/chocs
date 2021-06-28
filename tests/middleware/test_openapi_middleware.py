@@ -5,7 +5,7 @@ import pytest
 from os import path
 
 from chocs import Application, HttpMethod, HttpRequest, HttpResponse
-from chocs.json_schema.errors import PropertyValueError, RequiredPropertyError
+from chocs.json_schema.errors import PropertyValueError, RequiredPropertyError, TypeValidationError
 from chocs.middleware import OpenApiMiddleware
 from chocs.middleware.open_api_middleware import QueryValidationError, PathValidationError, HeadersValidationError, CookiesValidationError
 
@@ -187,7 +187,7 @@ def test_fail_request_with_headers() -> None:
         app(HttpRequest(HttpMethod.GET, "/test-headers"))
 
     # then
-    assert error.value.error.message == RequiredPropertyError.message
+    assert error.value.error.message == TypeValidationError.message
 
 
 def _mockup_app() -> Application:

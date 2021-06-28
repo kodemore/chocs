@@ -57,6 +57,9 @@ def validate_array(value: list) -> list:
 def validate_object(value: dict) -> dict:
     if not isinstance(value, dict):
         raise TypeValidationError(expected_type="object", actual_type=type(value))
+    if not value:  # fails empty dicts
+        raise TypeValidationError(expected_type="object", actual_type="empty")
+
     return value
 
 
