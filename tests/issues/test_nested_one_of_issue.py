@@ -51,3 +51,6 @@ def test_can_build_validator_for_nested_structures() -> None:
                 "email": 12,
             }
         })
+
+    with pytest.raises(ValidationError):
+        validate({})
