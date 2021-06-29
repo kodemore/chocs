@@ -1,8 +1,3 @@
-import json
-from os import path
-
-from chocs import Application, HttpMethod, HttpRequest, HttpResponse, HttpStatus
-from chocs.middleware import OpenApiMiddleware
 from chocs.json_schema import build_validator_from_schema
 
 
@@ -19,6 +14,9 @@ def test_validate_all_of_for_one_string() -> None:
                     },
                     "name": {
                       "type": "string",
+                    },
+                    "id": {
+                        "type": "number",
                     }
                 }
             },

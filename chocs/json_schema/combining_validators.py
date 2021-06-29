@@ -1,4 +1,5 @@
 from typing import Any, Callable, Iterable
+from copy import deepcopy
 
 from .errors import ValidationError
 
@@ -12,8 +13,7 @@ def validate_all_of(value: Any, validators: Iterable[Callable]) -> Any:
 def validate_any_of(value: Any, validators: Iterable[Callable]) -> Any:
     for validate in validators:
         try:
-            validate(value)
-            return value
+            return validate(deepcopy(value))
         except ValueError:
             continue
 
@@ -22,9 +22,11 @@ def validate_any_of(value: Any, validators: Iterable[Callable]) -> Any:
 
 def validate_one_of(value: Any, validators: Iterable[Callable]) -> Any:
     valid_count = 0
+    result: Any = None
+
     for validate in validators:
         try:
-            validate(value)
+            result = validate(deepcopy(value))
             valid_count += 1
         except ValueError:
             continue
@@ -35,7 +37,7 @@ def validate_one_of(value: Any, validators: Iterable[Callable]) -> Any:
     if valid_count == 0:
         raise ValidationError("Value does not conform any criteria", code="one_of_error")
 
-    return value
+    return result
 
 
 def validate_not(value: Any, validator: Callable) -> Any:

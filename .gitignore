@@ -8,4 +8,4 @@ __pycache__
 /examples/serverless/.serverless
 /.DS_Store
 /.python-version
-/tests/fixtures/generated_dtos.py
+./tests/fixtures/generated_dtos.py
