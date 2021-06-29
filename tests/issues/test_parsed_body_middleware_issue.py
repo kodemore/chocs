@@ -23,9 +23,17 @@ def _mockup_pet_endpoint(app: Application) -> None:
 
 def test_parsed_body_issue_when_not_composite_message() -> None:
     openapi_file = path.realpath(path.dirname(__file__) + "/../fixtures/openapi.yml")
-    app = Application(OpenApiMiddleware(openapi_file), ParsedBodyMiddleware(strict=True))
+    app = Application(
+        OpenApiMiddleware(openapi_file), ParsedBodyMiddleware(strict=True)
+    )
     _mockup_pet_endpoint(app)
-    valid_body = json.dumps({"name": "Bobek", "tag": "test", "id": 1,})
+    valid_body = json.dumps(
+        {
+            "name": "Bobek",
+            "tag": "test",
+            "id": 1,
+        }
+    )
     response = app(
         HttpRequest(
             HttpMethod.POST,
@@ -35,4 +43,3 @@ def test_parsed_body_issue_when_not_composite_message() -> None:
         )
     )
     assert str(response) == "Bobek"
-

@@ -4,13 +4,16 @@ from chocs.dataclasses import init_dataclass
 
 T = TypeVar("T")
 
+
 @dataclass
 class Pet:
     name: str
 
+
 @dataclass
 class Animal:
     name: str
+
 
 @dataclass
 class CustomList(Generic[T]):
@@ -18,11 +21,13 @@ class CustomList(Generic[T]):
 
 
 pet_list = init_dataclass(
-    {"list": [
-        {"name": "Boo"},
-        {"name": "Bobek"},
-    ]},
-    CustomList[Pet]
+    {
+        "list": [
+            {"name": "Boo"},
+            {"name": "Bobek"},
+        ]
+    },
+    CustomList[Pet],
 )
 
 assert isinstance(pet_list, CustomList)
@@ -31,11 +36,13 @@ for pet in pet_list.list:
 
 
 animal_list = init_dataclass(
-    {"list": [
-        {"name": "Boo"},
-        {"name": "Bobek"},
-    ]},
-    CustomList[Animal]
+    {
+        "list": [
+            {"name": "Boo"},
+            {"name": "Bobek"},
+        ]
+    },
+    CustomList[Animal],
 )
 
 assert isinstance(pet_list, CustomList)

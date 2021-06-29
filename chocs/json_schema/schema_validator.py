@@ -8,7 +8,12 @@ from .array_validators import (
     validate_tuple,
     validate_unique_items,
 )
-from .combining_validators import validate_all_of, validate_any_of, validate_not, validate_one_of
+from .combining_validators import (
+    validate_all_of,
+    validate_any_of,
+    validate_not,
+    validate_one_of,
+)
 from .number_validators import (
     validate_exclusive_maximum,
     validate_exclusive_minimum,
@@ -51,8 +56,7 @@ def build_validator_from_schema(schema: Dict[str, Any]) -> Callable:
         return partial(validate_one_of, validators=validators)
 
     if "allOf" in schema:
-        validators = [build_validator_from_schema(item) for item in schema["allOf"]]
-        return partial(validate_all_of, validators=validators)
+        return _build_all_of_validator(schema["allOf"])
 
     if "not" in schema:
         return partial(validate_not, validator=build_validator_from_schema(schema["not"]))
@@ -64,6 +68,52 @@ def build_validator_from_schema(schema: Dict[str, Any]) -> Callable:
         return _build_enum_validator(schema)
 
     raise ValueError("Could not build validator for passed schema")
+
+
+def _build_all_of_validator(items: List) -> Callable:
+    """
+    String formatters are casting string values to specific type which corresponds
+    to given format. There are scenarios with allOf validator where one property might
+    be partially validated and can be cast to certain type which will automatically
+    cause to fail the next validator as the value is not longer a string.
+    Combining object validators into one fixes this issue.
+    """
+    combined_object_validator: Dict[str, Any] = {}
+    schemas = []
+    for item in items:
+        if "type" not in item or item["type"] != "object":
+            schemas.append(item)
+            continue
+
+        combined_object_validator["type"] = "object"
+
+        if "properties" in item:
+            if "properties" not in combined_object_validator:
+                combined_object_validator["properties"] = {}
+            combined_object_validator["properties"].update(item["properties"])
+        if "maxProperties" in item:
+            combined_object_validator["maxProperties"] = item["maxProperties"]
+        if "minProperties" in item:
+            combined_object_validator["minProperties"] = item["minProperties"]
+        if "required" in item:
+            if "required" not in combined_object_validator:
+                combined_object_validator["required"] = []
+            combined_object_validator["required"] += item["required"]
+        if "patternProperties" in item:
+            if "patternProperties" not in combined_object_validator:
+                combined_object_validator["patternProperties"] = {}
+            combined_object_validator["patternProperties"].update(item["patternProperties"])
+        if "additionalProperties" in item:
+            combined_object_validator["additionalProperties"] = item["additionalProperties"]
+        if "propertyNames" in item:
+            combined_object_validator["propertyNames"] = item["propertyNames"]
+
+    if combined_object_validator:
+        schemas.append(combined_object_validator)
+
+    validators = [build_validator_from_schema(item) for item in schemas]
+
+    return partial(validate_all_of, validators=validators)
 
 
 def _build_validator_for_type(schema_type: str, definition: Dict[str, Any]) -> Callable:

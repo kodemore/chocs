@@ -1,15 +1,15 @@
 import re
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
 from .errors import (
     AdditionalPropertyError,
     MaximumPropertyError,
     MinimumPropertyError,
+    MissingDependencyError,
     PropertyNameError,
     PropertyValueError,
     RequiredPropertyError,
     ValidationError,
-    MissingDependencyError,
 )
 
 
@@ -30,11 +30,11 @@ def validate_object_properties(
                     sub_code=error.code,
                     property_name=key + "." + error.context["property_name"],
                     validation_error=error.context["validation_error"],
-                )
+                ) from error
             except ValidationError as error:
-                raise PropertyValueError(property_name=key, validation_error=str(error), sub_code=error.code)
+                raise PropertyValueError(property_name=key, validation_error=str(error), sub_code=error.code) from error
             except ValueError as error:
-                raise PropertyValueError(property_name=key, validation_error=str(error))
+                raise PropertyValueError(property_name=key, validation_error=str(error)) from error
 
         if not additional_properties and not pattern_properties:
             raise AdditionalPropertyError(property_name=key)
@@ -65,15 +65,15 @@ def validate_object_properties(
             raise PropertyValueError(
                 property_name=key + "." + error.context["property_name"],
                 validation_error=error.context["validation_error"],
-            )
+            ) from error
         except ValidationError as error:
             raise PropertyValueError(
                 property_name=key,
                 validation_error=str(error),
                 sub_code=error.code,
-            )
+            ) from error
         except ValueError as error:
-            raise PropertyValueError(property_name=key, validation_error=str(error))
+            raise PropertyValueError(property_name=key, validation_error=str(error)) from error
 
     return obj
 
@@ -83,9 +83,9 @@ def validate_object_property_names(obj: dict, property_names: Callable) -> dict:
         try:
             property_names(name)
         except ValidationError as error:
-            raise PropertyNameError(sub_code=error.code, property_name=name, validation_error=str(error))
+            raise PropertyNameError(sub_code=error.code, property_name=name, validation_error=str(error)) from error
         except ValueError as error:
-            raise PropertyNameError(sub_code="error", property_name=name, validation_error=str(error))
+            raise PropertyNameError(sub_code="error", property_name=name, validation_error=str(error)) from error
 
     return obj
 

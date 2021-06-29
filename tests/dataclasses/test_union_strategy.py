@@ -20,6 +20,7 @@ def test_union_strategy_for_dataclasses() -> None:
     class Pet:
         id: str
         name: str
+
     @dataclass()
     class Tag:
         tag: str

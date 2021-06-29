@@ -31,5 +31,10 @@ class GenerateDtoCommand(Command):
 
         self.info(f"Generating dto classes from `{openapi_path}`...")
 
-        dto_generator = DtoGenerator(openapi_path, module_path, snake_case, str(class_suffix) if class_suffix else "")
+        dto_generator = DtoGenerator(
+            openapi_path,
+            module_path,
+            snake_case,
+            str(class_suffix) if class_suffix else "",
+        )
         dto_generator.generate(lambda msg: self.info(msg), lambda msg: self.line_error(msg))

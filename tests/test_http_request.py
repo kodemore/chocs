@@ -98,7 +98,9 @@ def test_http_request_as_dict() -> None:
         [None, ""],
     ],
 )
-def test_http_request_body_type(data: Union[bytes, bytearray, BytesIO, str, None], expected: str) -> None:
+def test_http_request_body_type(
+    data: Union[bytes, bytearray, BytesIO, str, None], expected: str
+) -> None:
     request = HttpRequest(HttpMethod.GET, body=data)
 
     assert str(request) == expected

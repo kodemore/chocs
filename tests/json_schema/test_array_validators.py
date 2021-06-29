@@ -1,6 +1,10 @@
 import pytest
 
-from chocs.json_schema.errors import MaximumLengthError, MinimumLengthError, UniqueItemsValidationError
+from chocs.json_schema.errors import (
+    MaximumLengthError,
+    MinimumLengthError,
+    UniqueItemsValidationError,
+)
 from chocs.json_schema.validators import (
     validate_integer,
     validate_items,

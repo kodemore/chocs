@@ -90,7 +90,9 @@ class _OpenApiValidatorGroup:
         if getattr(self, attribute_validator_name) is _UNDEFINED:
             if getattr(self, attribute_schema_name) is not _UNDEFINED:
                 setattr(
-                    self, attribute_validator_name, build_validator_from_schema(getattr(self, attribute_schema_name))
+                    self,
+                    attribute_validator_name,
+                    build_validator_from_schema(getattr(self, attribute_schema_name)),
                 )
             else:
                 setattr(self, attribute_validator_name, lambda x: x)
@@ -228,7 +230,9 @@ class OpenApiMiddleware(Middleware):
 
         if validator_cache_key not in self._validators:
             self._validators[validator_cache_key] = self._generate_validator_group_for(
-                route.route, request.method, str(request.headers.get("content-type", "application/json"))
+                route.route,
+                request.method,
+                str(request.headers.get("content-type", "application/json")),
             )
 
         self._validators[validator_cache_key].validate(request)
@@ -241,7 +245,11 @@ class OpenApiMiddleware(Middleware):
         method_name = str(method).lower()
 
         validator_group = _OpenApiValidatorGroup(
-            self.validate_body, self.validate_headers, self.validate_query, self.validate_path, self.validate_cookies
+            self.validate_body,
+            self.validate_headers,
+            self.validate_query,
+            self.validate_path,
+            self.validate_cookies,
         )
 
         try:
