@@ -20,7 +20,13 @@ def to_snake_case(text: str) -> str:
 
 
 class DtoGenerator:
-    def __init__(self, openapi_path: str, out: str, snake_case: bool = False, class_suffix: str = ""):
+    def __init__(
+        self,
+        openapi_path: str,
+        out: str,
+        snake_case: bool = False,
+        class_suffix: str = "",
+    ):
         openapi_path = path.realpath(openapi_path)
         self.openapi_schema = OpenApiSchema(openapi_path)
         self.openapi_path = openapi_path

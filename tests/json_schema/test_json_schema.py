@@ -1,7 +1,12 @@
 import pytest
 from os import path
 
-from chocs.json_schema import JsonReference, OpenApiSchema, URILoader, build_validator_from_schema
+from chocs.json_schema import (
+    JsonReference,
+    OpenApiSchema,
+    URILoader,
+    build_validator_from_schema,
+)
 
 
 def test_can_read_open_api_schema() -> None:

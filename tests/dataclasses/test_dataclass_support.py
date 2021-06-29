@@ -75,7 +75,10 @@ def test_can_extract_nested_dataclasses() -> None:
     assert data == {
         "name": "Bobek",
         "age": 4,
-        "tags": [{"name": "Cat"}, {"name": "Brown"},],
+        "tags": [
+            {"name": "Cat"},
+            {"name": "Brown"},
+        ],
     }
 
 
@@ -129,7 +132,18 @@ def test_can_make_nested_dataclasses_from_generic_parent() -> None:
 
     # when
     example = init_dataclass(
-        {"name": "Example One", "items": [{"id": 1,}, {"id": 2,},]}, Child[Item]
+        {
+            "name": "Example One",
+            "items": [
+                {
+                    "id": 1,
+                },
+                {
+                    "id": 2,
+                },
+            ],
+        },
+        Child[Item],
     )
 
     # then
@@ -155,10 +169,7 @@ def test_init_dataclass_supports_init_false_fields() -> None:
             self.total = len(self.items)
 
     # when
-    collection = init_dataclass(
-        {"items": [1, 2, 3]},
-        Collection
-    )
+    collection = init_dataclass({"items": [1, 2, 3]}, Collection)
     extracted_data = asdict(collection)
 
     # then

@@ -211,7 +211,11 @@ def test_can_build_validator_for_array() -> None:
             "items": [
                 {"type": "string", "format": "email"},
                 {"type": "string", "minLength": 2},
-                {"type": "integer", "minimum": 0, "maximum": 150,},
+                {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 150,
+                },
             ],
         }
     )
@@ -227,7 +231,11 @@ def test_can_build_validator_for_array() -> None:
             "items": [
                 {"type": "string", "format": "email"},
                 {"type": "string", "minLength": 2},
-                {"type": "integer", "minimum": 0, "maximum": 150,},
+                {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 150,
+                },
             ],
         }
     )
@@ -368,13 +376,23 @@ def test_can_build_validator_for_object() -> None:
         validate({"email": "bob@email.com"})
 
     # validate minimum properties
-    validate = build_validator_from_schema({"type": "object", "minProperties": 2,})
+    validate = build_validator_from_schema(
+        {
+            "type": "object",
+            "minProperties": 2,
+        }
+    )
     validate({"a": 1, "b": 2})
     with pytest.raises(PropertyError):
         validate({"a": 1})
 
     # validate maximum properties
-    validate = build_validator_from_schema({"type": "object", "maxProperties": 2,})
+    validate = build_validator_from_schema(
+        {
+            "type": "object",
+            "maxProperties": 2,
+        }
+    )
     validate({"a": 1, "b": 2})
     with pytest.raises(PropertyError):
         validate({"a": 1, "b": 2, "c": 3})
@@ -386,24 +404,20 @@ def test_validate_object_pattern_properties() -> None:
         "patternProperties": {
             "^x-": {"type": "string"},
             "^y-": {"type": "integer"},
-        }
+        },
     }
 
     validate = build_validator_from_schema(schema)
-    assert validate({
-        "x-a": "a",
-        "x-b": "b",
-        "y-1": 1,
-        "y-2": 2,
-        "a": True
-    })
+    assert validate({"x-a": "a", "x-b": "b", "y-1": 1, "y-2": 2, "a": True})
 
     assert validate({"a": "valid"})
 
     with pytest.raises(TypeValidationError) as e:
-        validate({
-            "x-a": 1,
-        })
+        validate(
+            {
+                "x-a": 1,
+            }
+        )
 
     assert e.value.args[0] == (
         "Passed value must be valid <class 'str'> type. "
@@ -422,26 +436,31 @@ def test_validate_object_pattern_properties_without_additional_parameters() -> N
     }
 
     validate = build_validator_from_schema(schema)
-    validate({
-        "x-a": "a",
-        "x-b": "b",
-        "y-1": 1,
-        "y-2": 2,
-    })
-
-    with pytest.raises(ValueError) as e:
-        validate({
-            "a": 1,
-        })
-    assert e.value.args[0] == (
-        "Object does not expect additional properties. "
-        "Property `a` is not allowed."
+    validate(
+        {
+            "x-a": "a",
+            "x-b": "b",
+            "y-1": 1,
+            "y-2": 2,
+        }
     )
 
     with pytest.raises(ValueError) as e:
-        validate({
-            "x-a": 1,
-        })
+        validate(
+            {
+                "a": 1,
+            }
+        )
+    assert e.value.args[0] == (
+        "Object does not expect additional properties. " "Property `a` is not allowed."
+    )
+
+    with pytest.raises(ValueError) as e:
+        validate(
+            {
+                "x-a": 1,
+            }
+        )
 
     assert e.value.args[0] == (
         "Passed value must be valid <class 'str'> type. "
@@ -452,49 +471,39 @@ def test_validate_object_pattern_properties_without_additional_parameters() -> N
 def test_validate_property_dependencies() -> None:
     schema = {
         "type": "object",
-
         "properties": {
             "name": {"type": "string"},
             "credit_card": {"type": "number"},
-            "billing_address": {"type": "string"}
+            "billing_address": {"type": "string"},
         },
-
         "required": ["name"],
-
         "dependencies": {
             "credit_card": ["billing_address"],
-            "billing_address": ["credit_card"]
-        }
+            "billing_address": ["credit_card"],
+        },
     }
     validate = build_validator_from_schema(schema)
 
-    assert validate({
-        "name": "John Doe"
-    })
+    assert validate({"name": "John Doe"})
 
-    assert validate({
-        "name": "John Doe",
-        "credit_card": 5555555555555555,
-        "billing_address": "555 Debtor's Lane"
-    })
+    assert validate(
+        {
+            "name": "John Doe",
+            "credit_card": 5555555555555555,
+            "billing_address": "555 Debtor's Lane",
+        }
+    )
 
     with pytest.raises(MissingDependencyError) as e:
-        validate({
-            "name": "John Doe",
-            "credit_card": 5555555555555555
-        })
+        validate({"name": "John Doe", "credit_card": 5555555555555555})
 
     assert e.value.args[0] == (
         "Property `credit_card` requires ['billing_address'] to be provided."
     )
 
     with pytest.raises(MissingDependencyError) as e:
-        validate({
-            "name": "John Doe",
-            "billing_address": "555 Debtor's Lane"
-        })
+        validate({"name": "John Doe", "billing_address": "555 Debtor's Lane"})
 
     assert e.value.args[0] == (
         "Property `billing_address` requires ['credit_card'] to be provided."
     )
-

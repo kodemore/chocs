@@ -8,7 +8,12 @@ from .array_validators import (
     validate_tuple,
     validate_unique_items,
 )
-from .combining_validators import validate_all_of, validate_any_of, validate_not, validate_one_of
+from .combining_validators import (
+    validate_all_of,
+    validate_any_of,
+    validate_not,
+    validate_one_of,
+)
 from .number_validators import (
     validate_exclusive_maximum,
     validate_exclusive_minimum,
@@ -73,7 +78,7 @@ def _build_all_of_validator(items: List) -> Callable:
     cause to fail the next validator as the value is not longer a string.
     Combining object validators into one fixes this issue.
     """
-    combined_object_validator = {}
+    combined_object_validator: Dict[str, Any] = {}
     schemas = []
     for item in items:
         if "type" not in item or item["type"] != "object":

@@ -20,7 +20,13 @@ from chocs.json_schema.validators import (
 
 
 @pytest.mark.parametrize(
-    "value, expected_minimum", [[1, 1], [2, 1], [1.1, 1], [1.1, 1.1],]
+    "value, expected_minimum",
+    [
+        [1, 1],
+        [2, 1],
+        [1.1, 1],
+        [1.1, 1.1],
+    ],
 )
 def test_pass_validate_minimum(value: int, expected_minimum: int) -> None:
     assert validate_minimum(value, expected_minimum)
@@ -33,14 +39,26 @@ def test_fail_validate_minimum(value: int, expected_minimum: int) -> None:
 
 
 @pytest.mark.parametrize(
-    "value, expected_maximum", [[1, 1], [1, 2], [1.1, 1.1], [1, 2.1],]
+    "value, expected_maximum",
+    [
+        [1, 1],
+        [1, 2],
+        [1.1, 1.1],
+        [1, 2.1],
+    ],
 )
 def test_pass_validate_maximum(value: int, expected_maximum: int) -> None:
     assert validate_maximum(value, expected_maximum)
 
 
 @pytest.mark.parametrize(
-    "value, expected_maximum", [[2, 1], [2.1, 2], [1.2, 1.1], [1, 0.9],]
+    "value, expected_maximum",
+    [
+        [2, 1],
+        [2.1, 2],
+        [1.2, 1.1],
+        [1, 0.9],
+    ],
 )
 def test_fail_validate_maximum(value: int, expected_maximum: int) -> None:
     with pytest.raises(MaximumRangeError):
@@ -48,27 +66,52 @@ def test_fail_validate_maximum(value: int, expected_maximum: int) -> None:
 
 
 @pytest.mark.parametrize(
-    "value, expected_maximum", [[1, 2], [1.1, 1.2], [1, 2.1], [1.1, 2.1],]
+    "value, expected_maximum",
+    [
+        [1, 2],
+        [1.1, 1.2],
+        [1, 2.1],
+        [1.1, 2.1],
+    ],
 )
 def test_pass_validate_exclusive_maximum(value: int, expected_maximum: int) -> None:
     assert validate_exclusive_maximum(value, expected_maximum)
 
 
 @pytest.mark.parametrize(
-    "value, expected_maximum", [[1, 1], [1.1, 1.1], [1.1, 1], [1, 0.9],]
+    "value, expected_maximum",
+    [
+        [1, 1],
+        [1.1, 1.1],
+        [1.1, 1],
+        [1, 0.9],
+    ],
 )
 def test_fail_validate_exclusive_maximum(value: int, expected_maximum: int) -> None:
     with pytest.raises(MaximumExclusiveRangeError):
         validate_exclusive_maximum(value, expected_maximum)
 
 
-@pytest.mark.parametrize("value, expected_minimum", [[2, 1], [1.2, 1.1], [2, 1.9],])
+@pytest.mark.parametrize(
+    "value, expected_minimum",
+    [
+        [2, 1],
+        [1.2, 1.1],
+        [2, 1.9],
+    ],
+)
 def test_pass_validate_exclusive_minimum(value: int, expected_minimum: int) -> None:
     assert validate_exclusive_minimum(value, expected_minimum)
 
 
 @pytest.mark.parametrize(
-    "value, expected_minimum", [[1, 1], [1.1, 1.2], [1, 1.1], [1.9, 2],]
+    "value, expected_minimum",
+    [
+        [1, 1],
+        [1.1, 1.2],
+        [1, 1.1],
+        [1.9, 2],
+    ],
 )
 def test_fail_validate_exclusive_minimum(value: int, expected_minimum: int) -> None:
     with pytest.raises(MinimumExclusiveRangeError):

@@ -1,6 +1,11 @@
 from typing import Callable, List, Set, Union
 
-from .errors import AdditionalItemsError, MaximumLengthError, MinimumLengthError, UniqueItemsValidationError
+from .errors import (
+    AdditionalItemsError,
+    MaximumLengthError,
+    MinimumLengthError,
+    UniqueItemsValidationError,
+)
 from .type_validators import validate_array
 
 

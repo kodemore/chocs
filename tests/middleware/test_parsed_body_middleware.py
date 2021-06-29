@@ -39,7 +39,13 @@ def test_hydrate_parsed_body_with_strict_mode() -> None:
             )
         )
 
-    valid_body = json.dumps({"name": "Bobek", "tag": "test", "id": 1,})
+    valid_body = json.dumps(
+        {
+            "name": "Bobek",
+            "tag": "test",
+            "id": 1,
+        }
+    )
     response = app(
         HttpRequest(
             HttpMethod.POST,
@@ -69,7 +75,13 @@ def test_hydrate_parsed_body_without_strict_mode() -> None:
     )
     assert str(respone) == "Bobek"
 
-    valid_body = json.dumps({"name": "Bobek", "tag": "test", "id": 1,})
+    valid_body = json.dumps(
+        {
+            "name": "Bobek",
+            "tag": "test",
+            "id": 1,
+        }
+    )
     response = app(
         HttpRequest(
             HttpMethod.POST,

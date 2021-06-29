@@ -6,18 +6,22 @@ from chocs.dataclasses import get_strategy_for
 T = TypeVar("T")
 U = TypeVar("U")
 
+
 @dataclass
 class Pet:
     name: str
+
 
 @dataclass
 class MyList(Generic[T]):
     count: int
     pets: List[T]
 
+
 @dataclass
 class Tag:
     name: str
+
 
 @dataclass
 class TwoParameters(Generic[T, U]):
@@ -79,10 +83,7 @@ def test_extract_generic_dataclass() -> None:
     # given
     strategy = get_strategy_for(MyList[Pet])
 
-    data = MyList[Pet](count=2, pets=[
-        Pet("Bobek"),
-        Pet("Boo")
-    ])
+    data = MyList[Pet](count=2, pets=[Pet("Bobek"), Pet("Boo")])
 
     # when
     extracted_data = strategy.extract(data)

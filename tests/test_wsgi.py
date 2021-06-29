@@ -33,7 +33,7 @@ def test_handling_cookies_by_wsgi_handler() -> None:
     def _http_start(status_code, headers):
         assert headers == [
             ("content-type", "text/plain"),
-            ("set-cookie", "test=SuperCookie")
+            ("set-cookie", "test=SuperCookie"),
         ]
         assert status_code == "200"
 

@@ -1,8 +1,16 @@
 import re
 from typing import Callable, Dict, List, Optional, Union
 
-from .errors import (AdditionalPropertyError, MaximumPropertyError, MinimumPropertyError, MissingDependencyError,
-                     PropertyNameError, PropertyValueError, RequiredPropertyError, ValidationError)
+from .errors import (
+    AdditionalPropertyError,
+    MaximumPropertyError,
+    MinimumPropertyError,
+    MissingDependencyError,
+    PropertyNameError,
+    PropertyValueError,
+    RequiredPropertyError,
+    ValidationError,
+)
 
 
 def validate_object_properties(

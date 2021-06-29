@@ -13,4 +13,4 @@ class Pet:
 boo = init_dataclass({"name": "Boo"}, Pet)
 
 assert isinstance(boo, Pet)
-assert boo.tags == ['pet']
+assert boo.tags == ["pet"]

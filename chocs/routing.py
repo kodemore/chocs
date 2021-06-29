@@ -11,7 +11,14 @@ _VAR_REGEX = "[^/]+"
 
 
 class Route:
-    __slots__ = ["route", "attributes", "_parameters_names", "_pattern", "_parameters", "is_wildcard"]
+    __slots__ = [
+        "route",
+        "attributes",
+        "_parameters_names",
+        "_pattern",
+        "_parameters",
+        "is_wildcard",
+    ]
 
     def __init__(self, route: str, attributes: Optional[Dict] = None):
         self.route = route

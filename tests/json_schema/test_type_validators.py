@@ -13,7 +13,13 @@ from chocs.json_schema.validators import (
 )
 
 
-@pytest.mark.parametrize("value", [[], [1, 2, 3],])
+@pytest.mark.parametrize(
+    "value",
+    [
+        [],
+        [1, 2, 3],
+    ],
+)
 def test_pass_validate_array(value: Any) -> None:
     assert validate_array(value) == value
 
@@ -28,12 +34,26 @@ def test_fail_validate_array(value: Any) -> None:
     )
 
 
-@pytest.mark.parametrize("value", [True, False,])
+@pytest.mark.parametrize(
+    "value",
+    [
+        True,
+        False,
+    ],
+)
 def test_pass_validate_boolean(value: Any) -> None:
     assert validate_boolean(value) == value
 
 
-@pytest.mark.parametrize("value", [1, "True", "False", 0,])
+@pytest.mark.parametrize(
+    "value",
+    [
+        1,
+        "True",
+        "False",
+        0,
+    ],
+)
 def test_fail_validate_boolean(value: Any) -> None:
     with pytest.raises(TypeValidationError) as e:
         validate_boolean(value)
@@ -57,12 +77,28 @@ def test_fail_validate_enum(value: Any, expected_values: list) -> None:
         validate_enum(value, expected_values)
 
 
-@pytest.mark.parametrize("value", [1, 123, 12453,])
+@pytest.mark.parametrize(
+    "value",
+    [
+        1,
+        123,
+        12453,
+    ],
+)
 def test_pass_validate_integer(value: Any) -> None:
     assert validate_integer(value) == value
 
 
-@pytest.mark.parametrize("value", [True, False, "True", "False", 1.2,])
+@pytest.mark.parametrize(
+    "value",
+    [
+        True,
+        False,
+        "True",
+        "False",
+        1.2,
+    ],
+)
 def test_fail_validate_integer(value: Any) -> None:
     with pytest.raises(TypeValidationError) as e:
         validate_integer(value)
@@ -87,14 +123,26 @@ def test_pass_validate_nullable(value: Any, validator: Callable) -> None:
 
 @pytest.mark.parametrize(
     "value, validator",
-    [["a", validate_integer], [False, validate_integer], [1, validate_string],],
+    [
+        ["a", validate_integer],
+        [False, validate_integer],
+        [1, validate_string],
+    ],
 )
 def test_fail_validate_nullable(value: Any, validator: Callable) -> None:
     with pytest.raises(TypeValidationError) as e:
         validate_nullable(value, validator)
 
 
-@pytest.mark.parametrize("value", [1, 123.124, 12453.2, 0,])
+@pytest.mark.parametrize(
+    "value",
+    [
+        1,
+        123.124,
+        12453.2,
+        0,
+    ],
+)
 def test_pass_validate_number(value: Any) -> None:
     assert validate_number(value) == value
 
