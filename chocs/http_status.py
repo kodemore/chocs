@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union
 
 
 class HttpStatus(Enum):
@@ -67,6 +68,36 @@ class HttpStatus(Enum):
 
     def __int__(self) -> int:
         return self.value[0]
+
+    def __lt__(self, other: Union[int, "HttpStatus"]) -> bool:
+        if isinstance(other, int):
+            return self.value[0] < other
+
+        return self.value[0] < other.value[0]
+
+    def __le__(self, other: Union[int, "HttpStatus"]) -> bool:
+        if isinstance(other, int):
+            return self.value[0] <= other
+
+        return self.value[0] <= other.value[0]
+
+    def __gt__(self, other: Union[int, "HttpStatus"]) -> bool:
+        if isinstance(other, int):
+            return self.value[0] > other
+
+        return self.value[0] > other.value[0]
+
+    def __ge__(self, other: Union[int, "HttpStatus"]) -> bool:
+        if isinstance(other, int):
+            return self.value[0] >= other
+
+        return self.value[0] >= other.value[0]
+
+    def __eq__(self, other: Union[int, "HttpStatus"]) -> bool:  # type: ignore
+        if isinstance(other, int):
+            return self.value[0] == other
+
+        return self.value[0] == other.value[0]
 
     @classmethod
     def from_int(cls, status: int) -> "HttpStatus":
