@@ -8,7 +8,7 @@ from .http_headers import HttpHeaders
 from .http_method import HttpMethod
 from .http_parsed_body import HttpParsedBodyTrait
 from .http_query_string import HttpQueryString
-from .routing import Route
+from chocs.routing import Route
 
 
 class HttpRequest(HttpParsedBodyTrait):

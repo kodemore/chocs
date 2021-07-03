@@ -14,7 +14,7 @@ from chocs.serverless import AwsServerlessFunction, create_http_request_from_aws
 )
 def test_create_http_request_from_serverless_event(event_file: str) -> None:
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    event_json = json.load(open(os.path.join(dir_path, event_file)))
+    event_json = json.load(open(os.path.join(dir_path, '..', event_file)))
 
     request = create_http_request_from_aws_event(event_json, {})
     assert isinstance(request, HttpRequest)
@@ -35,7 +35,7 @@ def test_create_http_request_from_serverless_event_without_headers() -> None:
     event_json = json.load(
         open(
             os.path.join(
-                dir_path, "fixtures/lambda_rest_api_event_without_headers.json"
+                dir_path, "../fixtures/lambda_rest_api_event_without_headers.json"
             )
         )
     )
@@ -50,7 +50,7 @@ def test_create_http_request_from_serverless_event_multipart_image() -> None:
     event_json = json.load(
         open(
             os.path.join(
-                dir_path, "fixtures/lambda_rest_api_multipart_form_image_upload.json"
+                dir_path, "../fixtures/lambda_rest_api_multipart_form_image_upload.json"
             )
         )
     )
@@ -66,7 +66,7 @@ def test_make_serverless_callback() -> None:
     serverless_callback = AwsServerlessFunction(test_callaback)
     dir_path = os.path.dirname(os.path.realpath(__file__))
     event_json = json.load(
-        open(os.path.join(dir_path, "fixtures/lambda_http_api_event.json"))
+        open(os.path.join(dir_path, "../fixtures/lambda_http_api_event.json"))
     )
 
     response = serverless_callback(event_json, {})
@@ -97,7 +97,7 @@ def test_middleware_for_serverless() -> None:
     )
     dir_path = os.path.dirname(os.path.realpath(__file__))
     event_json = json.load(
-        open(os.path.join(dir_path, "fixtures/lambda_http_api_event.json"))
+        open(os.path.join(dir_path, "../fixtures/lambda_http_api_event.json"))
     )
 
     response = serverless_callback(event_json, {})
@@ -128,7 +128,7 @@ def test_content_types_are_not_base64_encoded(content_type) -> None:
     serverless_callback = AwsServerlessFunction(test_callback)
     dir_path = os.path.dirname(os.path.realpath(__file__))
     event_json = json.load(
-        open(os.path.join(dir_path, "fixtures/lambda_http_api_event.json"))
+        open(os.path.join(dir_path, "../fixtures/lambda_http_api_event.json"))
     )
 
     response = serverless_callback(event_json, {})

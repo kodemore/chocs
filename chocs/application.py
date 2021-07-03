@@ -1,10 +1,10 @@
 import importlib
 from typing import Callable, List, Optional, Union
 
-from .http_error import NotFoundError
-from .http_method import HttpMethod
-from .http_request import HttpRequest
-from .http_response import HttpResponse
+from chocs.http.http_error import NotFoundError
+from chocs.http.http_method import HttpMethod
+from chocs.http.http_request import HttpRequest
+from chocs.http.http_response import HttpResponse
 from .middleware.application_middleware import ApplicationMiddleware
 from .middleware.middleware import Middleware, MiddlewarePipeline
 from .routing import Route, Router

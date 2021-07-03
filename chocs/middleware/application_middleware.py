@@ -1,6 +1,6 @@
-from chocs.http_error import HttpError
-from chocs.http_request import HttpRequest
-from chocs.http_response import HttpResponse
+from chocs.http.http_error import HttpError
+from chocs.http.http_request import HttpRequest
+from chocs.http.http_response import HttpResponse
 from chocs.routing import Router
 from chocs.serverless.serverless import ServerlessFunction
 

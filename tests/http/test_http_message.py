@@ -51,7 +51,7 @@ json_body = {
     "wsgi.input": BytesIO(b'{"test_1":"1","test_2":"Test 2","test_3":"{test 3}"}'),
 }
 
-cat_file = open(DIR_PATH + "/fixtures/grumpy_cat_test.jpg", "rb")
+cat_file = open(DIR_PATH + "/../fixtures/grumpy_cat_test.jpg", "rb")
 
 cat_file_body = {
     "CONTENT_TYPE": "multipart/form-data; boundary=__CAT_BOUNDARY__",
