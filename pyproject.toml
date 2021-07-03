@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chocs"
-version = "1.0.0"
+version = "1.0.0-beta.0"
 description = "Lightweight and powerful wsgi rest framework for rapid building applications based on wsgi servers."
 authors = [
     "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
