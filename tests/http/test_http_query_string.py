@@ -1,6 +1,7 @@
 from pytest import mark, raises
 
-from chocs.http_query_string import HttpQueryString, build_dict_from_path, parse_qs
+from chocs import HttpQueryString
+from chocs.http.http_query_string import build_dict_from_path, parse_qs
 
 
 @mark.parametrize(

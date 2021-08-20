@@ -2,12 +2,12 @@ from io import BytesIO
 from json import dumps as json_dumps
 from typing import Dict, Optional, Union
 
+from chocs.http.http_headers import HttpHeaders
+from chocs.http.http_method import HttpMethod
+from chocs.http.http_query_string import HttpQueryString
+from chocs.http.http_request import HttpRequest
+from chocs.http.http_response import HttpResponse
 from .application import Application
-from .http_headers import HttpHeaders
-from .http_method import HttpMethod
-from .http_query_string import HttpQueryString
-from .http_request import HttpRequest
-from .http_response import HttpResponse
 
 
 class TestClient:

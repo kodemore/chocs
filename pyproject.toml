@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chocs"
-version = "0.19.0"
+version = "1.0.0"
 description = "Lightweight and powerful wsgi rest framework for rapid building applications based on wsgi servers."
 authors = [
     "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
@@ -19,7 +19,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Topic :: Software Development :: Libraries",
@@ -30,10 +29,8 @@ classifiers = [
 
 # Requirements
 [tool.poetry.dependencies]
-python = "^3.7"
-typing_extensions = "^3.7.4"
+python = "^3.8"
 pyyaml = "^5.3.1"
-cleo = "^0.8.1"
 
 
 [tool.poetry.dev-dependencies]
@@ -45,6 +42,3 @@ isort = "^5.6.4"
 mypy = "^0.812"
 bjoern = "^3.1.0"
 pylint = "^2.7.2"
-
-[tool.poetry.scripts]
-chocs = "chocs.console.application:main"

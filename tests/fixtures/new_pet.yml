@@ -1,9 +1,0 @@
-NewPet:
-  type: object
-  required:
-    - name
-  properties:
-    name:
-      type: string
-    base_tag:
-      type: string

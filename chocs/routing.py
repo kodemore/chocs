@@ -1,10 +1,10 @@
 import re
 from copy import copy
 from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Union
-from .http_query_string import parse_qs_value
 
-from .http_error import NotFoundError
-from .http_method import HttpMethod
+from chocs.http.http_error import NotFoundError
+from chocs.http.http_method import HttpMethod
+from chocs.http.http_query_string import parse_qs_value
 
 _ROUTE_REGEX = r"\\\{\s*(?P<var>[a-z_][a-z0-9_-]*)\s*\\\}"
 _VAR_REGEX = "[^/]+"

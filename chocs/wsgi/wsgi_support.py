@@ -3,12 +3,12 @@ from io import BytesIO
 from typing import Any, Callable, Dict
 
 from chocs.application import Application
-from chocs.http_error import HttpError
-from chocs.http_headers import HttpHeaders
-from chocs.http_method import HttpMethod
-from chocs.http_query_string import HttpQueryString
-from chocs.http_request import HttpRequest
-from chocs.http_response import HttpResponse
+from chocs.http.http_error import HttpError
+from chocs.http.http_headers import HttpHeaders
+from chocs.http.http_method import HttpMethod
+from chocs.http.http_query_string import HttpQueryString
+from chocs.http.http_request import HttpRequest
+from chocs.http.http_response import HttpResponse
 
 
 def create_http_request_from_wsgi(environ: Dict[str, Any]) -> HttpRequest:
