@@ -10,7 +10,6 @@ It provides an elegant API for writing fault-proof, extensible microservices.
 ## Features
 
  - AWS Serverless integration
- - Open api integration  
  - Elegant and easy API
  - No additional bloat like built-in template engines, session handlers, etc.
  - Compatible with all WSGI servers
@@ -19,6 +18,7 @@ It provides an elegant API for writing fault-proof, extensible microservices.
  - Graceful error handling
  - HTTP middleware support
  - Fast routing
+ - Middleware packages to simplify daily tasks
 
 ## Installation
 ```
@@ -47,6 +47,19 @@ chocs.serve(http)
 
 > Keep in mind that the `chocs.serve()` function is using the `bjoern` package, so make sure you included it in your project
 > dependencies before using it. You are able to use any WSGI compatible server.
+
+## Available middlewares
+
+### OpenAPI Integration middleware
+
+Allows integrating OpenAPI documentation into your codebase, providing automating request validation based
+on your OpenAPI spec. More details are available in the [chocs-openapi repository](https://github.com/kodemore/chocs-openapi).
+
+### ParsedBody middleware
+
+Parsed body middleware helps to convert json/yaml request payloads into dataclass, this not only makes your
+daily tasks easier but increases readability of your code and contract. More details are available in the [chocs-parsed-body repository](https://github.com/kodemore/chocs-parsed-body).
+
 
 # Documentation
 For usage and detailed documentation please visit our [wiki page](https://github.com/kodemore/chocs/wiki)
