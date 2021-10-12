@@ -82,7 +82,7 @@ class InExpression(Expression):
         self.values = values
 
     def __str__(self) -> str:
-        return ",".join(self.values)
+        return ",".join([str(value) for value in self.values])
 
 
 def parse_expression(value: Union[list, str, int, float, bool]) -> Expression:
@@ -93,11 +93,11 @@ def parse_expression(value: Union[list, str, int, float, bool]) -> Expression:
         return EqualExpression(value)
 
     # edge cases
-    if value in ("..", ">", "<", "*", ",", "\""):
+    if value in ("..", ">", "<", "*", ",", '"'):
         return EqualExpression(value)
 
     # escaping
-    if value.startswith("\""):
+    if value.startswith('"'):
         return EqualExpression(value[1:-1])
 
     if value.startswith(">"):

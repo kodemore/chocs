@@ -108,7 +108,7 @@ class HttpQueryString(dict):
         self._str = string
         super().__init__(parse_qs(string))
 
-    def __getitem__(self, key) -> str:
+    def __getitem__(self, key) -> Any:
         return self.get(key)
 
     def __repr__(self):

@@ -15,7 +15,6 @@ class SortDirection(Enum):
 def parse_sorting(value: str, allowed_fields: List[str] = None) -> Dict[str, SortDirection]:
     fields = value.split(",")
     result = {}
-    allowed_fields = set(allowed_fields) if allowed_fields else allowed_fields
 
     for field in fields:
         field = field.strip()

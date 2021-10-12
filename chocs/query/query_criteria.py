@@ -85,7 +85,6 @@ class QueryCriteria:
 
 
 def create_criteria_fields(query: Dict[str, Any], allowed_fields: List[str] = None) -> Dict[str, Expression]:
-    allowed_fields = set(allowed_fields) if allowed_fields else None
     result = {}
 
     for field, value in query.items():
