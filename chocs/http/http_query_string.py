@@ -1,4 +1,4 @@
-from typing import Any, Dict, ItemsView, KeysView, ValuesView
+from typing import Any, Dict
 from urllib.parse import unquote_plus
 
 
@@ -103,16 +103,13 @@ def parse_qs_value(value: str) -> Any:
     return value
 
 
-class HttpQueryString:
+class HttpQueryString(dict):
     def __init__(self, string: str):
         self._str = string
-        self._params = parse_qs(string)
+        super().__init__(parse_qs(string))
 
-    def __getitem__(self, key) -> str:
+    def __getitem__(self, key) -> Any:
         return self.get(key)
-
-    def __contains__(self, key) -> bool:
-        return key in self._params
 
     def __repr__(self):
         return self._str
@@ -120,26 +117,11 @@ class HttpQueryString:
     def __str__(self) -> str:
         return self._str
 
-    def get(self, key: str, default: Any = None):
-        return self._params.get(key, default)
-
-    def items(self) -> ItemsView:
-        return self._params.items()
-
-    def values(self) -> ValuesView:
-        return self._params.values()
-
-    def keys(self) -> KeysView:
-        return self._params.keys()
-
     def __eq__(self, other) -> bool:
         if not isinstance(other, HttpQueryString):
             return False
 
         return other._str == self._str
-
-    def __iter__(self):
-        return iter(self._params)
 
 
 __all__ = ["HttpQueryString", "build_dict_from_path", "parse_qs", "parse_qs_value"]
