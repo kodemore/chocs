@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "chocs"
-version = "1.0.1"
+version = "1.1.0"
 description = "Lightweight and powerful WSGI/AWS lambda framework for rapid building rest applications."
 authors = [
     "Dawid Kraczkowski <dawid.kraczkowski@gmail.com>"
