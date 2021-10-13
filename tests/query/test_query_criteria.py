@@ -4,7 +4,7 @@ from chocs.query import QueryCriteria, Expression
 
 def test_can_instantiate() -> None:
     # when
-    query = QueryCriteria(HttpQueryString("limit=10&name=Bob*&age=>10&tags=pet,happy,dupa&sort=-name,+age"))
+    query = QueryCriteria(HttpQueryString("limit=10&name=Bob*&age=>10&tags=one,two,three&sort=-name,+age"))
 
     # then
     assert isinstance(query, QueryCriteria)
