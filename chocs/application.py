@@ -1,5 +1,7 @@
 import importlib
 from typing import Callable, List, Optional, Union
+import glob
+from os import path
 
 from chocs.http.http_error import NotFoundError
 from chocs.http.http_method import HttpMethod
@@ -12,7 +14,7 @@ from .serverless.wrapper import create_serverless_function
 
 
 class Application:
-    def __init__(self, *middleware: Union[Middleware, Callable], open_api_path: str = ""):
+    def __init__(self, *middleware: Union[Middleware, Callable]):
         self.parent: Optional[Application] = None
         self._middleware = MiddlewarePipeline()
         for item in middleware:
@@ -142,6 +144,16 @@ class Application:
         return self._application_middleware(request)
 
     def use(self, module: str) -> None:
+        if "*" in module:
+            module_pattern = module.replace(".", path.sep) + ".py"
+            matches = [item.replace(path.sep, ".")[:-3] for item in glob.glob(module_pattern)]
+            for module in matches:
+                self._load(module)
+            return
+
+        self._load(module)
+
+    def _load(self, module):
         if module in self._loaded_modules:
             return
 
