@@ -1,6 +1,6 @@
 import glob
 import importlib
-from os import path
+from os import path, getcwd
 from typing import Callable, List, Optional, Union
 
 from .errors import ApplicationError
@@ -15,22 +15,22 @@ from .serverless.wrapper import create_serverless_function
 
 
 class _Loader:
-    _mapping = {}
-    _loaded_modules = []
+    _loaded_modules: List[str] = []
 
     @classmethod
     def load(cls, ns: str) -> List[str]:
         # Take the first ns part to understand related system path
         ns_parts = ns.split(".")
         base_module = importlib.import_module(ns_parts[0])
-        base_path = base_module.__path__[0]
+        module_paths = getattr(base_module, "__path__", [getcwd()])
+        base_path = module_paths[0]
 
         # Create glob expression to look up for relevant python files
         glob_path = path.join(base_path, path.sep.join(ns_parts[1:])) + ".py"
         file_list = glob.glob(glob_path)
 
         # Convert file name list back to module list
-        module_list = [ns_parts[0] + file[len(base_path):-3].replace(path.sep, ".") for file in file_list]
+        module_list = [ns_parts[0] + file[len(base_path) : -3].replace(path.sep, ".") for file in file_list]
 
         return [module_name for module_name in module_list if cls._load(module_name)]
 
