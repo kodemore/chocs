@@ -1,18 +1,55 @@
+import glob
 import importlib
+from os import path, getcwd
 from typing import Callable, List, Optional, Union
 
-from chocs.http.http_error import NotFoundError
-from chocs.http.http_method import HttpMethod
-from chocs.http.http_request import HttpRequest
-from chocs.http.http_response import HttpResponse
+from .errors import ApplicationError
+from .http.http_error import NotFoundError
+from .http.http_method import HttpMethod
+from .http.http_request import HttpRequest
+from .http.http_response import HttpResponse
 from .middleware.application_middleware import ApplicationMiddleware
 from .middleware.middleware import Middleware, MiddlewarePipeline
 from .routing import Route, Router
 from .serverless.wrapper import create_serverless_function
 
 
+class _Loader:
+    _loaded_modules: List[str] = []
+
+    @classmethod
+    def load(cls, ns: str) -> List[str]:
+        # Take the first ns part to understand related system path
+        ns_parts = ns.split(".")
+        base_module = importlib.import_module(ns_parts[0])
+        module_paths = getattr(base_module, "__path__", [getcwd()])
+        base_path = module_paths[0]
+
+        # Create glob expression to look up for relevant python files
+        glob_path = path.join(base_path, path.sep.join(ns_parts[1:])) + ".py"
+        file_list = glob.glob(glob_path)
+
+        # Convert file name list back to module list
+        module_list = [ns_parts[0] + file[len(base_path) : -3].replace(path.sep, ".") for file in file_list]
+
+        return [module_name for module_name in module_list if cls._load(module_name)]
+
+    @classmethod
+    def _load(cls, module) -> bool:
+        if module in cls._loaded_modules:
+            return True
+        loaded = True
+        try:
+            importlib.import_module(module)
+        except ModuleNotFoundError:
+            loaded = False
+
+        cls._loaded_modules.append(module)
+        return loaded
+
+
 class Application:
-    def __init__(self, *middleware: Union[Middleware, Callable], open_api_path: str = ""):
+    def __init__(self, *middleware: Union[Middleware, Callable]):
         self.parent: Optional[Application] = None
         self._middleware = MiddlewarePipeline()
         for item in middleware:
@@ -141,12 +178,11 @@ class Application:
 
         return self._application_middleware(request)
 
-    def use(self, module: str) -> None:
-        if module in self._loaded_modules:
-            return
-
-        importlib.import_module(module)
-        self._loaded_modules.append(module)
+    def use(self, namespace: str) -> None:
+        try:
+            self._loaded_modules = self._loaded_modules + _Loader.load(namespace)
+        except ModuleNotFoundError as e:
+            raise ApplicationError.for_invalid_namespace(namespace) from e
 
     @property
     def _application_middleware(self) -> MiddlewarePipeline:
