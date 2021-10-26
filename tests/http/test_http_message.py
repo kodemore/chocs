@@ -129,3 +129,15 @@ def test_simple_http_message() -> None:
     assert http_message == "Hello World!"
     assert http_message.upper() == "HELLO WORLD!"
     assert isinstance(http_message, SimpleHttpMessage)
+
+
+def test_can_convert_uploaded_file_to_bytes() -> None:
+    request = HttpRequest(
+        multipart_body["REQUEST_METHOD"],
+        body=multipart_body["wsgi.input"],
+        headers={"content-type": multipart_body["CONTENT_TYPE"]},
+    )
+    body = request.parsed_body
+    file_bytes = bytes(body["file_a"])
+
+    assert file_bytes == b"GIF87a\x02\x00\x02\x00\x91\x00\x00\x00\x00\x00\xff\x8c\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\t\x00\x00\x03\x00,\x00\x00\x00\x00\x02\x00\x02\x00\x00\x02\x02\x8cS\x00;"

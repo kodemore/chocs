@@ -51,7 +51,6 @@ class UploadedFile:
         return len(self) > 0
 
     def __str__(self) -> str:
-
         if not self._str:
             self._str = self.read().decode()
 
@@ -62,6 +61,10 @@ class UploadedFile:
 
     def __exit__(self, *args: Any) -> None:
         self.close()
+
+    def __bytes__(self) -> bytes:
+        self.seek(0)
+        return self.read()
 
 
 class ParserState(Enum):
