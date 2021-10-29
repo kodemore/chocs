@@ -49,7 +49,7 @@ class HttpRequest(HttpParsedBodyTrait):
 
     @property
     def body(self) -> BytesIO:
-        return copy(self._body)
+        return self._body
 
     @property
     def cookies(self) -> HttpCookieJar:
