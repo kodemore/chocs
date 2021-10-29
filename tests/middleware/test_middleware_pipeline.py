@@ -22,7 +22,7 @@ class ProxingMiddleware(Middleware):
         assert isinstance(next, MiddlewareHandler)
         assert len(next.queue.queue) == 1
         response = next(request)
-        response.write(" Proxed Response")
+        response.write(b"Proxed Response")
         return response
 
 
@@ -68,4 +68,4 @@ def test_successing_pipeline():
     response = pipeline(HttpRequest("get"))
     response.body.seek(0)
     assert int(response.status_code) == 201
-    assert response.body.read() == b"Created Proxed Response"
+    assert response.body.read() == b"Proxed Response"

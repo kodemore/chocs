@@ -14,3 +14,5 @@ def write_body(
         body.write(contents.read())
     else:
         body.write(contents)
+
+    body.seek(0)
