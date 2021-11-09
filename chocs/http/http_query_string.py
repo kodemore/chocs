@@ -90,7 +90,7 @@ def parse_qs_value(value: str) -> Any:
     if value == "false":
         return False
 
-    if value[0] == "0" and value[1] != ".":
+    if len(value) > 1 and value[0] == "0" and value[1] != ".":
         return value
 
     try:

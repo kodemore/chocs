@@ -119,6 +119,6 @@ def test_can_parse_booleans_in_query() -> None:
 
 
 def test_ignores_string_integers_starting_with_0() -> None:
-    result = parse_qs("not_integer=01231&float=0.123&not_float=01.23")
+    result = parse_qs("not_integer=01231&float=0.123&not_float=01.23&zero=0")
 
-    assert result == {"not_integer": "01231", "float": 0.123, "not_float": "01.23"}
+    assert result == {"not_integer": "01231", "float": 0.123, "not_float": "01.23", "zero": 0}
