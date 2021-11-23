@@ -1,7 +1,8 @@
 import pytest
 
-from chocs import Application
+from chocs import Application, HttpRequest, HttpResponse
 from chocs.errors import ApplicationError
+from inspect import signature
 
 
 def test_can_load_dynamically_modules_with_const_ending() -> None:
@@ -41,4 +42,17 @@ def test_will_fails_on_invalid_module_name() -> None:
     with pytest.raises(ApplicationError):
         app.use("invalid.name")
 
+
+def test_if_function_is_properly_wrapped() -> None:
+    # given
+    app = Application()
+
+    @app.get("/pets")
+    def get_pet(req: HttpRequest) -> HttpResponse:
+        return HttpResponse("pet")
+
+    # then
+    assert get_pet.__name__ == "get_pet"
+    func_sig = signature(get_pet)
+    assert list(func_sig.parameters.keys()) == ["req"]
 

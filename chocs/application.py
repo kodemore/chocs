@@ -76,60 +76,33 @@ class Application:
         return Route(base_uri + route, attributes)
 
     def get(self, route: str, **attributes) -> Callable:
-        def _get(handler: Callable) -> Callable:
-            r = self._create_route(route, attributes)
-            self._append_route(HttpMethod.GET, r, handler)
-            return create_serverless_function(handler, r, self._middleware)
-
-        return _get
+        return self._create_method_function(route, HttpMethod.GET, **attributes)
 
     def post(self, route: str, **attributes) -> Callable:
-        def _post(handler: Callable) -> Callable:
-            r = self._create_route(route, attributes)
-            self._append_route(HttpMethod.POST, r, handler)
-            return create_serverless_function(handler, r, self._middleware)
-
-        return _post
+        return self._create_method_function(route, HttpMethod.POST, **attributes)
 
     def put(self, route: str, **attributes) -> Callable:
-        def _put(handler: Callable) -> Callable:
-            r = self._create_route(route, attributes)
-            self._append_route(HttpMethod.PUT, r, handler)
-            return create_serverless_function(handler, r, self._middleware)
-
-        return _put
+        return self._create_method_function(route, HttpMethod.PUT, **attributes)
 
     def patch(self, route: str, **attributes) -> Callable:
-        def _patch(handler: Callable) -> Callable:
-            r = self._create_route(route, attributes)
-            self._append_route(HttpMethod.PATCH, r, handler)
-            return create_serverless_function(handler, r, self._middleware)
-
-        return _patch
+        return self._create_method_function(route, HttpMethod.PATCH, **attributes)
 
     def delete(self, route: str, **attributes) -> Callable:
-        def _delete(handler: Callable) -> Callable:
-            r = self._create_route(route, attributes)
-            self._append_route(HttpMethod.DELETE, r, handler)
-            return create_serverless_function(handler, r, self._middleware)
-
-        return _delete
+        return self._create_method_function(route, HttpMethod.DELETE, **attributes)
 
     def head(self, route: str, **attributes) -> Callable:
-        def _head(handler: Callable) -> Callable:
-            r = self._create_route(route, attributes)
-            self._append_route(HttpMethod.HEAD, r, handler)
-            return create_serverless_function(handler, r, self._middleware)
-
-        return _head
+        return self._create_method_function(route, HttpMethod.HEAD, **attributes)
 
     def options(self, route: str, **attributes) -> Callable:
-        def _options(handler: Callable) -> Callable:
+        return self._create_method_function(route, HttpMethod.OPTIONS, **attributes)
+
+    def _create_method_function(self, route: str, method: HttpMethod, **attributes):
+        def _handler(handler: Callable) -> Callable:
             r = self._create_route(route, attributes)
-            self._append_route(HttpMethod.OPTIONS, r, handler)
+            self._append_route(method, r, handler)
             return create_serverless_function(handler, r, self._middleware)
 
-        return _options
+        return _handler
 
     def any(self, route: str, **attributes) -> Callable:
         def _any(handler: Callable) -> Callable:
@@ -171,7 +144,7 @@ class Application:
             request.attributes["__handler__"] = handler
         except NotFoundError:
 
-            def _handler(req: HttpRequest) -> HttpResponse:
+            def _handler(_: HttpRequest) -> HttpResponse:
                 raise NotFoundError()
 
             request.attributes["__handler__"] = _handler
