@@ -1,3 +1,5 @@
+from copy import copy
+
 import pytest
 from datetime import datetime
 
@@ -80,3 +82,17 @@ def test_fail_to_change_cookie_name():
 )
 def test_serialise_cookie(cookie: HttpCookie, expected: str):
     assert cookie.serialise() == expected
+
+
+def test_can_copy_http_jar() -> None:
+    # given
+    jar = HttpCookieJar()
+    jar.append(HttpCookie("test", "test"))
+
+    # when
+    jar_copy = copy(jar)
+    jar_copy["test"] = "test-2"
+
+    # then
+    assert jar["test"] == "test"
+    assert jar_copy["test"] == "test-2"

@@ -1,5 +1,7 @@
 import glob
 import importlib
+import asyncio
+from copy import copy
 from os import path, getcwd
 from typing import Callable, List, Optional, Union
 
@@ -8,10 +10,24 @@ from .http.http_error import NotFoundError
 from .http.http_method import HttpMethod
 from .http.http_request import HttpRequest
 from .http.http_response import HttpResponse
-from .middleware.application_middleware import ApplicationMiddleware
+from .middleware.application_middleware import SynchronousRequestHandlerMiddleware
 from .middleware.middleware import Middleware, MiddlewarePipeline
 from .routing import Route, Router
-from .serverless.wrapper import create_serverless_function
+from .serverless.wrapper import create_serverless_function, is_serverless
+from functools import wraps, update_wrapper
+
+
+def _wrap_request_handler(handler: Callable, route: Route) -> Callable:
+    def _handle_request(*args) -> HttpResponse:
+        request: HttpRequest = args[0]
+        local_route = copy(route)
+        local_route._parameters = request.path_parameters
+        request.route = local_route
+        request.attributes["__handler__"] = handler
+
+        return handler(*args)
+
+    return update_wrapper(_handle_request, handler)
 
 
 class _Loader:
@@ -76,46 +92,53 @@ class Application:
         return Route(base_uri + route, attributes)
 
     def get(self, route: str, **attributes) -> Callable:
-        return self._create_method_function(route, HttpMethod.GET, **attributes)
+        return self._create_route_handler(route, HttpMethod.GET, **attributes)
 
     def post(self, route: str, **attributes) -> Callable:
-        return self._create_method_function(route, HttpMethod.POST, **attributes)
+        return self._create_route_handler(route, HttpMethod.POST, **attributes)
 
     def put(self, route: str, **attributes) -> Callable:
-        return self._create_method_function(route, HttpMethod.PUT, **attributes)
+        return self._create_route_handler(route, HttpMethod.PUT, **attributes)
 
     def patch(self, route: str, **attributes) -> Callable:
-        return self._create_method_function(route, HttpMethod.PATCH, **attributes)
+        return self._create_route_handler(route, HttpMethod.PATCH, **attributes)
 
     def delete(self, route: str, **attributes) -> Callable:
-        return self._create_method_function(route, HttpMethod.DELETE, **attributes)
+        return self._create_route_handler(route, HttpMethod.DELETE, **attributes)
 
     def head(self, route: str, **attributes) -> Callable:
-        return self._create_method_function(route, HttpMethod.HEAD, **attributes)
+        return self._create_route_handler(route, HttpMethod.HEAD, **attributes)
 
     def options(self, route: str, **attributes) -> Callable:
-        return self._create_method_function(route, HttpMethod.OPTIONS, **attributes)
+        return self._create_route_handler(route, HttpMethod.OPTIONS, **attributes)
 
-    def _create_method_function(self, route: str, method: HttpMethod, **attributes):
+    def _create_route_handler(self, route: str, method: HttpMethod, **attributes):
         def _handler(handler: Callable) -> Callable:
-            r = self._create_route(route, attributes)
-            self._append_route(method, r, handler)
-            return create_serverless_function(handler, r, self._middleware)
+            local_route = self._create_route(route, attributes)
+            handler = _wrap_request_handler(handler, local_route)
+            self._append_route(method, local_route, handler)
+            if is_serverless():
+                return create_serverless_function(handler, local_route, self._middleware)
+
+            return handler
 
         return _handler
 
     def any(self, route: str, **attributes) -> Callable:
         def _any(handler: Callable) -> Callable:
-            r = self._create_route(route, attributes)
-            self._append_route(HttpMethod.GET, r, handler)
-            self._append_route(HttpMethod.POST, r, handler)
-            self._append_route(HttpMethod.PUT, r, handler)
-            self._append_route(HttpMethod.PATCH, r, handler)
-            self._append_route(HttpMethod.DELETE, r, handler)
-            self._append_route(HttpMethod.HEAD, r, handler)
-            self._append_route(HttpMethod.OPTIONS, r, handler)
+            local_route = self._create_route(route, attributes)
+            request_handler = _wrap_request_handler(handler, local_route)
+            self._append_route(HttpMethod.GET, local_route, request_handler)
+            self._append_route(HttpMethod.POST, local_route, request_handler)
+            self._append_route(HttpMethod.PUT, local_route, request_handler)
+            self._append_route(HttpMethod.PATCH, local_route, request_handler)
+            self._append_route(HttpMethod.DELETE, local_route, request_handler)
+            self._append_route(HttpMethod.HEAD, local_route, request_handler)
+            self._append_route(HttpMethod.OPTIONS, local_route, request_handler)
 
-            return create_serverless_function(handler, r, self._middleware)
+            if is_serverless():
+                return create_serverless_function(request_handler, local_route, self._middleware)
+            return request_handler
 
         return _any
 
@@ -149,7 +172,10 @@ class Application:
 
             request.attributes["__handler__"] = _handler
 
-        return self._application_middleware(request)
+        return self._call_handler(request)
+
+    def __async_call__(self):
+        ...
 
     def use(self, namespace: str) -> None:
         try:
@@ -158,10 +184,10 @@ class Application:
             raise ApplicationError.for_invalid_namespace(namespace) from e
 
     @property
-    def _application_middleware(self) -> MiddlewarePipeline:
+    def _call_handler(self) -> MiddlewarePipeline:
         if self._cached_middleware is None:
             middleware = MiddlewarePipeline(self._middleware.queue)
-            middleware.append(ApplicationMiddleware(self.router))
+            middleware.append(SynchronousRequestHandlerMiddleware(self.router))
             self._cached_middleware = middleware
 
         return self._cached_middleware

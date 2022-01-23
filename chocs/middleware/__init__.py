@@ -1,4 +1,4 @@
-from .application_middleware import ApplicationMiddleware
+from .application_middleware import SynchronousRequestHandlerMiddleware
 from .middleware import (
     Middleware,
     MiddlewareCursor,

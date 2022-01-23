@@ -1,5 +1,5 @@
 import pytest
-
+from copy import copy
 from chocs import HttpHeaders
 
 
@@ -63,3 +63,21 @@ def test_eq_headers() -> None:
     headers_copy["test_2"] = "value"
 
     assert not headers == headers_copy
+
+
+def test_can_copy() -> None:
+    # given
+    instance = HttpHeaders({"a": 1, "b": 2, "c": [1, 2]})
+
+    # when
+    instance_copy = copy(instance)
+    instance_copy["a"] = 'a'
+    instance_copy["c"] = 'c'
+
+    # then
+    assert instance['c'] == ['1', '2']
+    assert instance['a'] == '1'
+
+    assert instance_copy['c'] == 'c'
+    assert instance_copy['a'] == 'a'
+

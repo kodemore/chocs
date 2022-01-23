@@ -1,6 +1,6 @@
 import pytest
 
-from chocs import Application, HttpRequest, HttpResponse
+from chocs import Application, HttpRequest, HttpResponse, HttpMethod
 from chocs.errors import ApplicationError
 from inspect import signature
 
@@ -55,4 +55,46 @@ def test_if_function_is_properly_wrapped() -> None:
     assert get_pet.__name__ == "get_pet"
     func_sig = signature(get_pet)
     assert list(func_sig.parameters.keys()) == ["req"]
+
+
+def test_if_request_is_containing_a_handler_name() -> None:
+    # given
+    app = Application()
+
+    @app.get("/pets")
+    def get_pet(req: HttpRequest) -> HttpResponse:
+        assert req.attributes["handler_name"] == "get_pet"
+        return HttpResponse("pet")
+
+
+def test_if_request_handler_is_property_wrapped() -> None:
+    # given
+    app = Application()
+
+    @app.get("/test")
+    def get_pet(req: HttpRequest) -> HttpResponse:
+        if "test" not in req.attributes:
+            req.attributes["test"] = 0
+
+        req.attributes["test"] += 1
+        return HttpResponse("OK")
+
+    request = HttpRequest(HttpMethod.GET, "/test")
+
+    # when
+    res = app(request)
+
+    # then
+    assert "test" not in request.attributes
+
+
+def test_can_register_async_handler() -> None:
+    # given
+    app = Application()
+
+    @app.get("/test")
+    async def get_test(req: HttpRequest) -> HttpResponse:
+        return HttpResponse("OK")
+
+    a = 1
 

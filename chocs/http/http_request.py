@@ -1,14 +1,16 @@
-from copy import copy
+from __future__ import annotations
+
+from copy import copy, deepcopy
 from io import BytesIO
 from typing import Any, Dict, Optional, Union
 
+from chocs.routing import Route
 from .http_body import write_body
 from .http_cookies import HttpCookieJar, parse_cookie_header
 from .http_headers import HttpHeaders
 from .http_method import HttpMethod
 from .http_parsed_body import HttpParsedBodyTrait
 from .http_query_string import HttpQueryString
-from chocs.routing import Route
 
 
 class HttpRequest(HttpParsedBodyTrait):
@@ -73,6 +75,18 @@ class HttpRequest(HttpParsedBodyTrait):
     def __str__(self) -> str:
         self._body.seek(0)
         return self._body.read().decode(self.encoding)
+
+    def __copy__(self) -> HttpRequest:
+        new_copy = HttpRequest.__new__(HttpRequest)
+        new_copy.method = self.method
+        new_copy.path = self.path
+        new_copy.query_string = deepcopy(self.query_string)
+        new_copy._headers = copy(self._headers)
+        new_copy._cookies = None  # reset cookies after copy
+        self._body.seek(0)
+        new_copy._body = BytesIO(self._body.read())
+
+        return new_copy
 
     @property
     def headers(self) -> HttpHeaders:

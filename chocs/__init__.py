@@ -1,5 +1,5 @@
 from chocs.http import *
 from .application import Application
-from .middleware.application_middleware import ApplicationMiddleware
+from .middleware.application_middleware import SynchronousRequestHandlerMiddleware
 from .routing import Route, Router
 from .wsgi.wsgi_support import WsgiServers, create_wsgi_handler, serve

@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import re
+from copy import copy
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, ItemsView, KeysView, Optional, Union, ValuesView
+from typing import Dict, ItemsView, KeysView, Optional, Union, ValuesView, overload
 from urllib.parse import quote, unquote
 
 COOKIE_NAME_VALIDATOR = re.compile(r"[a-z0-9!#$%&'*+.^_`|~\-]+", re.I)
@@ -75,6 +78,32 @@ class HttpCookie:
     def __bool__(self) -> bool:
         return bool(self.value)
 
+    @overload
+    def __eq__(self, other: HttpCookie) -> bool:
+        ...
+
+    @overload
+    def __eq__(self, other: str) -> bool:
+        ...
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, str):
+            return self.value == other
+
+        if not isinstance(other, HttpCookie):
+            raise TypeError(f"HttpCookie.__eq__ expects either instance of `HttpCookie` or `str`,"
+                            f" {type(other)} passed instead.")
+
+        return self.name == other.name and \
+            self.value == other.value and \
+            self.path == other.path and \
+            self.domain == other.domain and \
+            self.expires == other.expires and \
+            self.max_age == other.max_age and \
+            self.secure == other.secure and \
+            self.http_only == other.http_only and \
+            self.same_site == other.same_site
+
     def serialise(self) -> str:
         output = f"{self.name}={self.safe_value}"
         if self.max_age is not None:
@@ -102,6 +131,20 @@ class HttpCookie:
                 output += "; SameSite=Strict"
 
         return output
+
+    def __copy__(self) -> HttpCookie:
+        new_copy = HttpCookie.__new__(HttpCookie)
+        new_copy._name = self._name
+        new_copy.value = self.value
+        new_copy.path = self.path
+        new_copy.domain = self.domain
+        new_copy.expires = self.expires
+        new_copy.max_age = self.max_age
+        new_copy.secure = self.secure
+        new_copy.http_only = self.http_only
+        new_copy.same_site = self.same_site
+
+        return new_copy
 
 
 class HttpCookieJar:
@@ -144,6 +187,12 @@ class HttpCookieJar:
 
     def __repr__(self) -> str:
         return str(self._cookies)
+
+    def __copy__(self) -> HttpCookieJar:
+        new_copy = HttpCookieJar.__new__(HttpCookieJar)
+        new_copy._cookies = {name: copy(value) for name, value in self.items()}
+
+        return new_copy
 
 
 def parse_cookie_header(header: str) -> HttpCookieJar:

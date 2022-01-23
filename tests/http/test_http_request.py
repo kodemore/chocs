@@ -1,4 +1,5 @@
 import json
+from copy import copy
 from typing import Union
 
 import pytest
@@ -104,3 +105,20 @@ def test_http_request_body_type(
     request = HttpRequest(HttpMethod.GET, body=data)
 
     assert str(request) == expected
+
+
+def test_can_copy() -> None:
+    # given
+    headers = {
+        "Header-1": "value-1",
+        "heaDer-2": 13,
+    }
+    request = HttpRequest(HttpMethod.GET, body=b"test body", headers=headers)
+
+    # when
+    request_copy = copy(request)
+    assert request_copy == request
+    request_copy.headers.set("header-1", "new-value")
+
+    # then
+    assert request.headers.get("header-1") == "value-1"
