@@ -85,6 +85,8 @@ class HttpRequest(HttpParsedBodyTrait):
         new_copy._cookies = None  # reset cookies after copy
         self._body.seek(0)
         new_copy._body = BytesIO(self._body.read())
+        new_copy.path_parameters = {key: value for key, value in self.path_parameters.items()}
+        new_copy.attributes = {key: value for key, value in self.attributes.items()}
 
         return new_copy
 

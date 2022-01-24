@@ -4,7 +4,7 @@ from typing import Callable
 
 from chocs import (
     Application,
-    SynchronousRequestHandlerMiddleware,
+    RequestHandlerMiddleware,
     HttpMethod,
     HttpRequest,
     HttpResponse,

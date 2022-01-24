@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from copy import copy
 from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Union
@@ -89,6 +91,16 @@ class Route:
 
         return default
 
+    def __copy__(self) -> Route:
+        new_copy = Route.__new__(Route)
+        new_copy.route = self.route
+        new_copy._parameters_names = self._parameters_names
+        new_copy._pattern = self._pattern
+        new_copy._parameters = {}
+        new_copy.is_wildcard = self.is_wildcard
+
+        return new_copy
+
 
 class Router:
     def __init__(self):
@@ -129,8 +141,9 @@ class Router:
             raise NotFoundError(f"Could not match any resource matching {method} {uri} uri")
 
         for route in self._routes[method]:
-            if route[0].match(uri):
-                return route
+            match = route[0].match(uri)
+            if match:
+                return match, route[1]
 
         raise NotFoundError(f"Could not match any resource matching {method} {uri} uri")
 

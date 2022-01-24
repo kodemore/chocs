@@ -1,5 +1,6 @@
 import base64
 from cgi import parse_header
+from copy import copy
 from io import BytesIO
 from typing import Any, Dict
 from urllib.parse import quote_plus
@@ -9,6 +10,9 @@ from chocs.http.http_query_string import HttpQueryString
 from chocs.http.http_request import HttpRequest
 from chocs.http.http_response import HttpResponse
 from chocs.http.http_status import HttpStatus
+from chocs.middleware.middleware import MiddlewareHandler, MiddlewarePipeline
+from chocs.routing import Route
+from chocs.types import HttpHandlerFunction
 from .serverless import ServerlessFunction
 
 TEXT_MIME_TYPES = [
@@ -28,9 +32,23 @@ AwsContext = Dict[str, Any]
 
 
 class AwsServerlessFunction(ServerlessFunction):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        function: HttpHandlerFunction,
+        route: Route = Route("/"),
+        middleware_pipeline: MiddlewarePipeline = MiddlewarePipeline()
+    ):
+        super().__init__(function, route, middleware_pipeline)
         self.middleware_enabled = True
+
+        def _function_middleware(_request: HttpRequest, _next: MiddlewareHandler) -> HttpResponse:
+            _route = copy(route)
+            route._parameters = _request.path_parameters
+            _request.route = _route
+
+            return function(_request)
+
+        self.middleware_pipeline.append(_function_middleware)
 
     def __call__(self, *args):
         event: AwsEvent = args[0]
@@ -78,7 +96,7 @@ def format_response_to_aws(event: AwsEvent, response: HttpResponse) -> Dict[str,
     body = str(response)
 
     if (mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES) and not response.headers.get(
-        "Content-Encoding", ""
+            "Content-Encoding", ""
     ):
         serverless_response["body"] = body
         serverless_response["isBase64Encoded"] = False
