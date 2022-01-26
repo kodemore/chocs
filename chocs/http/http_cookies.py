@@ -78,7 +78,7 @@ class HttpCookie:
     def __bool__(self) -> bool:
         return bool(self.value)
 
-    @overload
+    @overload  # type: ignore
     def __eq__(self, other: HttpCookie) -> bool:
         ...
 

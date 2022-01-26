@@ -1,10 +1,7 @@
 import os
-from copy import copy
 from typing import Any
 
-from chocs.http.http_request import HttpRequest
-from chocs.http.http_response import HttpResponse
-from chocs.middleware.middleware import MiddlewareHandler, MiddlewarePipeline
+from chocs.middleware.middleware import MiddlewarePipeline
 from chocs.routing import Route
 from chocs.types import HttpHandlerFunction
 

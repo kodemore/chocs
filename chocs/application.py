@@ -18,9 +18,9 @@ class _Loader:
     _loaded_modules: List[str] = []
 
     @classmethod
-    def load(cls, ns: str) -> List[str]:
+    def load(cls, namespace: str) -> List[str]:
         # Take the first ns part to understand related system path
-        ns_parts = ns.split(".")
+        ns_parts = namespace.split(".")
         base_module = importlib.import_module(ns_parts[0])
         module_paths = getattr(base_module, "__path__", [getcwd()])
         base_path = module_paths[0]
@@ -155,19 +155,17 @@ class Application:
 
             request.attributes["__handler__"] = _handler
 
-        return self._call_handler(request)
-
-    def __async_call__(self):
-        ...
+        request_handler = self._request_handler
+        return request_handler(request)
 
     def use(self, namespace: str) -> None:
         try:
             self._loaded_modules = self._loaded_modules + _Loader.load(namespace)
-        except ModuleNotFoundError as e:
-            raise ApplicationError.for_invalid_namespace(namespace) from e
+        except ModuleNotFoundError as error:
+            raise ApplicationError.for_invalid_namespace(namespace) from error
 
     @property
-    def _call_handler(self) -> MiddlewarePipeline:
+    def _request_handler(self) -> MiddlewarePipeline:
         if self._cached_middleware is None:
             middleware = MiddlewarePipeline(self._middleware.queue)
             middleware.append(RequestHandlerMiddleware(self.router))

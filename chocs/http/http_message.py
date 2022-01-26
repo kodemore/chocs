@@ -16,10 +16,10 @@ class HttpMessage(ABC):
 
 
 class SimpleHttpMessage(HttpMessage, str):
-    def __new__(cls, value, *args, **kwargs):
+    def __new__(cls, value):
         return super(SimpleHttpMessage, cls).__new__(cls, value)
 
-    def __init__(self, value: str):
+    def __init__(self, value: str):  # pylint: disable=W0613
         # ignore value, as strings are immutable and this should be passed to __new__ constructor
         ...
 

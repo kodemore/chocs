@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections import UserDict
-from copy import deepcopy
 from typing import Any, Dict
 from urllib.parse import unquote_plus
 
@@ -30,32 +28,32 @@ def build_dict_from_path(path: str, value) -> Dict[str, Any]:
         if len(_parsed_path) == 1:
             if not _parsed_path[0]:
                 return [value]
-            else:
-                return {_parsed_path[0]: value}
+
+            return {_parsed_path[0]: value}
         if not _parsed_path[0]:
             return [_create_leaf(_parsed_path[1:])]
-        else:
-            return {_parsed_path[0]: _create_leaf(_parsed_path[1:])}
+
+        return {_parsed_path[0]: _create_leaf(_parsed_path[1:])}
 
     return _create_leaf(parsed_path)
 
 
-def deep_merge(a: Dict[str, Any], b: Dict[str, Any]) -> Dict[str, Any]:
-    for key in b:
-        if key in a:
-            if isinstance(a[key], dict) and isinstance(b[key], dict):
-                a[key] = deep_merge(a[key], b[key])
-            elif isinstance(a[key], list) and isinstance(b[key], list):
-                a[key] = a[key] + b[key]
-            elif isinstance(b[key], list):
-                a[key] = [a[key]] + b[key]
-            elif isinstance(b[key], dict):
-                a[key] = {"": a[key], **b[key]}
+def deep_merge(base: Dict[str, Any], extension: Dict[str, Any]) -> Dict[str, Any]:
+    for key in extension:
+        if key in base:
+            if isinstance(base[key], dict) and isinstance(extension[key], dict):
+                base[key] = deep_merge(base[key], extension[key])
+            elif isinstance(base[key], list) and isinstance(extension[key], list):
+                base[key] = base[key] + extension[key]
+            elif isinstance(extension[key], list):
+                base[key] = [base[key]] + extension[key]
+            elif isinstance(extension[key], dict):
+                base[key] = {"": base[key], **extension[key]}
             else:
-                a[key] = [a[key], b[key]]
+                base[key] = [base[key], extension[key]]
         else:
-            a[key] = b[key]
-    return a
+            base[key] = extension[key]
+    return base
 
 
 def parse_qs(query: str) -> Dict[str, Any]:

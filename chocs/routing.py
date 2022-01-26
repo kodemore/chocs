@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from copy import copy
-from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Union, Literal
 
 from chocs.http.http_error import NotFoundError
 from chocs.http.http_method import HttpMethod
@@ -50,7 +50,7 @@ class Route:
             re.I | re.M,
         )
 
-    def match(self, uri: str) -> Union[bool, "Route"]:
+    def match(self, uri: str) -> Union[Literal[False], "Route"]:
         matches = self.pattern.findall(uri)
         if not matches:
             return False
@@ -125,7 +125,7 @@ class Router:
     @staticmethod
     def _normalise_methods(methods: Union[str, HttpMethod, List[Union[str, HttpMethod]]]) -> List[HttpMethod]:
         if methods == "*":
-            methods = [method for method in HttpMethod]
+            methods = list(HttpMethod)
         elif isinstance(methods, HttpMethod):
             methods = [methods]
         else:
