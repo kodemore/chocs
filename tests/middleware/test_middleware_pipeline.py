@@ -8,7 +8,7 @@ class ErrorCatchingMiddleware(Middleware):
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         try:
             assert isinstance(next, MiddlewareHandler)
-            assert len(next.queue.queue) == 2
+            assert len(next.queue) == 2
             response = next(request)
         except Exception as e:
             response = HttpResponse(status=500)
@@ -20,7 +20,7 @@ class ErrorCatchingMiddleware(Middleware):
 class ProxingMiddleware(Middleware):
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         assert isinstance(next, MiddlewareHandler)
-        assert len(next.queue.queue) == 1
+        assert len(next.queue) == 1
         response = next(request)
         response.write(b"Proxed Response")
         return response
@@ -29,7 +29,7 @@ class ProxingMiddleware(Middleware):
 class ErroringMiddleware(Middleware):
     def handle(self, request: HttpRequest, next: MiddlewareHandler) -> HttpResponse:
         assert isinstance(next, MiddlewareHandler)
-        assert len(next.queue.queue) == 0
+        assert len(next.queue) == 0
         raise RuntimeError("Error")
 
 

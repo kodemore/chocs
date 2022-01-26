@@ -9,4 +9,5 @@ def wsgi_serve(
     port: int = 80,
     workers: int = 1,
 ) -> None:
-    run(wsgi_handler, host, port)
+    if workers >= 1:
+        run(wsgi_handler, host, port)

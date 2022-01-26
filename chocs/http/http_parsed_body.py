@@ -1,8 +1,9 @@
 import json
-import yaml
 from cgi import parse_header
 from io import BytesIO
 from typing import Any, Callable, Dict, Optional, Tuple, Union
+
+import yaml
 
 from .http_headers import HttpHeaders
 from .http_message import (

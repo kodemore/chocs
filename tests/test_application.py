@@ -1,6 +1,6 @@
 import pytest
 
-from chocs import Application, HttpRequest, HttpResponse
+from chocs import Application, HttpRequest, HttpResponse, HttpMethod
 from chocs.errors import ApplicationError
 from inspect import signature
 
@@ -56,3 +56,12 @@ def test_if_function_is_properly_wrapped() -> None:
     func_sig = signature(get_pet)
     assert list(func_sig.parameters.keys()) == ["req"]
 
+
+def test_if_request_is_containing_a_handler_name() -> None:
+    # given
+    app = Application()
+
+    @app.get("/pets")
+    def get_pet(req: HttpRequest) -> HttpResponse:
+        assert req.attributes["handler_name"] == "get_pet"
+        return HttpResponse("pet")

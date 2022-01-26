@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Generator, KeysView, Optional, Sequence, Union, ValuesView
 
 
@@ -19,9 +21,9 @@ def _normalize_headers(headers: dict) -> dict:
     normalized = {}
     for name, value in headers.items():
         if isinstance(value, list):
-            normalized[_normalize_header_name(name)] = value
+            normalized[_normalize_header_name(name)] = [str(item) for item in value]
         else:
-            normalized[_normalize_header_name(name)] = [value]
+            normalized[_normalize_header_name(name)] = [str(value)]
 
     return normalized
 
@@ -101,6 +103,12 @@ class HttpHeaders:
             return False
 
         return self._headers == other._headers
+
+    def __copy__(self) -> HttpHeaders:
+        copy = HttpHeaders.__new__(HttpHeaders)
+        copy._headers = {key: [item for item in value] for key, value in self._headers.items()}
+
+        return copy
 
 
 __all__ = ["HttpHeaders"]

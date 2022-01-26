@@ -1,10 +1,7 @@
 import os
-from copy import copy
 from typing import Any
 
-from chocs.http.http_request import HttpRequest
-from chocs.http.http_response import HttpResponse
-from chocs.middleware.middleware import MiddlewareHandler, MiddlewarePipeline
+from chocs.middleware.middleware import MiddlewarePipeline
 from chocs.routing import Route
 from chocs.types import HttpHandlerFunction
 
@@ -20,15 +17,6 @@ class ServerlessFunction:
         self._route = route
         self._middleware_pipeline = MiddlewarePipeline(middleware_pipeline.queue)
         self._middleware_enabled = False
-
-        def _function_middleware(_request: HttpRequest, _next: MiddlewareHandler) -> HttpResponse:
-            _route = copy(route)
-            route._parameters = _request.path_parameters
-            _request.route = _route
-
-            return function(_request)
-
-        self.middleware_pipeline.append(_function_middleware)
 
     @property
     def function(self) -> HttpHandlerFunction:
@@ -51,11 +39,6 @@ class ServerlessFunction:
         self._middleware_enabled = value
 
     def __call__(self, *args) -> Any:
-        request = args[0]
-        route = copy(self.route)
-        route._parameters = request.path_parameters
-        request.route = route
-        request.attributes["__handler__"] = self._function
         if self._middleware_enabled and not self._middleware_pipeline.empty:
             return self._middleware_pipeline(*args)
 

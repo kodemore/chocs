@@ -1,3 +1,5 @@
+from copy import copy, deepcopy
+
 from pytest import mark, raises
 
 from chocs import HttpQueryString
@@ -122,3 +124,15 @@ def test_ignores_string_integers_starting_with_0() -> None:
     result = parse_qs("not_integer=01231&float=0.123&not_float=01.23&zero=0")
 
     assert result == {"not_integer": "01231", "float": 0.123, "not_float": "01.23", "zero": 0}
+
+
+def test_can_copy() -> None:
+    # given
+    qs = HttpQueryString("a=1&b=2&c[a]=1&c[b]=2")
+
+    # when
+    qs_copy = deepcopy(qs)
+    qs_copy["c"]["a"] = 10
+
+    # then
+    assert qs["c"]["a"] == 1

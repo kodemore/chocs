@@ -14,4 +14,4 @@ def default(request: HttpRequest) -> HttpResponse:
     return HttpResponse("Not found", HttpStatus.NOT_FOUND)
 
 
-serve(app, port=8080, debug=True, wsgi_server=WsgiServers.CHERRYPY)
+serve(app, port=8080, debug=True, wsgi_server=WsgiServers.BJOERN)

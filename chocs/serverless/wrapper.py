@@ -21,4 +21,11 @@ def create_serverless_function(
     return update_wrapper(ServerlessFunction(func, route, middleware_pipeline), func)
 
 
-__all__ = ["create_serverless_function"]
+def is_serverless() -> bool:
+    if IS_AWS_ENVIRONMENT:
+        return True
+
+    return False
+
+
+__all__ = ["create_serverless_function", "is_serverless"]

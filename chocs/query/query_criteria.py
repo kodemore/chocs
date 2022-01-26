@@ -44,7 +44,7 @@ class QueryCriteria:
         elif self.offset - self.limit >= 0:
             query.append(f"offset={self.offset - self.limit}")
         else:
-            query.append(f"offset=0")
+            query.append("offset=0")
 
         return "&".join(query)
 

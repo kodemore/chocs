@@ -7,7 +7,7 @@ from chocs.serverless.serverless import ServerlessFunction
 from .middleware import Middleware, MiddlewareHandler
 
 
-class ApplicationMiddleware(Middleware):
+class RequestHandlerMiddleware(Middleware):
     def __init__(self, router: Router):
         self.router = router
 
@@ -26,4 +26,4 @@ class ApplicationMiddleware(Middleware):
             return HttpResponse(status=error.status_code, body=error.http_message)
 
 
-__all__ = ["ApplicationMiddleware"]
+__all__ = ["RequestHandlerMiddleware"]
