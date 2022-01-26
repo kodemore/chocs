@@ -36,7 +36,7 @@ class AwsServerlessFunction(ServerlessFunction):
         self,
         function: HttpHandlerFunction,
         route: Route = Route("/"),
-        middleware_pipeline: MiddlewarePipeline = MiddlewarePipeline()
+        middleware_pipeline: MiddlewarePipeline = MiddlewarePipeline(),
     ):
         super().__init__(function, route, middleware_pipeline)
         self.middleware_enabled = True
@@ -96,7 +96,7 @@ def format_response_to_aws(event: AwsEvent, response: HttpResponse) -> Dict[str,
     body = str(response)
 
     if (mimetype.startswith("text/") or mimetype in TEXT_MIME_TYPES) and not response.headers.get(
-            "Content-Encoding", ""
+        "Content-Encoding", ""
     ):
         serverless_response["body"] = body
         serverless_response["isBase64Encoded"] = False

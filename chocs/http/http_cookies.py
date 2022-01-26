@@ -91,18 +91,21 @@ class HttpCookie:
             return self.value == other
 
         if not isinstance(other, HttpCookie):
-            raise TypeError(f"HttpCookie.__eq__ expects either instance of `HttpCookie` or `str`,"
-                            f" {type(other)} passed instead.")
+            raise TypeError(
+                f"HttpCookie.__eq__ expects either instance of `HttpCookie` or `str`," f" {type(other)} passed instead."
+            )
 
-        return self.name == other.name and \
-            self.value == other.value and \
-            self.path == other.path and \
-            self.domain == other.domain and \
-            self.expires == other.expires and \
-            self.max_age == other.max_age and \
-            self.secure == other.secure and \
-            self.http_only == other.http_only and \
-            self.same_site == other.same_site
+        return (
+            self.name == other.name
+            and self.value == other.value
+            and self.path == other.path
+            and self.domain == other.domain
+            and self.expires == other.expires
+            and self.max_age == other.max_age
+            and self.secure == other.secure
+            and self.http_only == other.http_only
+            and self.same_site == other.same_site
+        )
 
     def serialise(self) -> str:
         output = f"{self.name}={self.safe_value}"
