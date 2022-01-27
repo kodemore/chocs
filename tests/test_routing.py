@@ -1,3 +1,5 @@
+from copy import copy
+
 import pytest
 import re
 from typing import Callable
@@ -125,3 +127,18 @@ def test_router_not_found() -> None:
     response = app(request)
 
     assert response.status_code == HttpStatus.NOT_FOUND
+
+
+def test_can_copy_route() -> None:
+    # given
+    base_route = Route("/test/{parameter}")
+
+    # when
+    match_route = base_route.match("/test/test-1")
+    route_copy = copy(match_route)
+
+    # then
+    assert match_route
+    assert route_copy.attributes == match_route.attributes
+    assert route_copy.route == match_route.route
+    assert route_copy.parameters == match_route.parameters
