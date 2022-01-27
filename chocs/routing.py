@@ -63,6 +63,7 @@ class Route:
 
         route = copy(self)
         match_index = 0
+        route._parameters = {}
         for value in matches:
             route._parameters[self._parameters_names[match_index]] = parse_qs_value(value)
             match_index += 1
@@ -96,8 +97,9 @@ class Route:
         new_copy.route = self.route
         new_copy._parameters_names = self._parameters_names
         new_copy._pattern = self._pattern
-        new_copy._parameters = {}
+        new_copy._parameters = {key: value for key, value in self._parameters.items()}
         new_copy.is_wildcard = self.is_wildcard
+        new_copy.attributes = {key: value for key, value in self.attributes.items()}
 
         return new_copy
 
