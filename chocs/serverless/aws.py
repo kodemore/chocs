@@ -134,7 +134,7 @@ def create_http_request_from_aws_http_api(event: AwsEvent, context: AwsContext) 
         query_string=HttpQueryString(event.get("rawQueryString", "")),
         headers=HttpHeaders(headers),
     )
-    request.path_parameters = event.get("pathParameters", {})
+    request.path_parameters = get_normalised_path_parameters(event)
 
     request.attributes["aws_context"] = context
     request.attributes["aws_event"] = event
@@ -163,7 +163,7 @@ def create_http_request_from_aws_rest_api(event: AwsEvent, context: AwsContext) 
         query_string=HttpQueryString(raw_query_string),
         headers=HttpHeaders(headers),
     )
-    request.path_parameters = event.get("pathParameters", {})
+    request.path_parameters = get_normalised_path_parameters(event)
 
     request.attributes["aws_context"] = context
     request.attributes["aws_event"] = event
@@ -193,6 +193,12 @@ def get_normalised_headers_from_aws(event: AwsEvent) -> Dict[str, str]:
         headers["x-serverless-trace-id"] = headers["x-amzn-trace-id"]
 
     return headers
+
+
+def get_normalised_path_parameters(event: AwsEvent) -> Dict[str, Any]:
+    path_parameters = event.get("pathParameters", {})
+
+    return path_parameters if path_parameters is not None else {}
 
 
 def get_normalised_body_from_aws(event: AwsEvent) -> BytesIO:
