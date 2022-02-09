@@ -196,9 +196,7 @@ def get_normalised_headers_from_aws(event: AwsEvent) -> Dict[str, str]:
 
 
 def get_normalised_path_parameters(event: AwsEvent) -> Dict[str, Any]:
-    path_parameters = event.get("pathParameters", {})
-
-    return path_parameters if path_parameters is not None else {}
+    return event.get("pathParameters") or {}
 
 
 def get_normalised_body_from_aws(event: AwsEvent) -> BytesIO:
