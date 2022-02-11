@@ -86,10 +86,6 @@ class Route:
     def __contains__(self, key: str) -> bool:
         return key in self._parameters
 
-    @overload
-    def __eq__(self, other: Route) -> bool:
-        ...
-
     def __eq__(self, other):
         if not isinstance(other, Route):
             raise TypeError(f"Passed parameter was {type(other)}, instead of Route")
