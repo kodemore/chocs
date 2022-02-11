@@ -90,6 +90,8 @@ def test_middleware_for_serverless() -> None:
         assert hasattr(request, "route")
         assert request.route is not None
         assert request.route == route
+        assert request.path_parameters == {"id": "123"}
+        assert request.route.parameters == {"id": "123"}
         response = next(request)
         response._headers.set("Access-Control-Allow-Origin", "*")
 
