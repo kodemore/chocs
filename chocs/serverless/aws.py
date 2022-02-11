@@ -42,10 +42,6 @@ class AwsServerlessFunction(ServerlessFunction):
         self.middleware_enabled = True
 
         def _function_middleware(_request: HttpRequest, _next: MiddlewareHandler) -> HttpResponse:
-            _route = copy(route)
-            route._parameters = _request.path_parameters
-            _request.route = _route
-
             return function(_request)
 
         self.middleware_pipeline.append(_function_middleware)
@@ -62,6 +58,10 @@ class AwsServerlessFunction(ServerlessFunction):
                 "statusCode": int(HttpStatus.CONTINUE),
             }
         request = create_http_request_from_aws_event(event, context)
+        route = copy(self.route)
+        route._parameters = request.path_parameters
+        request.route = route
+
         return format_response_to_aws(event, super().__call__(request))
 
 
