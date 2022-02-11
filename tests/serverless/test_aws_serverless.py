@@ -60,10 +60,14 @@ def test_create_http_request_from_serverless_event_multipart_image() -> None:
 
 
 def test_make_serverless_callback() -> None:
+    route = Route("/test/{id}")
+
     def test_callaback(request: HttpRequest) -> HttpResponse:
+        assert hasattr(request, "route")
+        assert request.route == route
         return HttpResponse(request.path)
 
-    serverless_callback = AwsServerlessFunction(test_callaback)
+    serverless_callback = AwsServerlessFunction(test_callaback, route)
     dir_path = os.path.dirname(os.path.realpath(__file__))
     event_json = json.load(
         open(os.path.join(dir_path, "../fixtures/lambda_http_api_event.json"))
@@ -79,9 +83,13 @@ def test_make_serverless_callback() -> None:
 
 
 def test_middleware_for_serverless() -> None:
+    route = Route("/test/{id}")
     def cors_middleware(
         request: HttpRequest, next: Callable[[HttpRequest], HttpResponse]
     ) -> HttpResponse:
+        assert hasattr(request, "route")
+        assert request.route is not None
+        assert request.route == route
         response = next(request)
         response._headers.set("Access-Control-Allow-Origin", "*")
 
@@ -93,7 +101,7 @@ def test_middleware_for_serverless() -> None:
     middleware_pipeline = MiddlewarePipeline()
     middleware_pipeline.append(cors_middleware)
     serverless_callback = AwsServerlessFunction(
-        ok_handler, Route("/"), middleware_pipeline
+        ok_handler, route, middleware_pipeline
     )
     dir_path = os.path.dirname(os.path.realpath(__file__))
     event_json = json.load(
@@ -159,6 +167,4 @@ def test_can_pass_none_in_path_parameters(aws_event: str) -> None:
 
     # then
     assert response["statusCode"] == 200
-
-
 
