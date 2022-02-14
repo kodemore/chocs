@@ -35,7 +35,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "bjoern"
-version = "3.1.0"
+version = "3.2.1"
 description = "A screamingly fast Python 2 + 3 WSGI server written in C."
 category = "dev"
 optional = false
@@ -339,7 +339,7 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "b0b124a0ca1068083f64317e6338ab548bd3f6477aa9b08c575ebb8b90589587"
+content-hash = "1f090e23f74c21d0ac8937038cfdf9807c6bb9018dfa51426666bf1b9cdbca07"
 
 [metadata.files]
 astroid = [
@@ -355,7 +355,7 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 bjoern = [
-    {file = "bjoern-3.1.0.tar.gz", hash = "sha256:01f3b601cf0ab0a9c7cb9c8f944ab7c738baaa6043ca82db20e9bd7a9be5767b"},
+    {file = "bjoern-3.2.1.tar.gz", hash = "sha256:19df818e059cc7ff87ca35b82586989e449a7ec4628866afb40b23be5a9b0c8b"},
 ]
 black = [
     {file = "black-22.1.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:1297c63b9e1b96a3d0da2d85d11cd9bf8664251fd69ddac068b98dc4f34f73b6"},
