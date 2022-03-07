@@ -2,6 +2,7 @@ from .http_cookies import HttpCookie, HttpCookieJar
 from .http_error import NotFoundError, BadRequestError, HttpError
 from .http_headers import HttpHeaders
 from .http_message import (
+    BinaryHttpMessage,
     CompositeHttpMessage,
     FormHttpMessage,
     HttpMessage,

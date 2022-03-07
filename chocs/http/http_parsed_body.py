@@ -13,6 +13,7 @@ from .http_message import (
     MultipartHttpMessage,
     SimpleHttpMessage,
     YamlHttpMessage,
+    BinaryHttpMessage,
 )
 
 
@@ -56,8 +57,12 @@ class HttpParsedBodyTrait:
         ):
             parsed_body = YamlHttpMessage.from_bytes(self._body, content_type[1].get("charset", "utf8"))
         else:
-            self._body.seek(0)
-            parsed_body = SimpleHttpMessage(self._body.read().decode(content_type[1].get("charset", "utf8")))
+            try:
+                self._body.seek(0)
+                parsed_body = SimpleHttpMessage(self._body.read().decode(content_type[1].get("charset", "utf8")))
+            except:
+                self._body.seek(0)
+                parsed_body = BinaryHttpMessage(self._body.read())
 
         self._parsed_body = parsed_body
         return self._parsed_body

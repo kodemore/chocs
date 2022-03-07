@@ -24,6 +24,11 @@ class SimpleHttpMessage(HttpMessage, str):
         ...
 
 
+class BinaryHttpMessage(HttpMessage, BytesIO):  # type: ignore
+    def __init__(self, *args, **kwargs):  # pylint: disable=W0613
+        super().__init__(*args, **kwargs)
+
+
 class CompositeHttpMessage(HttpMessage):
     def __init__(self, data: Any) -> None:
         self.data = data
@@ -123,5 +128,6 @@ __all__ = [
     "JsonHttpMessage",
     "MultipartHttpMessage",
     "SimpleHttpMessage",
+    "BinaryHttpMessage",
     "YamlHttpMessage",
 ]
