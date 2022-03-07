@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from copy import copy
-from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Union, Literal
+from typing import Any, Callable, Dict, List, Optional, Pattern, Tuple, Union, Literal, overload
 
 from chocs.http.http_error import NotFoundError
 from chocs.http.http_method import HttpMethod
@@ -85,6 +85,12 @@ class Route:
 
     def __contains__(self, key: str) -> bool:
         return key in self._parameters
+
+    def __eq__(self, other):
+        if not isinstance(other, Route):
+            raise TypeError(f"Passed parameter was {type(other)}, instead of Route")
+
+        return other.route == self.route and other.attributes == self.attributes
 
     def get(self, key: str, default: Optional[Any] = None):
         if key in self:
