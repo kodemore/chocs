@@ -1,5 +1,5 @@
 from chocs.http import HttpQueryString
-from chocs.query import QueryCriteria, Expression
+from chocs.query import Expression, QueryCriteria
 
 
 def test_can_instantiate() -> None:

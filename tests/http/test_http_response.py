@@ -1,15 +1,7 @@
+import pytest
 from io import BytesIO
 
-import pytest
-
-from chocs import (
-    HttpCookie,
-    HttpHeaders,
-    HttpMessage,
-    HttpResponse,
-    HttpStatus,
-    JsonHttpMessage,
-)
+from chocs import HttpCookie, HttpHeaders, HttpMessage, HttpResponse, HttpStatus, JsonHttpMessage
 
 
 def test_can_instantiate() -> None:

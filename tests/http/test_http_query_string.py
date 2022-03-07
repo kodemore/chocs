@@ -1,5 +1,4 @@
 from copy import copy, deepcopy
-
 from pytest import mark, raises
 
 from chocs import HttpQueryString

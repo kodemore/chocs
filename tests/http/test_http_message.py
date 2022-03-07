@@ -2,12 +2,14 @@ import os
 from io import BytesIO
 
 from chocs import (
+    BinaryHttpMessage,
     FormHttpMessage,
+    HttpMethod,
     HttpRequest,
     JsonHttpMessage,
     MultipartHttpMessage,
     SimpleHttpMessage,
-    UploadedFile, HttpMethod, BinaryHttpMessage,
+    UploadedFile,
 )
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))

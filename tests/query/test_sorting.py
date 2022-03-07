@@ -1,4 +1,4 @@
-from chocs.query.sorting import parse_sorting, SortDirection
+from chocs.query.sorting import SortDirection, parse_sorting
 
 
 def test_can_create_sort_order() -> None:
