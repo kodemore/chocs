@@ -60,7 +60,7 @@ class HttpParsedBodyTrait:
             try:
                 self._body.seek(0)
                 parsed_body = SimpleHttpMessage(self._body.read().decode(content_type[1].get("charset", "utf8")))
-            except:
+            except Exception:
                 self._body.seek(0)
                 parsed_body = BinaryHttpMessage(self._body.read())
         else:
