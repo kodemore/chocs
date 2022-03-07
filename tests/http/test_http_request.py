@@ -1,9 +1,8 @@
 import json
-from copy import copy
-from typing import Union
-
 import pytest
+from copy import copy
 from io import BytesIO
+from typing import Union
 
 from chocs import HttpHeaders, HttpMethod, HttpRequest
 

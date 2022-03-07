@@ -2,7 +2,9 @@ import os
 from io import BytesIO
 
 from chocs import (
+    BinaryHttpMessage,
     FormHttpMessage,
+    HttpMethod,
     HttpRequest,
     JsonHttpMessage,
     MultipartHttpMessage,
@@ -11,6 +13,9 @@ from chocs import (
 )
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+
+binary_body = b"GIF87a\x02\x00\x02\x00\x91\x00\x00\x00\x00\x00\xff\x8c\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\t\x00" \
+        b"\x00\x03\x00,\x00\x00\x00\x00\x02\x00\x02\x00\x00\x02\x02\x8cS\x00;"
 
 multipart_body = {
     "CONTENT_TYPE": "multipart/form-data; charset=utf-8; boundary=__TEST_BOUNDARY__",
@@ -141,3 +146,24 @@ def test_can_convert_uploaded_file_to_bytes() -> None:
     file_bytes = bytes(body["file_a"])
 
     assert file_bytes == b"GIF87a\x02\x00\x02\x00\x91\x00\x00\x00\x00\x00\xff\x8c\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\t\x00\x00\x03\x00,\x00\x00\x00\x00\x02\x00\x02\x00\x00\x02\x02\x8cS\x00;"
+
+
+def test_can_create_binary_message() -> None:
+    # given
+    request = HttpRequest(
+        HttpMethod.POST,
+        "/test",
+        body=binary_body
+    )
+
+    # when
+    parsed_body = request.parsed_body
+    binary_data = request.parsed_body.read()
+
+    # then
+    assert isinstance(parsed_body, BytesIO)
+    assert isinstance(parsed_body, BinaryHttpMessage)
+    assert binary_data == binary_body
+
+
+

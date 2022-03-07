@@ -1,17 +1,16 @@
-from copy import copy
-
 import pytest
 import re
+from copy import copy
 from typing import Callable
 
 from chocs import (
     Application,
-    RequestHandlerMiddleware,
     HttpMethod,
     HttpRequest,
     HttpResponse,
     HttpStatus,
     NotFoundError,
+    RequestHandlerMiddleware,
     Route,
     Router,
 )

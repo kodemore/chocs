@@ -1,8 +1,8 @@
 import pytest
-
-from chocs import Application, HttpRequest, HttpResponse, HttpMethod
-from chocs.errors import ApplicationError
 from inspect import signature
+
+from chocs import Application, HttpMethod, HttpRequest, HttpResponse
+from chocs.errors import ApplicationError
 
 
 def test_can_load_dynamically_modules_with_const_ending() -> None:
