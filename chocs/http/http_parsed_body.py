@@ -56,7 +56,7 @@ class HttpParsedBodyTrait:
             "application/x-yaml",
         ):
             parsed_body = YamlHttpMessage.from_bytes(self._body, content_type[1].get("charset", "utf8"))
-        elif content_type[0:4] == "text":
+        elif content_type[0][0:4] == "text":
             try:
                 self._body.seek(0)
                 parsed_body = SimpleHttpMessage(self._body.read().decode(content_type[1].get("charset", "utf8")))

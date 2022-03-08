@@ -65,3 +65,19 @@ def test_if_request_is_containing_a_handler_name() -> None:
     def get_pet(req: HttpRequest) -> HttpResponse:
         assert req.attributes["handler_name"] == "get_pet"
         return HttpResponse("pet")
+
+
+def test_can_parse_and_compare_default_response() -> None:
+    # given
+    app = Application()
+
+    @app.get("/test")
+    def get_pet(req: HttpRequest) -> HttpResponse:
+        return HttpResponse("OK")
+
+    # when
+    response = app(HttpRequest(HttpMethod.GET, "/test"))
+
+    # then
+    parsed_body = response.parsed_body
+    assert parsed_body == "OK"

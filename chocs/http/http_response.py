@@ -17,6 +17,11 @@ class HttpResponse(HttpParsedBodyTrait):
         encoding: str = "utf-8",
     ):
         self._headers = headers if isinstance(headers, HttpHeaders) else HttpHeaders(headers)
+
+        # Add default content type
+        if "content-type" not in self._headers:
+            self._headers.set("content-type", "text/plain")
+
         if isinstance(status, int):
             status = HttpStatus.from_int(status)
         self.status_code = status
