@@ -25,21 +25,13 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
-    
-    - name: Install dependencies
-      run: |
-        sudo apt-get install -y libev-dev
-        python -m pip install --upgrade pip
-        pip install --upgrade requests
-        pip install poetry
-        poetry install
+      uses: actions/checkout@v3
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         languages: ${{ matrix.language }}
-        setup-python-dependencies: false
+        setup-python-dependencies: true
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2
