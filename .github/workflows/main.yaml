@@ -32,7 +32,6 @@ jobs:
           poetry run isort -c setup.cfg
           poetry run black --line-length=120 --target-version py38 chocs
           poetry run mypy chocs
-          poetry run pylint --confidence=HIGH,INFERENCE,INFERENCE_FAILURE chocs
       - name: Test with codecoverage
         run: |
           poetry run pytest

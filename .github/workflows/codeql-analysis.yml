@@ -31,6 +31,7 @@ jobs:
       run: |
         sudo apt-get install -y libev-dev
         python -m pip install --upgrade pip
+        pip install --upgrade requests
         pip install poetry
         poetry install
 
